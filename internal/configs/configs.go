@@ -1,0 +1,40 @@
+package configs
+
+import "github.com/spf13/viper"
+
+// Configs holds struct for the bot configuration data
+type Config struct {
+	// for future references
+	CmdPrefix string `yaml:"cmdPrefix"`
+}
+
+// Secrets is the Bot's per-user data, some of which is secret
+type Secrets struct {
+	AuthToken string `yaml:"authToken"`
+	ClientID  string `yaml:"clientID"`
+}
+
+// LoadConfigFile will setup configs from given path, will use viper to process and returns error if one occurred
+func LoadConfigFile(path string) (*Config, error) {
+	viper.SetConfigName("configs")
+	viper.SetConfigFile("yaml")
+	viper.AddConfigPath(path)
+	err := viper.ReadInConfig()
+	cfg := &Config{
+		CmdPrefix: viper.GetString("cmdPrefix"),
+	}
+	return cfg, err
+}
+
+// LoadSecretsFile will setup configs from given path, will use viper to process and returns error if one occurred
+func LoadSecretsFile(path string) (*Secrets, error) {
+	viper.SetConfigName("discord")
+	viper.SetConfigFile("yaml")
+	viper.AddConfigPath(path)
+	err := viper.MergeInConfig()
+	sec := &Secrets{
+		AuthToken: viper.GetString("authToken"),
+		ClientID:  viper.GetString("clientID"),
+	}
+	return sec, err
+}

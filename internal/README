@@ -1,0 +1,3 @@
+bots contains bot modules 
+db contains all database schenanigans (DAO, Mongo, and maybe SQL in the future)
+main.go handles internal bots function
