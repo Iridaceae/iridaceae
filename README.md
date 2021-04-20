@@ -1,13 +1,20 @@
-<h1 align="center">iris.</h1>
+# iris.
 
 Pomodoro bot. Built with  :heart: and `discordgo`
 
+### fyi.
+
 Stack: mongoDB - discordgo - Heroku 
 
-if we want to save statistics => CRUD with `mgo`
+cmd line version named after herself `tensrose` will start Iris
 
-create pomodoro for specific users channel
+### install.
 
-database model:
-- Users -> save user model and just update pomodoroTime saved under minutesStudied
-- Pomodoro -> maybe just have to save it in cache
+to install `tensrose` binary run 
+
+```go 
+$ go install github.com/aarnphm/iris/cmd/tensrose
+```
+
+
+

@@ -2,7 +2,7 @@ package db
 
 import "github.com/globalsign/mgo/bson"
 
-// UserSchema defined a user info with stats
+// UserSchema defined a user info with stats.
 type User struct {
 	Id             bson.ObjectId `bson:"_id,omitempty"`
 	DiscordID      string        `bson:"discordid"`

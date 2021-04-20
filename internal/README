@@ -1,5 +1,17 @@
-bots contains bot modules 
+bot contains Iris, which is interaction between discord and the bot
 db contains all database schenanigans (DAO, Mongo, and maybe SQL in the future)
-main.go handles internal bots function
+log contains IrisLogger that wraps sirupen/logrus
 
-!ir simp to mention a user given tag --> discordID hardcoded their discordTag and id --> assign people to people
+features:
+!ir 
+!ir simp @givenuser
+--> discordID 
+--> assign people to people
+
+database:
+if we want to save statistics --> CRUD with `mgo` --> lives inside db/mongo.go and db/db.go
+
+    model:
+    - Users -> save user model and just update pomodoroTime saved under minutesStudied
+    - Pomodoro -> maybe just have to save it in cache
+

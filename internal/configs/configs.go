@@ -2,19 +2,19 @@ package configs
 
 import "github.com/spf13/viper"
 
-// Configs holds struct for the bot configuration data
+// Configs holds struct for the bot configuration data.
 type Configs struct {
 	// for future references
 	CmdPrefix string `yaml:"cmdPrefix"`
 }
 
-// Secrets is the Bot's per-user data, some of which is secret
+// Secrets is the Bot's per-user data, some of which is secret.
 type Secrets struct {
 	AuthToken string `yaml:"authToken"`
 	ClientID  string `yaml:"clientID"`
 }
 
-// LoadConfigFile will setup configs from given path, will use viper to process and returns error if one occurred
+// LoadConfigFile will setup configs from given path, will use viper to process and returns error if one occurred.
 func LoadConfigFile(path string) (*Configs, error) {
 	viper.SetConfigName("configs")
 	viper.SetConfigFile("yaml")
@@ -26,12 +26,14 @@ func LoadConfigFile(path string) (*Configs, error) {
 	return cfg, err
 }
 
-// LoadSecretsFile will setup configs from given path, will use viper to process and returns error if one occurred
+// LoadSecretsFile will setup configs from given path, will use viper to process and returns error if one occurred.
 func LoadSecretsFile(path string) (*Secrets, error) {
 	viper.SetConfigName("discord")
 	viper.SetConfigFile("yaml")
 	viper.AddConfigPath(path)
-	err := viper.MergeInConfig()
+	// https://stackoverflow.com/a/47185439/8643197
+	// err := viper.MergeInConfig()
+	err := viper.ReadInConfig()
 	sec := &Secrets{
 		AuthToken: viper.GetString("authToken"),
 		ClientID:  viper.GetString("clientID"),

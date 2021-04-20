@@ -4,23 +4,21 @@ package db
 
 import (
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"net"
 
-	"github.com/aarnphm/iris/internal/log"
 	"github.com/globalsign/mgo"
+
 	"github.com/globalsign/mgo/bson"
 )
 
 var (
 	Session *mgo.Session
 	users   *mgo.Collection
-	logger  *log.Logging
 )
 
 func initMgoSessions(user, pass, ip, port, dbname string) {
-	logger.Info("attempting to connect at %s", ip)
+	logger.Infof("attempting to connect at %s", ip)
 
 	// building URI
 	URIfmt := "mongodb://%s:%s@%s:%s/%s"
@@ -30,18 +28,18 @@ func initMgoSessions(user, pass, ip, port, dbname string) {
 	// https://stackoverflow.com/a/42522753/8643197
 	dialInfo, err := mgo.ParseURL(MongoURI)
 	if err != nil {
-		logger.Fatal(errors.New(fmt.Sprintf("errors parsing uri: %s", err.Error())))
+		logger.Fatal(fmt.Errorf("errors parsing uri: %w", err))
 	}
 
 	tlsConfig := &tls.Config{}
 	dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
-		conn, err := tls.Dial("tcp", addr.String(), tlsConfig)
-		return conn, err
+		conn, er := tls.Dial("tcp", addr.String(), tlsConfig)
+		return conn, er
 	}
 
 	Session, err = mgo.DialWithInfo(dialInfo)
 	if err != nil {
-		logger.Fatal(errors.New(fmt.Sprintf("error while establishing connection with mongo: %s", err.Error())))
+		logger.Fatal(fmt.Errorf("error while establishing connection with mongo: %w", err))
 	}
 
 	users = Session.DB("main").C("users")
@@ -52,10 +50,9 @@ func insert(user User) error {
 }
 
 func update(discordID string, mins int) error {
-
 	u, err := fetch(discordID)
 	if err != nil {
-		logger.Fatal(errors.New(fmt.Sprintf("error while finding discordID: %s", err.Error())))
+		logger.Fatal(fmt.Errorf("error while finding discordID: %w", err))
 	}
 
 	newMin := u.MinutesStudied + mins

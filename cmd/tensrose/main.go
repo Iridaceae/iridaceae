@@ -13,17 +13,18 @@ const (
 	defaultConfigPath = "./internal/configs"
 )
 
-type metricsOptions struct {
-	PrometheusMetrics  bool
-	PrintMetrics       bool
-	StackdriverMetrics bool
-	StatsdMetrics      bool
-}
+// type metricsOptions struct {
+// 	PrometheusMetrics  bool
+// 	PrintMetrics       bool
+// 	StackdriverMetrics bool
+// 	StatsdMetrics      bool
+// }
 
 // depart all core run into internal
 func main() {
+	log.ShellMode = true
 	logger := log.CreateLogger("tensrose")
-	defer logger.Info("--SHUTDOWN--")
+	defer logger.Infof("--shutdown %s--", logger.Name)
 
 	// parse configs and secrets parent directory since viper will handle configs
 	cpath := flag.String("cpath", defaultConfigPath, fmt.Sprintf("Config path for storing default configs and secrets, default: %s", defaultConfigPath))
@@ -37,6 +38,9 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
+
+	// NOTE: possible caveats with multiple instance of viper
+	// https://stackoverflow.com/a/47185439/8643197
 	secret, err := configs.LoadSecretsFile(*cpath)
 	if err != nil {
 		logger.Fatal(err)
@@ -45,7 +49,7 @@ func main() {
 	// setup metrics here
 	// ....
 
-	//Start Iris finally
+	// Start Iris finally
 	iris := bot.NewIris(*cfg, *secret, *logger)
 	err = iris.Start()
 	if err != nil {

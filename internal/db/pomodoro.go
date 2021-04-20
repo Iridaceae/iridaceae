@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-// Pomodoro defines a single state of a pomodoro sessions
-// Usuage of channel to handle cancel signal
+// Pomodoro defines a single state of a pomodoro sessions.
+// Usuage of channel to handle cancel signal.
 type Pomodoro struct {
 	workDuration time.Duration
 	onWorkEnd    TaskCallback
@@ -15,16 +15,16 @@ type Pomodoro struct {
 	cancel       sync.Once
 }
 
-// NotifyInfo defines notification message for users
+// NotifyInfo defines notification message for users.
 type NotifyInfo struct {
 	TitleID string
 	User    *User
 }
 
-// TaskCallback receives NotifyInfo and a boolean to define whether the task is completed or not
+// TaskCallback receives NotifyInfo and a boolean to define whether the task is completed or not.
 type TaskCallback func(info NotifyInfo, finished bool)
 
-// UserPomodoroMap is a map-like structure to init a single pomodoro in a channel. It has goroutine safe ops
+// UserPomodoroMap is a map-like structure to init a single pomodoro in a channel. It has goroutine safe ops.
 type UserPomodoroMap struct {
 	mutex     sync.Mutex
 	userToPom map[string]*Pomodoro
@@ -35,7 +35,7 @@ func NewUserPomodoroMap() UserPomodoroMap {
 	return UserPomodoroMap{userToPom: make(map[string]*Pomodoro)}
 }
 
-// NewPom create a new pomodoro and start it using time.NewTimer. onWorkEnd will be called after the goroutine
+// NewPom create a new pomodoro and start it using time.NewTimer. onWorkEnd will be called after the goroutine.
 func NewPom(workDuration time.Duration, onWorkEnd TaskCallback, notify NotifyInfo) *Pomodoro {
 	pom := &Pomodoro{
 		workDuration: workDuration,
@@ -49,7 +49,7 @@ func NewPom(workDuration time.Duration, onWorkEnd TaskCallback, notify NotifyInf
 	return pom
 }
 
-// Cancel is used to cancel the current state of the goroutine. sync.Once to prevent panic
+// Cancel is used to cancel the current state of the goroutine. sync.Once to prevent panic.
 func (pom *Pomodoro) Cancel() {
 	pom.cancel.Do(func() {
 		close(pom.cancelChan)
@@ -67,8 +67,8 @@ func (pom *Pomodoro) startPom() {
 	}
 }
 
-// CreateIfEmpty will create a new Pomodoro for given user according to their discordID if user has none
-// the pomodoro will then be removed from the mapping once completed or cancelled
+// CreateIfEmpty will create a new Pomodoro for given user according to their discordID if user has none.
+// The pomodoro will then be removed from the mapping once completed or cancelled.
 func (u *UserPomodoroMap) CreateIfEmpty(duration time.Duration, onWorkEnd TaskCallback, notify NotifyInfo) bool {
 	u.mutex.Lock()
 	defer u.mutex.Unlock()
@@ -88,7 +88,7 @@ func (u *UserPomodoroMap) CreateIfEmpty(duration time.Duration, onWorkEnd TaskCa
 	return wasCreated
 }
 
-// RemoveIfExists will remove a Pomodoro from given channel i one already exists
+// RemoveIfExists will remove a Pomodoro from given channel i one already exists.
 func (u *UserPomodoroMap) RemoveIfExists(discordID string) bool {
 	u.mutex.Lock()
 	defer u.mutex.Unlock()
@@ -101,10 +101,9 @@ func (u *UserPomodoroMap) RemoveIfExists(discordID string) bool {
 	}
 
 	return wasRemoved
-
 }
 
-// Count counts the number of current Pomodoro being tracked
+// Count counts the number of current Pomodoro being tracked.
 func (u *UserPomodoroMap) Count() int {
 	u.mutex.Lock()
 	defer u.mutex.Unlock()

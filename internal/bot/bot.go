@@ -11,10 +11,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+
 	"github.com/aarnphm/iris/internal/configs"
 	"github.com/aarnphm/iris/internal/db"
 	"github.com/aarnphm/iris/internal/log"
-	"github.com/bwmarrin/discordgo"
 )
 
 const (
@@ -52,7 +53,7 @@ type Iris struct {
 func NewIris(config configs.Configs, secrets configs.Secrets, logger log.Logging) *Iris {
 	// setup new logLevel
 	logger.SetLoggingLevel(logLevel)
-	logger.Name("iris")
+	logger.Named("iris")
 
 	ir := &Iris{
 		Config:  config,
@@ -95,7 +96,7 @@ func (ir *Iris) buildHelpMessage() string {
 // Start will start the bot, blocking til completed
 func (ir *Iris) Start() error {
 	if ir.secrets.AuthToken == "" {
-		return errors.New("No authToken found")
+		return errors.New("no authToken found")
 	}
 
 	var err error
@@ -116,7 +117,7 @@ func (ir *Iris) Start() error {
 		return err
 	}
 
-	ir.logger.Info("Bot is now running. Press CTRL-C to exit.")
+	ir.logger.Infof("Bot is now running. Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
@@ -150,19 +151,28 @@ func (ir *Iris) onMessageReceived(s *discordgo.Session, m *discordgo.MessageCrea
 			if f.handler != nil {
 				f.handler(s, m, rest)
 			} else {
-				ir.logger.Fatal(errors.New(fmt.Sprintf("nil handlers for command %#v", cmd)))
-				s.ChannelMessageSend(m.ChannelID, "Command error - dm @aarnphm")
+				ir.logger.Fatal(fmt.Errorf("nil handlers for command %#v", cmd))
+				_, err := s.ChannelMessageSend(m.ChannelID, "Command error - dm @aarnphm")
+				if err != nil {
+					ir.logger.Fatal(err)
+				}
 			}
 		}
 	}
 }
 
 func (ir *Iris) onCmdHelp(s *discordgo.Session, m *discordgo.MessageCreate, ex string) {
-	s.ChannelMessageSend(m.ChannelID, ir.helpMessage)
+	_, err := s.ChannelMessageSend(m.ChannelID, ir.helpMessage)
+	if err != nil {
+		ir.logger.Fatal(err)
+	}
 }
 
 func (ir *Iris) onCmdInvite(s *discordgo.Session, m *discordgo.MessageCreate, ex string) {
-	s.ChannelMessageSend(m.ChannelID, ir.inviteMessage)
+	_, err := s.ChannelMessageSend(m.ChannelID, ir.inviteMessage)
+	if err != nil {
+		ir.logger.Fatal(err)
+	}
 }
 
 func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, ex string) {
@@ -173,7 +183,7 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 
 	// make sure the users' text can't break out of our quote box
 	// ex[0] will be message ex[1] will be time period (optional)
-	ex = strings.Replace(ex, "`", "", -1)
+	ex = strings.ReplaceAll(ex, "`", "")
 	exa := strings.SplitN(ex, " ", 2)
 
 	title := exa[0]
@@ -199,19 +209,27 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 		}
 
 		msg := fmt.Sprintf("%s**%.1f minutes** remaining!", taskStr, pomDuration.Minutes())
-		s.ChannelMessageSend(m.ChannelID, msg)
-		//metrics here
+		_, err := s.ChannelMessageSend(m.ChannelID, msg)
+		if err != nil {
+			ir.logger.Fatal(err)
+		}
+		// metrics here
 		// ir.metrics.RecordStartPom()
 		// ir.metrics.RecordRunningPoms(int64(ir.poms.Count()))
 	} else {
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("A pomodoro is already running for %s", m.Author.ID))
+		_, err := s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("A pomodoro is already running for %s", m.Author.ID))
+		if err != nil {
+			ir.logger.Fatal(err)
+		}
 	}
-
 }
 
 func (ir *Iris) onCmdCancelPom(s *discordgo.Session, m *discordgo.MessageCreate, ex string) {
 	if exists := ir.poms.RemoveIfExists(m.Author.ID); !exists {
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("No pom is currently running for %s", m.Author.ID))
+		_, err := s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("No pom is currently running for %s", m.Author.ID))
+		if err != nil {
+			ir.logger.Fatal(err)
+		}
 	}
 	// if this removal is success then call onPomEnded
 }
@@ -224,7 +242,7 @@ func (ir *Iris) onPomEnded(notif db.NotifyInfo, completed bool) {
 		if err = db.FetchUser(notif.User.DiscordID); err != nil {
 			// create new users entry
 			hash, err = db.NewUser(notif.User.DiscordID, notif.User.DiscordTag, notif.User.GuidID, pomDuration.String())
-			ir.logger.Info("inserted %s to database. Hash: %s", notif.User.DiscordID, hash)
+			ir.logger.Infof("inserted %s to database. Hash: %s", notif.User.DiscordID, hash)
 			if err != nil {
 				ir.logger.Fatal(err)
 			}
@@ -242,9 +260,11 @@ func (ir *Iris) onPomEnded(notif db.NotifyInfo, completed bool) {
 			message = fmt.Sprintf("```md\n%s\n```%s", notif.TitleID, message)
 		}
 
-		user, err := ir.discord.User(notif.User.DiscordID)
-		if err == nil {
+		user, er := ir.discord.User(notif.User.DiscordID)
+		if er == nil {
 			toMention = append(toMention, user.Mention())
+		} else {
+			ir.logger.Fatal(er)
 		}
 
 		if len(toMention) > 0 {
@@ -252,13 +272,18 @@ func (ir *Iris) onPomEnded(notif db.NotifyInfo, completed bool) {
 			message = fmt.Sprintf("%s\n%s", message, mentions)
 		}
 
-		ir.discord.ChannelMessageSend(notif.User.ChannelID, message)
+		_, err = ir.discord.ChannelMessageSend(notif.User.ChannelID, message)
+		if err != nil {
+			ir.logger.Fatal(err)
+		}
 	} else {
-		ir.discord.ChannelMessageSend(notif.User.ChannelID, "Pom cancelled!")
+		_, err = ir.discord.ChannelMessageSend(notif.User.ChannelID, "Pom canceled!")
+		if err != nil {
+			ir.logger.Fatal(err)
+		}
 	}
 
 	// ir.metrics.RecordRunningPoms(int64(ir.poms.Count()))
-
 }
 
 // onGuildCreate is called when a Guild adds the bot

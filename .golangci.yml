@@ -1,0 +1,127 @@
+linters:
+  enable:
+  - asciicheck
+  - bodyclose
+  - deadcode
+  - depguard
+  - dogsled
+  - dupl
+  - durationcheck
+  - errcheck
+  - errorlint
+  - exhaustive
+  - exportloopref
+  - forbidigo
+  - forcetypeassert
+  - gocritic
+  - godot
+  - goerr113
+  - gofmt
+  - goimports
+  - golint
+  - gomoddirectives
+  - gomodguard
+  - goprintffuncname
+  - gosec
+  - gosimple
+  - govet
+  - importas
+  - ineffassign
+  - makezero
+  - misspell
+  - nilerr
+  - noctx
+  - prealloc
+  - predeclared
+  - revive
+  - rowserrcheck
+  - sqlclosecheck
+  - staticcheck
+  - structcheck
+  - stylecheck
+  - thelper
+  - typecheck
+  - unconvert
+  - unparam
+  - unused
+  - varcheck
+  - wastedassign
+  - whitespace
+  disable:
+  - cyclop
+  - exhaustivestruct
+  - funlen
+  - gochecknoglobals
+  - gochecknoinits
+  - gocognit
+  - goconst
+  - gocyclo
+  - godox
+  - goheader
+  - gomnd
+  - ifshort # FIXME re-enable when bugs in ifshort are fixed
+  - lll
+  - maligned
+  - nakedret
+  - nestif
+  - nlreturn
+  - nolintlint # FIXME re-enable when more reliable
+  - paralleltest
+  - testpackage
+  - tparallel
+  - wrapcheck
+  - wsl
+
+linters-settings:
+  forbidigo:
+    forbid:
+    # - ^fmt\.Print.*$
+    - ^ioutil\.
+  gofumpt:
+    extra-rules: true
+  goimports:
+    local-prefixes: github.com/aarnphm/iris
+  misspell:
+    locale: US
+    golint:
+    min-confidence: 0
+  gomnd:
+    settings:
+      mnd:
+        # don't include the "operation" and "assign"
+        checks: argument,case,condition,return
+  govet:
+    check-shadowing: true
+    settings:
+      printf:
+        funcs:
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
+  lll:
+    line-length: 140
+  maligned:
+    suggest-new: true
+  misspell:
+    locale: US
+  nolintlint:
+    allow-leading-space: true # don't require machine-readable nolint directives (i.e. with no leading space)
+    allow-unused: false # report any unused nolint directives
+    require-explanation: false # don't require an explanation for nolint directives
+    require-specific: false # don't require nolint directives to be specific about which linter is being skipped
+
+
+
+issues:
+  exclude-rules:
+  - linters:
+    - goerr113
+    text: "do not define dynamic errors, use wrapped static errors instead"
+  - linters:
+    - forbidigo
+    - gosec
+    path: ^internal/cmd/
+  - linters:
+    - gosec
+    path: "_test\\.go$"
