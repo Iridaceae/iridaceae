@@ -1,4 +1,5 @@
-package bot
+// package iris contains bot functionality for iris. Currently following Pomodoro technique.
+package iris
 
 import (
 	"bytes"
@@ -21,7 +22,7 @@ import (
 const (
 	logLevel            int    = 2 // refers to internal/log/log.go for level definition
 	discordBotPrefix    string = "Bot "
-	baseAuthURLTemplate string = "https://discordapp.com/api/oauth2/authorize?client_id=%s&scope=bot"
+	baseAuthURLTemplate string = "https://discord.com/api/oauth2/authorize?client_id=%s&scope=bot"
 )
 
 // default sess should always be 25 mins
@@ -53,7 +54,6 @@ type Iris struct {
 func NewIris(config configs.Configs, secrets configs.Secrets, logger log.Logging) *Iris {
 	// setup new logLevel
 	logger.SetLoggingLevel(logLevel)
-	logger.Named("iris")
 
 	ir := &Iris{
 		Config:  config,
@@ -63,8 +63,9 @@ func NewIris(config configs.Configs, secrets configs.Secrets, logger log.Logging
 	}
 
 	ir.registerCmdHandlers()
-	ir.inviteMessage = fmt.Sprintf("Click here: <"+baseAuthURLTemplate+"> to invite me to the server", ir.secrets.ClientID)
 	ir.helpMessage = ir.buildHelpMessage()
+	ir.inviteMessage = fmt.Sprintf("Click here: <"+baseAuthURLTemplate+"> to invite me to the server", ir.secrets.ClientID)
+	ir.logger.Infof(ir.inviteMessage)
 	return ir
 }
 

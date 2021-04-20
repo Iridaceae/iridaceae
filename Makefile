@@ -7,9 +7,11 @@ GOGET=$(GOCMD) get
 BINARY_NAME=tensrose
 
 DIST_FOLDER=dist
-BIN_FOLDER=bin
+BIN_FOLDER=$(shell pwd)/bin
 
 GOLANGCI_LINT_VERSION=1.39.0
+
+.DEFAULT_GOAL := all
 
 .PHONY: help
 help: ## Display this help message
@@ -20,13 +22,19 @@ all: build
 build: ## build tensrose
 	$(GOBUILD) -o $(BIN_FOLDER)/$(BINARY_NAME) -v cmd/tensrose/main.go
 
+.PHONY: run-dev
+run-dev: clean build ## run iris in development
+	ulimit -n 1000
+	./bin/reflex --decoration=fancy -r '\.go$$' -s -- sh -c 'make && $(BIN_FOLDER)/$(BINARY_NAME)'
+
 .PHONY: clean
 clean: ## clean package
 	$(GOCLEAN)
 	rm -rf $(DIST_FOLDER)
 
 .PHONY: build-all
-build-all: ## build for all system and arch
+build-all: clean ## build for all system and arch
+	mkdir -p $(DIST_FOLDER)
 	# [darwin/amd64]
 	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_darwin -v cmd/tensrose/main.go
 	# [linux/amd64]
@@ -35,20 +43,26 @@ build-all: ## build for all system and arch
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_windows.exe -v cmd/tensrose/main.go
 
 .PHONY: ensure-tools
-ensure-tools: install-gofumports install-lint
+ensure-tools: install-gofumports install-lint install-reflex ## ensure all dev tools
 
 .PHONY: install-lint
-install-lint: ## install golangci-lint
+install-lint:
 	@echo "installing golangci-lint"
-	if [ ! -x $(BIN_FOLDER)/golanci-lint ]  || ( ./bin/golangci-lint --version | grep -Fqv "version ${GOLANGCI_LINT_VERSION}" ); then \
+	if [ ! -x ./bin/golanci-lint ]  || ( ./bin/golangci-lint --version | grep -Fqv "version ${GOLANGCI_LINT_VERSION}" ); then \
 		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v${GOLANGCI_LINT_VERSION}; \
 	fi
 
 .PHONY: install-gofumports
-install-gofumports: ## install gofumports
+install-gofumports:
 	if [ ! -x bin/gofumports ]; then \
 		mkdir -p bin; \
-		GOBIN=$(shell pwd)/bin $(GOCMD) install mvdan.cc/gofumpt/gofumports@latest ; \
+		GOBIN=$(BIN_FOLDER) $(GOCMD) install mvdan.cc/gofumpt/gofumports@latest ; \
+	fi
+
+.PHONY: install-reflex
+install-reflex:
+	if [ ! -x bin/reflex ]; then \
+		GOBIN=$(BIN_FOLDER) $(GOGET) github.com/cespare/reflex; \
 	fi
 
 .PHONY: lint

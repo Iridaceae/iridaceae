@@ -21,11 +21,9 @@ func init() {
 
 	mUser := os.Getenv("MONGO_USER")
 	mPass := os.Getenv("MONGO_PASS")
-	mPort := os.Getenv("MONGO_PORT")
 	mIP := os.Getenv("MONGO_ADDR")
-	mDB := os.Getenv("MONGO_DBNAME")
 
-	initMgoSessions(mUser, mPass, mIP, mPort, mDB)
+	initMgoSessions(mUser, mPass, mIP)
 }
 
 // NewUser returns a hex representation of the inputs ObjectID and insert errors into new database.

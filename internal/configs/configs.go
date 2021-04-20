@@ -17,7 +17,7 @@ type Secrets struct {
 // LoadConfigFile will setup configs from given path, will use viper to process and returns error if one occurred.
 func LoadConfigFile(path string) (*Configs, error) {
 	viper.SetConfigName("configs")
-	viper.SetConfigFile("yaml")
+	viper.SetConfigType("yaml")
 	viper.AddConfigPath(path)
 	err := viper.ReadInConfig()
 	cfg := &Configs{
@@ -29,7 +29,7 @@ func LoadConfigFile(path string) (*Configs, error) {
 // LoadSecretsFile will setup configs from given path, will use viper to process and returns error if one occurred.
 func LoadSecretsFile(path string) (*Secrets, error) {
 	viper.SetConfigName("discord")
-	viper.SetConfigFile("yaml")
+	viper.SetConfigType("yaml")
 	viper.AddConfigPath(path)
 	// https://stackoverflow.com/a/47185439/8643197
 	// err := viper.MergeInConfig()

@@ -17,18 +17,18 @@ var (
 	users   *mgo.Collection
 )
 
-func initMgoSessions(user, pass, ip, port, dbname string) {
-	logger.Infof("attempting to connect at %s", ip)
-
+func initMgoSessions(user, pass, ip string) {
 	// building URI
-	URIfmt := "mongodb://%s:%s@%s:%s/%s"
-	// URI from mongo mongodb+srv://admin:<password>@main.hzdkk.mongodb.net/main?retryWrites=true&w=majority
-	MongoURI := fmt.Sprintf(URIfmt, user, pass, ip, port, dbname)
+	var URIfmt = "mongodb://%s:%s@%s:27017"
+
+	logger.Infof("attempting to connect at "+URIfmt, "<user>", "<pass>", ip)
+
+	mongoURI := fmt.Sprintf(URIfmt, user, pass, ip)
 
 	// https://stackoverflow.com/a/42522753/8643197
-	dialInfo, err := mgo.ParseURL(MongoURI)
+	dialInfo, err := mgo.ParseURL(mongoURI)
 	if err != nil {
-		logger.Fatal(fmt.Errorf("errors parsing uri: %w", err))
+		logger.Fatal(fmt.Errorf("errors parsing URI: %w", err))
 	}
 
 	tlsConfig := &tls.Config{}
