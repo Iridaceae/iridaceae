@@ -18,10 +18,12 @@ import (
 )
 
 const (
-	discordBotPrefix    = "Bot "
-	baseAuthURLTemplate = "https://discordapp.com/api/oauth2/authorize?client_id=%s&scope=bot"
+	logLevel            int    = 2 // refers to internal/log/log.go for level definition
+	discordBotPrefix    string = "Bot "
+	baseAuthURLTemplate string = "https://discordapp.com/api/oauth2/authorize?client_id=%s&scope=bot"
 )
 
+// default sess should always be 25 mins
 var pomDuration = time.Minute * 25
 
 type cmdHandler func(s *discordgo.Session, m *discordgo.MessageCreate, ex string)
@@ -32,26 +34,30 @@ type botCommand struct {
 	exampleParams string
 }
 
+// Iris defines the structure for the bot's functionality
 type Iris struct {
-	Config      configs.Config
-	secrets     configs.Secrets
-	cmdHandlers map[string]botCommand
-	discord     *discordgo.Session
-	logger      log.Logger
-
 	helpMessage   string
 	inviteMessage string
+	Config        configs.Configs
+	secrets       configs.Secrets
+	discord       *discordgo.Session
+	logger        *log.Logging
+	cmdHandlers   map[string]botCommand
 	poms          db.UserPomodoroMap
-
 	// record metrics here
 	// metrics metrics.Recorder
 }
 
-func NewIris(config configs.Config, secrets configs.Secrets, logger log.Logger) *Iris {
+// NewIris creates a new instance of Iris that can deploy over Heroku
+func NewIris(config configs.Configs, secrets configs.Secrets, logger log.Logging) *Iris {
+	// setup new logLevel
+	logger.SetLoggingLevel(logLevel)
+	logger.Name("iris")
+
 	ir := &Iris{
 		Config:  config,
 		secrets: secrets,
-		logger:  logger.Name("iris"),
+		logger:  &logger,
 		poms:    db.NewUserPomodoroMap(),
 	}
 
@@ -78,7 +84,7 @@ func (ir *Iris) buildHelpMessage() string {
 	// just use map iteration order
 	for cmdStr, cmd := range ir.cmdHandlers {
 		helpBuffer.WriteString(fmt.Sprintf("\n•  **%s**  •  %s\n", cmdStr, cmd.desc))
-		helpBuffer.WriteString(fmt.Sprintf("- Example: `%s%s %s`\n", ir.Config.CmdPrefix, cmdStr, cmd.exampleParams))
+		helpBuffer.WriteString(fmt.Sprintf("• Example: `%s%s %s`\n", ir.Config.CmdPrefix, cmdStr, cmd.exampleParams))
 	}
 
 	helpBuffer.WriteString("\n" + ir.inviteMessage)
@@ -98,6 +104,7 @@ func (ir *Iris) Start() error {
 		return err
 	}
 
+	// onReady will prepare our metrics, which will get from prometheus
 	// ir.discord.AddHandler(ir.onReady)
 	ir.discord.AddHandler(ir.onMessageReceived)
 	// keep track of how many guild we join

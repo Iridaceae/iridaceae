@@ -15,8 +15,8 @@ const (
 )
 
 var (
-	// shellMode determines what to print to. If false use logrus, else just print straight to /dev/tty
-	shellMode = false
+	// ShellMode determines what to print to. If false use logrus, else just print straight to /dev/tty
+	ShellMode = false
 	success   = color.New(color.FgGreen).SprintFunc()
 	info      = color.New(color.FgWhite).SprintFunc()
 	warn      = color.New(color.FgYellow).SprintFunc()
@@ -25,70 +25,94 @@ var (
 
 type Logger interface {
 	Success(format string, args ...interface{})
-	Prompt(p string)
 	Info(format string, args ...interface{})
 	Warn(format string, args ...interface{})
 	Fatal(err error)
-	Name(name string) Logger
+	Name(name string)
 }
 
-func SetLoggingLevel(l int) {
-	switch l {
+// Logging defines a wrapper around sirupsen/logrus with defined name
+type Logging struct {
+	name     string
+	log      *logrus.Logger
+	LogLevel int
+}
+
+// CreateLogger will create a new *Logging that wraps around logrus.Logger with a given name
+func CreateLogger(name string) *Logging {
+	// NOTE: for future logrus customization
+	logrusLogger := logrus.New()
+	return &Logging{name: name, log: logrusLogger, LogLevel: 1}
+}
+
+// SetLoggingLevel defines level for logrus to log
+func (l *Logging) SetLoggingLevel(lvl int) {
+	switch lvl {
 	case FATAL:
-		logrus.SetLevel(logrus.FatalLevel)
+		l.log.SetLevel(logrus.FatalLevel)
+		l.LogLevel = FATAL
 	case WARN:
-		logrus.SetLevel(logrus.WarnLevel)
+		l.log.SetLevel(logrus.WarnLevel)
+		l.LogLevel = WARN
 	case INFO:
-		logrus.SetLevel(logrus.InfoLevel)
+		l.log.SetLevel(logrus.InfoLevel)
+		l.LogLevel = INFO
 	}
 }
 
-func Success(format string, args ...interface{}) {
-	if shellMode {
+// Success is a wrapper around Info with color
+func (l *Logging) Success(format string, args ...interface{}) {
+	if ShellMode {
 		s := fmt.Sprintf(success(format), args...)
 		fmt.Printf(s)
 		return
 	}
-	logrus.Info(fmt.Sprintf(format, args...))
+	l.log.Info(fmt.Sprintf(format, args...))
 }
 
-func Prompt(p string) {
-	fmt.Print(info(p))
+// Name returns name of given logger
+func (l *Logging) Name(n string) {
+	l.name = n
 }
 
-func Info(format string, args ...interface{}) {
-	if shellMode {
+// Info is a logrus.Info wrapper
+func (l *Logging) Info(format string, args ...interface{}) {
+	if ShellMode {
 		s := fmt.Sprintf(info(format), args...)
 		fmt.Printf(s)
 		return
 	}
-	logrus.Info(fmt.Sprintf(format, args...))
+	l.log.Info(fmt.Sprintf(format, args...))
 }
 
-func WInfo(w http.ResponseWriter, format string, args ...interface{}) {
+// WInfo is logrus.Info wrapper for future API calls
+func (l *Logging) WInfo(w http.ResponseWriter, format string, args ...interface{}) {
 	fmt.Fprintf(w, format, args...)
-	Info(format, args...)
+	l.Info(format, args...)
 }
 
-func Warn(format string, args ...interface{}) {
-	if shellMode {
+// Warn is logrus.Warn wraps with color
+func (l *Logging) Warn(format string, args ...interface{}) {
+	if ShellMode {
 		s := fmt.Sprintf(warn(format), args...)
 		fmt.Printf(s)
 		return
 	}
-	logrus.Warnf(format, args...)
+	l.log.Warnf(format, args...)
 }
 
-func WWarn(w http.ResponseWriter, format string, args ...interface{}) {
+// WWarn is Warn but for API calls
+func (l *Logging) WWarn(w http.ResponseWriter, format string, args ...interface{}) {
 	fmt.Fprintf(w, format, args...)
-	Warn(format, args...)
+	l.Warn(format, args...)
 }
 
-func Fatal(err error) {
-	if shellMode {
+// Fatal is a wrapper for logrus.Fatal
+func (l *Logging) Fatal(err error) {
+	if ShellMode {
 		s := fmt.Sprintf(er("fatal: %s"), err.Error())
 		fmt.Println(s)
 		panic(err)
 	}
-	logrus.Fatal(err)
+	l.log.Fatal(err)
 }

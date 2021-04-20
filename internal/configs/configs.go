@@ -3,7 +3,7 @@ package configs
 import "github.com/spf13/viper"
 
 // Configs holds struct for the bot configuration data
-type Config struct {
+type Configs struct {
 	// for future references
 	CmdPrefix string `yaml:"cmdPrefix"`
 }
@@ -15,12 +15,12 @@ type Secrets struct {
 }
 
 // LoadConfigFile will setup configs from given path, will use viper to process and returns error if one occurred
-func LoadConfigFile(path string) (*Config, error) {
+func LoadConfigFile(path string) (*Configs, error) {
 	viper.SetConfigName("configs")
 	viper.SetConfigFile("yaml")
 	viper.AddConfigPath(path)
 	err := viper.ReadInConfig()
-	cfg := &Config{
+	cfg := &Configs{
 		CmdPrefix: viper.GetString("cmdPrefix"),
 	}
 	return cfg, err

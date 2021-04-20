@@ -1,20 +1,26 @@
+// mongo.go contains DAO operations that can later be called with your repository layer.
+// DAO lives within mongo.go for now, as per implementation only requires it to be as mongo. SQL will be used for logging and metrics
 package db
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net"
 
+	"github.com/aarnphm/iris/internal/log"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
-	log "github.com/sirupsen/logrus"
 )
 
-var Session *mgo.Session
-var users *mgo.Collection
+var (
+	Session *mgo.Session
+	users   *mgo.Collection
+	logger  *log.Logging
+)
 
 func initMgoSessions(user, pass, ip, port, dbname string) {
-	log.Infof("attempting to connect at %s", ip)
+	logger.Info("attempting to connect at %s", ip)
 
 	// building URI
 	URIfmt := "mongodb://%s:%s@%s:%s/%s"
@@ -24,7 +30,7 @@ func initMgoSessions(user, pass, ip, port, dbname string) {
 	// https://stackoverflow.com/a/42522753/8643197
 	dialInfo, err := mgo.ParseURL(MongoURI)
 	if err != nil {
-		log.Fatalf("errors parsing uri: %s", err.Error())
+		logger.Fatal(errors.New(fmt.Sprintf("errors parsing uri: %s", err.Error())))
 	}
 
 	tlsConfig := &tls.Config{}
@@ -35,7 +41,7 @@ func initMgoSessions(user, pass, ip, port, dbname string) {
 
 	Session, err = mgo.DialWithInfo(dialInfo)
 	if err != nil {
-		log.Fatalf("error while establishing connection with mongo: %s", err.Error())
+		logger.Fatal(errors.New(fmt.Sprintf("error while establishing connection with mongo: %s", err.Error())))
 	}
 
 	users = Session.DB("main").C("users")
@@ -49,7 +55,7 @@ func update(discordID string, mins int) error {
 
 	u, err := fetch(discordID)
 	if err != nil {
-		log.Fatalf("error while finding discordID: %s", err.Error())
+		logger.Fatal(errors.New(fmt.Sprintf("error while finding discordID: %s", err.Error())))
 	}
 
 	newMin := u.MinutesStudied + mins
