@@ -8,5 +8,6 @@ type User struct {
 	DiscordID      string        `bson:"discordid"`
 	DiscordTag     string        `bson:"discordtag"`
 	GuidID         string        `bson:"guidid"`
+	ChannelID      string        `bson:"channelid"`
 	MinutesStudied int           `bson:"minutesstudied"`
 }

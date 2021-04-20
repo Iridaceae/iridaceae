@@ -52,7 +52,9 @@ func update(discordID string, mins int) error {
 		log.Fatalf("error while finding discordID: %s", err.Error())
 	}
 
-	minStudy := bson.M{"minutesstudied": mins}
+	newMin := u.MinutesStudied + mins
+
+	minStudy := bson.M{"minutesstudied": newMin}
 	err = users.Update(minStudy, bson.M{"$set": u})
 	return err
 }

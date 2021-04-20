@@ -17,8 +17,8 @@ type Pomodoro struct {
 
 // NotifyInfo defines notification message for users
 type NotifyInfo struct {
-	titleID string
-	user    *User
+	TitleID string
+	User    *User
 }
 
 // TaskCallback receives NotifyInfo and a boolean to define whether the task is completed or not
@@ -74,15 +74,15 @@ func (u *UserPomodoroMap) CreateIfEmpty(duration time.Duration, onWorkEnd TaskCa
 	defer u.mutex.Unlock()
 
 	wasCreated := false
-	if _, exists := u.userToPom[notify.user.DiscordID]; !exists {
+	if _, exists := u.userToPom[notify.User.DiscordID]; !exists {
 		doneInMap := func(notifs NotifyInfo, completed bool) {
 			// only called when it is done then we can use the mutex
 			// cancellation won't trigger onWorkEnd since startPom is already done at this point
-			u.RemoveIfExists(notifs.user.DiscordID)
+			u.RemoveIfExists(notifs.User.DiscordID)
 			onWorkEnd(notifs, completed)
 		}
 
-		u.userToPom[notify.user.DiscordID] = NewPom(duration, doneInMap, notify)
+		u.userToPom[notify.User.DiscordID] = NewPom(duration, doneInMap, notify)
 		wasCreated = true
 	}
 	return wasCreated

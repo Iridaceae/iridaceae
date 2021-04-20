@@ -1,3 +1,5 @@
 bots contains bot modules 
 db contains all database schenanigans (DAO, Mongo, and maybe SQL in the future)
 main.go handles internal bots function
+
+!ir simp to mention a user given tag --> discordID hardcoded their discordTag and id --> assign people to people
