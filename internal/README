@@ -28,5 +28,4 @@ TODO:
 desc:
     log contains IrisLogger that wraps sirupen/logrus
 
-
-
+setup ci with coverage

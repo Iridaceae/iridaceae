@@ -30,7 +30,7 @@ build:
 .PHONY: dev
 dev: clean build ## run iris in development
 	ulimit -n 1000
-	./bin/reflex --decoration=fancy -r '\.go$$' -s -- sh -c 'make && $(BIN_FOLDER)/$(BINARY_NAME)'
+	./bin/reflex --decoration=fancy -r '\.go$$' -s -- sh -c 'make && make docker-build && $(BIN_FOLDER)/$(BINARY_NAME)'
 
 .PHONY: clean
 clean:
@@ -47,7 +47,7 @@ docker-dev: docker-build docker-run  ## run development for ci
 
 .PHONY: docker-build
 docker-build:
-	docker build -t $(PACKAGE_NAME):latest -f deployments/Dockerfile .
+	docker build -t $(PACKAGE_NAME):latest .
 
 .PHONY: docker-run
 docker-run:

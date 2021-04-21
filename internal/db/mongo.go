@@ -59,12 +59,8 @@ func fetch(discordID string) (User, error) {
 func update(discordID string, mins int) error {
 	u, _ := fetch(discordID)
 
-	logger.Infof("users id: %s", discordID)
-	logger.Infof("mins to be added: %d", mins)
 	var newMin = u.MinutesStudied + mins
-	logger.Infof("users current score: %d", u.MinutesStudied)
-	logger.Infof("new mins: %d", newMin)
 
-	err := users.Update(bson.M{"minutesstudied": newMin}, bson.M{"$set": &u})
+	err := users.Update(bson.M{"discordid": u.DiscordID}, bson.M{"$set": bson.M{"minutesstudied": newMin}})
 	return err
 }
