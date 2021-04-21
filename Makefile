@@ -4,6 +4,7 @@ GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
+GOMOD=$(GOCMD) mod
 BINARY_NAME=tensrose
 
 DIST_FOLDER=dist
@@ -32,9 +33,19 @@ clean: ## clean package
 	$(GOCLEAN)
 	rm -rf $(DIST_FOLDER)
 
+.PHONY: docker-build
+docker-build: ## build docker images
+	docker build -t iris:latest .
+
+.PHONY: deploy
+deploy: ## deploy to heroku
+	@echo "Deploying to heroku"
+
 .PHONY: build-all
 build-all: clean ## build for all system and arch
 	mkdir -p $(DIST_FOLDER)
+	@echo "make a copy of dependencies"
+	$(GOMOD) download
 	# [darwin/amd64]
 	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_darwin -v cmd/tensrose/main.go
 	# [linux/amd64]

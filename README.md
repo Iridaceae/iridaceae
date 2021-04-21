@@ -20,4 +20,13 @@ $ go install github.com/aarnphm/iris/cmd/tensrose
 - pkg to construct message
 - fix time difference 
 
+--> full on microservices
+services
+- messageBuilder
+- databaseHandler
+  - DAO
+  - CRUD
+  - Repo
+- commandBuilder
+- 
 
