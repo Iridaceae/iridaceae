@@ -1,17 +1,32 @@
-bot contains Iris, which is interaction between discord and the bot
-db contains all database schenanigans (DAO, Mongo, and maybe SQL in the future)
-log contains IrisLogger that wraps sirupen/logrus
+--> full on microservices
+services
+- messageBuilder
 
-features:
-!ir 
-!ir simp @givenuser
---> discordID 
---> assign people to people
-
-database:
-if we want to save statistics --> CRUD with `mgo` --> lives inside db/mongo.go and db/db.go
-
+- databaseHandler
+    if we want to save statistics --> CRUD with `mgo` --> lives inside db/mongo.go and db/db.go
     model:
-    - Users -> save user model and just update pomodoroTime saved under minutesStudied
-    - Pomodoro -> maybe just have to save it in cache
+        - Users -> save user model and just update pomodoroTime saved under minutesStudied
+        - Pomodoro -> maybe just have to save it in cache
+    - DAO
+    - CRUD
+    - Repo
+
+- commandHandler
+    This contains error handling
+    Given prefix setup different commands
+    features:
+        !ir simp @givenuser --> discordID --> assign people to people
+
+- cache
+- metrics
+- leaderboard
+
+TODO:
+- pkg to construct message
+- fix time difference 
+
+desc:
+    log contains IrisLogger that wraps sirupen/logrus
+
+
 

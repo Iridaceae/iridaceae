@@ -1,24 +1,19 @@
 # Build stage
 FROM golang:alpine AS builder
-ENV GO111MODULE=on
 
 COPY . /iris/src
-WORKDIR /iris/src
-
-RUN apk add git ca-certificates
-RUN go mod download
-
 WORKDIR /iris/src/cmd/tensrose
 
-# now we build
 RUN CGO_ENABLED=0 GOOS=linux go build -o /go/bin/tensrose -v
 
+FROM alpine:latest
 
-FROM scratch
+WORKDIR /app
 
-COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder /go/bin/tensrose ./
-COPY ./internal ./internal
-COPY ./.env ./
+RUN apk --no-cache add git ca-certificates
 
-ENTRYPOINT ["./tensrose"]
+COPY --from=builder /iris/src/internal internal/
+COPY --from=builder /go/bin/tensrose .
+COPY .env ./
+
+CMD exec /app/tensrose

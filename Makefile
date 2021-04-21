@@ -19,42 +19,45 @@ BIN_FOLDER=$(shell pwd)/bin
 .DEFAULT_GOAL := all
 
 .PHONY: help
-help: ## Display this help message
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+help: ## display this help message
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[33m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: all
 all: build
 build:
 	$(GOBUILD) -o $(BIN_FOLDER)/$(BINARY_NAME) -v cmd/tensrose/main.go
 
-.PHONY: run-dev
-run-dev: clean build ## run iris in development
+.PHONY: dev
+dev: clean build ## run iris in development
 	ulimit -n 1000
 	./bin/reflex --decoration=fancy -r '\.go$$' -s -- sh -c 'make && $(BIN_FOLDER)/$(BINARY_NAME)'
 
 .PHONY: clean
-clean: ## clean package
+clean:
 	$(GOCLEAN)
 	rm -rf $(DIST_FOLDER)
 
-.PHONY: docker-build
-docker-build: ## build docker images
-	docker build -t $(PACKAGE_NAME):latest -f deployments/Dockerfile .
-
-.PHONY: docker-run
-docker-run: ## run docker images
-	docker run -t $(PACKAGE_NAME):latest
-
-.PHONY: deploy
+.PHONY: local-deploy
 local-deploy: ## deploy to heroku
 	@echo "local deploy heroku"
 	heroku local web
 
+.PHONY: docker-dev
+docker-dev: docker-build docker-run  ## run development for ci
+
+.PHONY: docker-build
+docker-build:
+	docker build -t $(PACKAGE_NAME):latest -f deployments/Dockerfile .
+
+.PHONY: docker-run
+docker-run:
+	docker run -t $(PACKAGE_NAME):latest
+
 .PHONY: build-all
 build-all: clean build ## build for all system and arch
 	mkdir -p $(DIST_FOLDER)
-	@echo "make a copy of dependencies"
-	$(GOMOD) download
+	# creates /vendor
+	$(GOMOD) tidy && $(GOMOD) vendor
 	# [darwin/amd64]
 	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_darwin -v cmd/tensrose/main.go
 	# [linux/amd64]
@@ -68,7 +71,7 @@ ensure-tools: install-gofumports install-lint install-reflex ## ensure all dev t
 .PHONY: install-lint
 install-lint:
 	@echo "installing golangci-lint"
-	if [ ! -x ./bin/golanci-lint ]  || ( ./bin/golangci-lint --version | grep -Fqv "version ${GOLANGCI_LINT_VERSION}" ); then \
+	if [[ ! -x bin/golangci-lint ]] || ( ./bin/golangci-lint --version | grep -Fqv "version ${GOLANGCI_LINT_VERSION}" ) ; then \
 		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v${GOLANGCI_LINT_VERSION}; \
 	fi
 
@@ -86,7 +89,7 @@ install-reflex:
 	fi
 
 .PHONY: ensure-format-lint
-ensure-format-lint: format lint
+ensure-format-lint: format lint ## ensures you run format and lint
 
 .PHONY: lint
 lint: install-lint

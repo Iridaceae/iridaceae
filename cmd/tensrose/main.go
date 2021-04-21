@@ -20,7 +20,7 @@ const (
 // 	StatsdMetrics      bool
 // }
 
-// depart all core run into internal
+// depart all core run into internal.
 func main() {
 	logger := log.CreateLogger("tensrose")
 	defer logger.Infof("--shutdown %s--", logger.Name)

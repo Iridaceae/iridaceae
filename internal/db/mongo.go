@@ -19,7 +19,7 @@ var (
 
 func initMgoSessions(user, pass, ip string) {
 	// building URI
-	var URIfmt = "mongodb://%s:%s@%s:27017"
+	URIfmt := "mongodb://%s:%s@%s:27017"
 
 	logger.Infof("attempting to connect at "+URIfmt, "<user>", "<pass>", ip)
 
@@ -49,23 +49,22 @@ func insert(user User) error {
 	return users.Insert(user)
 }
 
-func update(discordID string, mins int) error {
-	u, err := fetch(discordID)
-	if err != nil {
-		logger.Fatal(fmt.Errorf("error while finding discordID: %w", err))
-	}
+func fetch(discordID string) (User, error) {
+	var u User
 
-	newMin := u.MinutesStudied + mins
-
-	minStudy := bson.M{"minutesstudied": newMin}
-	err = users.Update(minStudy, bson.M{"$set": u})
-	return err
+	err := users.Find(bson.M{"discordid": discordID}).One(&u)
+	return u, err
 }
 
-func fetch(discordID string) (User, error) {
-	u := User{}
+func update(discordID string, mins int) error {
+	u, _ := fetch(discordID)
 
-	uid := bson.M{"discordid": discordID}
-	err := users.Find(uid).One(&u)
-	return u, err
+	logger.Infof("users id: %s", discordID)
+	logger.Infof("mins to be added: %d", mins)
+	var newMin = u.MinutesStudied + mins
+	logger.Infof("users current score: %d", u.MinutesStudied)
+	logger.Infof("new mins: %d", newMin)
+
+	err := users.Update(bson.M{"minutesstudied": newMin}, bson.M{"$set": &u})
+	return err
 }

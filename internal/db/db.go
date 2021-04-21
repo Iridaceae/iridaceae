@@ -41,13 +41,13 @@ func NewUser(did, dit, guid, mins string) (string, error) {
 	return oid.Hex(), insertErr
 }
 
-// UpdateUser updates minutes studied to current users via discordID.
-func UpdateUser(did string, mins int) error {
-	return update(did, mins)
-}
-
 // FetchUser returns a singleton of users given discordID.
 func FetchUser(did string) error {
 	_, err := fetch(did)
 	return err
+}
+
+// UpdateUser updates minutes studied to current users via discordID.
+func UpdateUser(did string, mins int) error {
+	return update(did, mins)
 }

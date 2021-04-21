@@ -68,7 +68,7 @@ func (pom *Pomodoro) startPom() {
 }
 
 // CreateIfEmpty will create a new Pomodoro for given user according to their discordID if user has none.
-// The pomodoro will then be removed from the mapping once completed or cancelled.
+// The pomodoro will then be removed from the mapping once completed or canceled.
 func (u *UserPomodoroMap) CreateIfEmpty(duration time.Duration, onWorkEnd TaskCallback, notify NotifyInfo) bool {
 	u.mutex.Lock()
 	defer u.mutex.Unlock()
