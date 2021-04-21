@@ -94,4 +94,4 @@ lint: install-lint
 
 .PHONY: format
 format: install-gofumports
-	find . -name \*.go | xargs ./bin/gofumports -local github.com/aarnphm/iris -w
+	find . -name \*.go | xargs ./bin/gofumports -local github.com/TensRoses/iris -w

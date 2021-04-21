@@ -13,7 +13,7 @@ cmd line version named after herself `tensrose` will start Iris
 to install `tensrose` binary run 
 
 ```sh 
-$ go install github.com/aarnphm/iris/cmd/tensrose
+$ go install github.com/TensRoses/iris/cmd/tensrose
 ```
 
 ### todo.

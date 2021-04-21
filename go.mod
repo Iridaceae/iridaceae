@@ -1,4 +1,4 @@
-module github.com/aarnphm/iris
+module github.com/TensRoses/iris
 
 go 1.16
 

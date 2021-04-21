@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/aarnphm/iris"
-	"github.com/aarnphm/iris/internal/configs"
-	"github.com/aarnphm/iris/internal/log"
+	"github.com/TensRoses/iris"
+	"github.com/TensRoses/iris/internal/configs"
+	"github.com/TensRoses/iris/internal/log"
 )
 
 const (

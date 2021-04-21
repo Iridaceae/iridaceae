@@ -15,9 +15,9 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
-	"github.com/aarnphm/iris/internal/configs"
-	"github.com/aarnphm/iris/internal/db"
-	"github.com/aarnphm/iris/internal/log"
+	"github.com/TensRoses/iris/internal/configs"
+	"github.com/TensRoses/iris/internal/db"
+	"github.com/TensRoses/iris/internal/log"
 )
 
 const (
