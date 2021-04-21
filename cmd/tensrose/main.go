@@ -33,7 +33,6 @@ func main() {
 	flag.Parse()
 
 	// load configs and secrets
-	logger.Infof("parsing configs from file %s", *cpath+"/configs.yaml")
 	cfg, err := configs.LoadConfigFile(*cpath)
 	if err != nil {
 		logger.Fatal(err)
@@ -41,7 +40,6 @@ func main() {
 
 	// NOTE: possible caveats with multiple instance of viper
 	// https://stackoverflow.com/a/47185439/8643197
-	logger.Infof("parsing secrets from file %s", *cpath+"/discord.yaml")
 	secret, err := configs.LoadSecretsFile(*cpath)
 	if err != nil {
 		logger.Fatal(err)

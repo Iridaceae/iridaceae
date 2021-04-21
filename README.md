@@ -27,6 +27,9 @@ services
   - DAO
   - CRUD
   - Repo
-- commandBuilder
-- 
-
+- commandHandler
+  - this contains error handling
+  - given prefix setup different commands
+- cache
+- metrics
+- leaderboard

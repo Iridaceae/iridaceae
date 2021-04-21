@@ -5,13 +5,17 @@ GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
 GOMOD=$(GOCMD) mod
-BINARY_NAME=tensrose
 
+# others params
+BINARY_NAME=tensrose
+PACKAGE_NAME=$(shell basename -s .git `git config --get remote.origin.url`)
+GOLANGCI_LINT_VERSION=1.39.0
+
+# folders
 DIST_FOLDER=dist
 BIN_FOLDER=$(shell pwd)/bin
 
-GOLANGCI_LINT_VERSION=1.39.0
-
+# Makefile settings
 .DEFAULT_GOAL := all
 
 .PHONY: help
@@ -20,7 +24,7 @@ help: ## Display this help message
 
 .PHONY: all
 all: build
-build: ## build tensrose
+build:
 	$(GOBUILD) -o $(BIN_FOLDER)/$(BINARY_NAME) -v cmd/tensrose/main.go
 
 .PHONY: run-dev
@@ -35,14 +39,19 @@ clean: ## clean package
 
 .PHONY: docker-build
 docker-build: ## build docker images
-	docker build -t iris:latest .
+	docker build -t $(PACKAGE_NAME):latest -f deployments/Dockerfile .
+
+.PHONY: docker-run
+docker-run: ## run docker images
+	docker run -t $(PACKAGE_NAME):latest
 
 .PHONY: deploy
-deploy: ## deploy to heroku
-	@echo "Deploying to heroku"
+local-deploy: ## deploy to heroku
+	@echo "local deploy heroku"
+	heroku local web
 
 .PHONY: build-all
-build-all: clean ## build for all system and arch
+build-all: clean build ## build for all system and arch
 	mkdir -p $(DIST_FOLDER)
 	@echo "make a copy of dependencies"
 	$(GOMOD) download
@@ -65,21 +74,24 @@ install-lint:
 
 .PHONY: install-gofumports
 install-gofumports:
-	if [ ! -x bin/gofumports ]; then \
+	if [[ ! -x bin/gofumports ]]; then \
 		mkdir -p bin; \
 		GOBIN=$(BIN_FOLDER) $(GOCMD) install mvdan.cc/gofumpt/gofumports@latest ; \
 	fi
 
 .PHONY: install-reflex
 install-reflex:
-	if [ ! -x bin/reflex ]; then \
+	if [[ ! -x bin/reflex ]]; then \
 		GOBIN=$(BIN_FOLDER) $(GOGET) github.com/cespare/reflex; \
 	fi
 
+.PHONY: ensure-format-lint
+ensure-format-lint: format lint
+
 .PHONY: lint
-lint: install-lint ## lint
+lint: install-lint
 	./bin/golangci-lint run ./...
 
 .PHONY: format
-format: install-gofumports ## format
+format: install-gofumports
 	find . -name \*.go | xargs ./bin/gofumports -local github.com/aarnphm/iris -w

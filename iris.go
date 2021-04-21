@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
@@ -174,11 +175,15 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 		ir.logger.Fatal(err)
 	}
 
-	// make sure the users' text can't break out of our quote box
-	ex = strings.Replace(ex, "`", "", -1)
-	ex = strings.TrimSpace(ex)
+	// make sure that this converts to time instead of any other funky usecase
+	rgx := regexp.MustCompile(`^([0-9])+`)
+	if rgx.MatchString(ex) {
+		ex = strings.Replace(ex, "`", "", -1)
+		ex = strings.TrimSpace(ex)
+	} else {
+		ir.logger.Fatal(fmt.Errorf("Unknown time format. Accepts numbers only (period)"))
+	}
 
-	// title := exa[0]
 	if ex != "" {
 		newDuration, _ := strconv.Atoi(ex)
 		pomDuration = time.Minute * time.Duration(newDuration)
