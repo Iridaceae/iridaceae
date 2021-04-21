@@ -16,5 +16,8 @@ to install `tensrose` binary run
 $ go install github.com/aarnphm/iris/cmd/tensrose
 ```
 
+### todo.
+- pkg to construct message
+- fix time difference 
 
 
