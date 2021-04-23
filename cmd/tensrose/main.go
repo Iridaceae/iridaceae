@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/TensRoses/iris"
 	"github.com/TensRoses/iris/internal/configs"
@@ -42,7 +43,9 @@ func main() {
 	// https://stackoverflow.com/a/47185439/8643197
 	secret, err := configs.LoadSecretsFile(*cpath)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Warnf("%s, loading from ENV instead", err.Error())
+		secret.AuthToken = os.Getenv("AUTH_TOKEN")
+		secret.ClientID = os.Getenv("CLIENTID")
 	}
 
 	// setup metrics here
