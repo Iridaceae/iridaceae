@@ -1,1 +1,1 @@
-web: ./bin/tensrose
+worker: ./bin/tensrose

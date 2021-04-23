@@ -67,7 +67,6 @@ func NewIris(config configs.Configs, secrets configs.Secrets, logger log.Logging
 	ir.registerCmdHandlers()
 	ir.helpMessage = ir.buildHelpMessage()
 	ir.inviteMessage = fmt.Sprintf("Click here: <"+baseAuthURLTemplate+"> to invite me to the server", ir.secrets.ClientID)
-	ir.logger.Infof(ir.inviteMessage)
 	return ir
 }
 

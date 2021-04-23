@@ -2,7 +2,6 @@ build:
   languages:
     - go
   docker:
-    web: deployments/Dockerfile
-    worker: worker/Dockerfile
+    worker: Dockerfile
 run:
-  web: ./bin/tensrose
+  worker: ./bin/tensrose
