@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-tree -C  -I ".gitignore|vendor" --dirsfirst
+tree -CI ".gitignore|vendor" -dL 1 --dirsfirst

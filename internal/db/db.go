@@ -14,7 +14,7 @@ import (
 var logger *log.Logging = log.CreateLogger("db")
 
 func init() {
-	err := godotenv.Load()
+	err := godotenv.Load("./envars/.env")
 	if err != nil {
 		logger.Warnf("Error loading env file: %s", err.Error())
 	}
