@@ -1,4 +1,4 @@
-// package belamcanda contains bot functionality for iris. Currently following Pomodoro technique.
+// Package belamcanda contains bot functionality for iris. Currently following Pomodoro technique.
 package belamcanda
 
 import (

@@ -28,7 +28,7 @@ type Logger interface {
 	Infof(format string, args ...interface{})
 	Warnf(format string, args ...interface{})
 	Fatal(err error)
-	Name(name string)
+	Named(name string)
 }
 
 // Logging defines a wrapper around sirupsen/logrus with defined name.
@@ -60,7 +60,7 @@ func (l *Logging) SetLoggingLevel(lvl int) {
 	}
 }
 
-// Name sets a name of a logger if it hasn't got one.
+// Named sets a name of a logger if it hasn't got one.
 func (l *Logging) Named(n string) {
 	if l.Name == "" {
 		l.Name = n
