@@ -8,13 +8,13 @@ import (
 
 	"github.com/globalsign/mgo/bson"
 
-	"github.com/TensRoses/iris/internal/log"
+	"github.com/TensRoses/iris/internal/irislog"
 )
 
-var logger *log.Logging = log.CreateLogger("db")
+var logger *irislog.Logging = irislog.CreateLogger("db")
 
 func init() {
-	err := godotenv.Load("./envars/.env")
+	err := godotenv.Load("./deployments/.env")
 	if err != nil {
 		logger.Warnf("Error loading env file: %s", err.Error())
 	}

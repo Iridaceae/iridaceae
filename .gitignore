@@ -14,4 +14,4 @@
 # Dependency directories (remove the comment below to include it)
 bin/
 
-envars/discord.yaml
+deployments/discord.yaml

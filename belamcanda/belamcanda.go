@@ -15,13 +15,13 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
-	"github.com/TensRoses/iris/internal/config"
+	"github.com/TensRoses/iris/internal/configparser"
 	"github.com/TensRoses/iris/internal/db"
-	"github.com/TensRoses/iris/internal/log"
+	"github.com/TensRoses/iris/internal/irislog"
 )
 
 const (
-	logLevel            int           = 2 // refers to internal/log/log.go for level definition
+	logLevel            int           = 2 // refers to internal/irislog/irislog.go for level definition
 	defaultPomDuration  time.Duration = 25 * time.Minute
 	discordBotPrefix    string        = "Bot "
 	baseAuthURLTemplate string        = "https://discord.com/api/oauth2/authorize?client_id=%s&scope=bot"
@@ -42,10 +42,10 @@ type botCommand struct {
 type Iris struct {
 	helpMessage   string
 	inviteMessage string
-	Config        config.Configs
-	secrets       config.Secrets
+	Config        configparser.Defaults
+	secrets       configparser.Secrets
 	discord       *discordgo.Session
-	logger        log.Logging
+	logger        irislog.Logging
 	cmdHandlers   map[string]botCommand
 	poms          db.UserPomodoroMap
 	// record metrics here
@@ -53,7 +53,7 @@ type Iris struct {
 }
 
 // NewIris creates a new instance of Iris that can deploy over Heroku.
-func NewIris(config config.Configs, secrets config.Secrets, logger log.Logging) *Iris {
+func NewIris(config configparser.Defaults, secrets configparser.Secrets, logger irislog.Logging) *Iris {
 	// setup new logLevel
 	logger.SetLoggingLevel(logLevel)
 
