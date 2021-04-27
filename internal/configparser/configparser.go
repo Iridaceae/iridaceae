@@ -11,7 +11,7 @@ type Stringer interface {
 }
 
 // Source acts as a generic type for different source of configs
-// ex: env, yaml, toml
+// ex: env, yaml, toml. refers to EnvSource for exampls parsing
 type Source interface {
 	GetValue(key string) interface{}
 	Name() string
@@ -34,8 +34,8 @@ type Manager struct {
 	Options map[string]*Options
 }
 
-// NewConfigManager returns a default configs manager
-func NewConfigManager() *Manager {
+// NewManager returns a default configs manager
+func NewManager() *Manager {
 	return &Manager{Options: make(map[string]*Options)}
 }
 
