@@ -5,23 +5,25 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TensRoses/iris/internal/irislog"
+
 	"github.com/bwmarrin/discordgo"
 
 	"github.com/TensRoses/iris/internal/configparser"
 )
 
 const (
-	logLevel            int           = 2 // refers to internal/irislog/irislog.go for level definition
+	logLevel            int           = irislog.Debug
 	defaultPomDuration  time.Duration = 25 * time.Minute
 	baseAuthURLTemplate string        = "https://discord.com/api/oauth2/authorize?client_id=%s&scope=bot"
 )
 
 // TODO: add options to check for valid configuration name.
 var (
-	ClientID      = configparser.Register("iris.clientid", "ClientID of the bot", nil)
-	ClientSecrets = configparser.Register("iris.clientsecret", "ClientSecret of the bot", nil)
-	BotToken      = configparser.Register("iris.authtoken", "authentication token of the bot", nil)
-	Loaded        = false
+	ClientID, _      = configparser.Register("iris.clientid", "ClientID of the bot", nil)
+	ClientSecrets, _ = configparser.Register("iris.clientsecret", "ClientSecret of the bot", nil)
+	BotToken, _      = configparser.Register("iris.authtoken", "authentication token of the bot", nil)
+	Loaded           = false
 
 	// VERSION is defined via git.
 	VERSION     = "unknown"

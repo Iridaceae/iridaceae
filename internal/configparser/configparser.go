@@ -2,18 +2,24 @@
 package configparser
 
 import (
+	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
-type Stringer interface {
-	String() string
-}
+const optionsFmtRegex string = "^(([\\w\\.])+(\\.)([\\w]){2,4}([\\w]*))*$"
 
-// Source acts as a generic type for different source of configs
-// ex: env, yaml, toml. refers to EnvSource for examples parsing
+var (
+	ErrEmptyValue          = fmt.Errorf("empty strings")
+	ErrInvalidFormat       = fmt.Errorf("invalid format")
+	ErrInvalidOptionsMatch = fmt.Errorf("invalid options match")
+)
+
+// Source acts as a generic type for different source of configs.
+// ex: env, yaml, toml. refers to EnvSource for envars parsing.
 type Source interface {
-	GetValue(key string) interface{}
+	GetValue(key string) (interface{}, error)
 	Name() string
 }
 
@@ -28,24 +34,28 @@ type Options struct {
 	ConfigSource Source
 }
 
-// Manager holds types for generic managers to generate configs
+// Manager holds types for generic managers to generate configs.
 type Manager struct {
 	sources []Source
 	Options map[string]*Options
 }
 
-// NewManager returns a default configs manager
+// NewManager makes a configs manager.
 func NewManager() *Manager {
 	return &Manager{Options: make(map[string]*Options)}
 }
 
-// AddSource allows users to append given configparser source to the manager
+// AddSource allows users to append given configparser source to the manager.
 func (c *Manager) AddSource(source Source) {
 	c.sources = append(c.sources, source)
 }
 
-// Register will add given configs to the general manager
-func (c *Manager) Register(name, desc string, defaultValue interface{}) *Options {
+// Register will add given configs to the general manager.
+func (c *Manager) Register(name, desc string, defaultValue interface{}) (*Options, error) {
+	_, err := matchOptionsRegex(name)
+	if err != nil {
+		return &Options{}, err
+	}
 	opt := &Options{
 		Name:         name,
 		Description:  desc,
@@ -53,45 +63,45 @@ func (c *Manager) Register(name, desc string, defaultValue interface{}) *Options
 		Manager:      c,
 	}
 	c.Options[name] = opt
-	return opt
+	return opt, nil
 }
 
-// Load handles configs func LoadValue directly
+// Load handles configs func LoadValue directly.
 func (c *Manager) Load() {
 	for _, v := range c.Options {
 		v.LoadValue()
 	}
 }
 
-// LoadValue will load given values if exists, otherwise use default ones
+// LoadValue will load given values if exists, otherwise use default ones.
 func (opt *Options) LoadValue() {
 	def := opt.DefaultValue
 	opt.ConfigSource = nil
 
 	for i := len(opt.Manager.sources) - 1; i >= 0; i-- {
 		source := opt.Manager.sources[i]
-		v := source.GetValue(opt.Name)
+		// v would be value from given source, check envsource.go for examples
+		v, _ := source.GetValue(opt.Name)
 
 		if v != nil {
 			def = v
 			opt.ConfigSource = source
 			break
 		}
-
-		if opt.DefaultValue != nil {
-			if _, ok := opt.DefaultValue.(int); ok {
-				def = interface{}(toIntVal(def))
-			} else if _, ok := opt.DefaultValue.(bool); ok {
-				def = interface{}(toBoolVal(def))
-			}
-		}
-
-		opt.LoadedValue = def
 	}
+
+	if opt.DefaultValue != nil {
+		if _, ok := opt.DefaultValue.(int); ok {
+			def = interface{}(toIntVal(def))
+		} else if _, ok := opt.DefaultValue.(bool); ok {
+			def = interface{}(toBoolVal(def))
+		}
+	}
+
+	opt.LoadedValue = def
 }
 
-// UpdateValue returns loaded value
-// TODO: fixes general types
+// UpdateValue updates loaded value.
 func (opt *Options) UpdateValue(val interface{}) {
 	switch val.(type) {
 	case bool:
@@ -101,20 +111,19 @@ func (opt *Options) UpdateValue(val interface{}) {
 	case int:
 		opt.LoadedValue = toIntVal(val)
 	}
-
 }
 
-// GetString are a getter string for &Options.LoadedValue
+// GetString are a getter string for &Options.LoadedValue.
 func (opt *Options) GetString() string {
 	return toStrVal(opt.LoadedValue)
 }
 
-// GetInt are a getter int for &Options.LoadedValue
+// GetInt are a getter int for &Options.LoadedValue.
 func (opt *Options) GetInt() int {
 	return toIntVal(opt.LoadedValue)
 }
 
-// GetBool are a getter bool for &Options.LoadedValue
+// GetBool are a getter bool for &Options.LoadedValue.
 func (opt *Options) GetBool() bool {
 	return toBoolVal(opt.LoadedValue)
 }
@@ -125,7 +134,7 @@ func toStrVal(i interface{}) string {
 		return t
 	case int:
 		return strconv.FormatInt(int64(t), 10)
-	case Stringer:
+	case fmt.Stringer:
 		return t.String()
 	}
 	return ""
@@ -159,4 +168,12 @@ func toBoolVal(i interface{}) bool {
 	}
 
 	return false
+}
+
+func matchOptionsRegex(key string) (bool, error) {
+	b, _ := regexp.MatchString(optionsFmtRegex, key)
+	if b {
+		return b, nil
+	}
+	return b, ErrInvalidOptionsMatch
 }

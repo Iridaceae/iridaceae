@@ -14,11 +14,11 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
-	"github.com/TensRoses/iris/internal/configparser"
-	"github.com/TensRoses/iris/internal/dbstore"
+	"github.com/TensRoses/iris/internal/datastore"
 	"github.com/TensRoses/iris/internal/irislog"
 )
 
+// GetBotToken will handles authToken
 func GetBotToken() string {
 	token := BotToken.GetString()
 	if !strings.HasSuffix(token, "Bot ") {
@@ -46,19 +46,19 @@ type Iris struct {
 	discord       *discordgo.Session
 	logger        irislog.IrisLogger
 	cmdHandlers   map[string]botCommand
-	poms          dbstore.UserPomodoroMap
+	poms          datastore.UserPomodoroMap
 	// record metrics here
 	// metrics metrics.Recorder
 }
 
 // NewIris creates a new instance of Iris that can deploy over Heroku.
-func NewIris(config configparser.Defaults, secrets configparser.Secrets, logger irislog.Logging) *Iris {
+func NewIris(logger irislog.IrisLogger) *Iris {
 	// setup new logLevel
-	logger.SetLoggingLevel(logLevel)
+	logger.set
 
 	ir := &Iris{
 		logger: logger,
-		poms:   dbstore.NewUserPomodoroMap(),
+		poms:   datastore.NewUserPomodoroMap(),
 	}
 
 	ir.registerCmdHandlers()
@@ -94,7 +94,8 @@ func (ir *Iris) buildHelpMessage() string {
 
 // Start will start the bot, blocking til completed.
 func (ir *Iris) Start() error {
-	ir.discord, err := discordgo.New(GetBotToken())
+	var err error
+	ir.discord, err = discordgo.New(GetBotToken())
 	if err != nil {
 		return err
 	}
@@ -157,7 +158,7 @@ func (ir *Iris) onMessageReceived(s *discordgo.Session, m *discordgo.MessageCrea
 
 // onPomEnded handles when Pom ends. It should add new users to current mongoDB if users hasn't existed in the database, else updates the minutes studied.
 // this should be refactored into multiple functions (future ref)
-func (ir *Iris) onPomEnded(notif dbstore.NotifyInfo, completed bool) {
+func (ir *Iris) onPomEnded(notif datastore.NotifyInfo, completed bool) {
 	var (
 		err        error
 		hash       string
@@ -172,17 +173,17 @@ func (ir *Iris) onPomEnded(notif dbstore.NotifyInfo, completed bool) {
 
 	if completed {
 		// update users' progress to databse
-		err = dbstore.FetchUser(notif.User.DiscordId)
+		err = datastore.FetchUser(notif.User.DiscordId)
 		if err != nil {
 			// create new users entry
-			hash, err = dbstore.NewUser(notif.User.DiscordId, notif.User.DiscordTag, notif.User.GuidId, pomDuration.String())
+			hash, err = datastore.NewUser(notif.User.DiscordId, notif.User.DiscordTag, notif.User.GuidId, pomDuration.String())
 			ir.logger.Infof("inserted %s to mongoDB. Hash: %s", notif.User.DiscordId, hash)
 			if err != nil {
 				ir.logger.Warnf(err.Error())
 			}
 		} else {
 			// users already in database, just updates timing
-			err = dbstore.UpdateUser(notif.User.DiscordId, int(pomDuration.Minutes()))
+			err = datastore.UpdateUser(notif.User.DiscordId, int(pomDuration.Minutes()))
 			if err != nil {
 				ir.logger.Warnf(err.Error())
 			}
@@ -244,9 +245,9 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 		pomDuration = defaultPomDuration
 	}
 
-	notif := dbstore.NotifyInfo{
+	notif := datastore.NotifyInfo{
 		TitleID: ex,
-		User: &dbstore.User{
+		User: &datastore.User{
 			DiscordId:  m.Author.ID,
 			DiscordTag: m.Author.Discriminator,
 			GuidId:     channel.GuildID,

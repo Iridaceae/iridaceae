@@ -6,7 +6,7 @@ Pomodoro bot. Self-develop into a general purpose bot
 
 ### fyi.
 
-Stack: mongoDB - discordgo - Heroku
+Stack: mongoDB - discordgo - Heroku - Github Action
 
 
 ### install.

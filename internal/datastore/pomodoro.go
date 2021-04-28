@@ -1,4 +1,4 @@
-package dbstore
+package datastore
 
 import (
 	"sync"

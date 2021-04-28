@@ -1,4 +1,4 @@
-package dbstore
+package datastore
 
 import "github.com/globalsign/mgo/bson"
 

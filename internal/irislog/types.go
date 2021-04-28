@@ -1,38 +1,71 @@
 package irislog
 
 import (
-	"github.com/TensRoses/iris/internal/configparser"
 	"github.com/rs/zerolog"
 )
 
+const (
+	irisCtxKeys ctxKey = "irislog"
+	Disabled           = -1
+	Debug              = iota
+	Info
+	Warn
+	Error
+)
+
 var (
-	logCfg     LogConfig
-	logmanager = configparser.NewManager()
-	LogLevel   = logmanager.Register("irislog.level", "logger level for iris", nil)
-	Configured = logmanager.Register("irislog.configured", "boolean for configuration", false)
+	// StdLogger Logger can be used right out of the box.
+	// Can also be replaced by a custom configured one using Set(*Logger)
+	StdLogger *IrisLogger
+	cfg       config
+	// NOTE: future reference we also want to configure a log config accessed for users using configparser
 )
 
 type IrisLogger struct {
-	Level    int
-	Name     string
-	Version  string
-	Revision string
-	StdLog   zerolog.Logger
-	ErrLog   zerolog.Logger
+	Level      int
+	Version    string
+	Revision   string
+	StdLog     zerolog.Logger
+	ErrLog     zerolog.Logger
+	dynafields []interface{}
 }
 
-type LogConfig struct {
-	manager   *configparser.Manager
-	logger    *IrisLogger
-	stdFields []interface{}
+type config struct {
+	name       string
+	level      int
+	stfields   []interface{}
+	configured bool
 }
 
-func setup(logLevel int, stFields []interface{}) {
-	logCfg.manager = logmanager
+type ctxKey string
 
-	Configured.UpdateValue(true)
-	LogLevel.UpdateValue(logLevel)
-	logCfg.stdFields = append(logCfg.stdFields, stFields...)
+// String is human readable representation of a context key
+func (c ctxKey) String() string {
+	return "mw-" + string(c)
+}
 
-	logCfg.manager.Load()
+func setup(name string, stfields []interface{}) {
+	if cfg.configured {
+		return
+	}
+
+	cfg.name = name
+	cfg.stfields = append(cfg.stfields, stfields...)
+	cfg.configured = true
+}
+
+// SetDynaFields acts as a receiver instance that will always append these key-value pairs to the output.
+func (i *IrisLogger) SetDynaFields(dynafields ...interface{}) {
+	i.dynafields = make([]interface{}, 2)
+	i.dynafields = append(i.dynafields, dynafields...)
+}
+
+// AddDynaFields acts as a receiver instance that add given key-value pairs to current logger
+func (i *IrisLogger) AddDynaFields(key, value interface{}) {
+	i.dynafields = append(i.dynafields, []interface{}{key, value})
+}
+
+// ResetDynaFields will reset dynamic fields
+func (i *IrisLogger) ResetDynaFields() {
+	i.dynafields = make([]interface{}, 2)
 }

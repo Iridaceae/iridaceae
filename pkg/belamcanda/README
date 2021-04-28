@@ -5,7 +5,7 @@ services
 - messageBuilder
 
 - databaseHandler
-    if we want to save statistics --> CRUD with `mgo` --> lives inside db/mongo.go and db/db.go
+    if we want to save statistics --> CRUD with `mgo` --> lives inside internal/datastore/mongo.go and internal/datastore/db.go
     model:
         - Users -> save user model and just update pomodoroTime saved under minutesStudied
         - Pomodoro -> maybe just have to save it in cache
@@ -20,9 +20,9 @@ services
         !ir simp @givenuser --> discordID --> assign people to people
 
 - cache
-    redispool 
-    pubsub
-    rabitmq
+- redispool
+- pubsub
+- rabitmq
 
 - metrics
     prometheus
@@ -33,10 +33,7 @@ services
 
 TODO:
 - pkg to construct message
-- fix time difference 
-
-desc:
-    log contains IrisLogger that wraps sirupen/logrus
+- added ability to time intercept ==> create a time interceptor?
 
 setup ci with coverage
     - a deploy branch explicit for heroku -> docker images

@@ -1,4 +1,4 @@
-package dbstore
+package datastore
 
 import (
 	"crypto/tls"
@@ -52,7 +52,7 @@ func fetch(discordID string) (User, error) {
 func update(discordID string, mins int) error {
 	u, _ := fetch(discordID)
 
-	var newMin = u.MinutesStudied + mins
+	newMin := u.MinutesStudied + mins
 
 	err := users.Update(bson.M{"discordid": u.DiscordId}, bson.M{"$set": bson.M{"minutesstudied": newMin}})
 	return err

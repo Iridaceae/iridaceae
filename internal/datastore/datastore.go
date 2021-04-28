@@ -1,5 +1,5 @@
-// Package dbstore handles all database configuration
-package dbstore
+// Package datastore handles all database configuration
+package datastore
 
 import (
 	"os"
