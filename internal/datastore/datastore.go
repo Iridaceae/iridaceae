@@ -2,9 +2,9 @@
 package datastore
 
 import (
+	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/joho/godotenv"
 
@@ -14,19 +14,20 @@ import (
 func init() {
 	err := godotenv.Load("./deployments/defaults.env")
 	if err != nil {
-		logger.Warn("Error loading env file: %s", err.Error())
+		dbLogger.Warn("Error loading env file: %s", err.Error())
 	}
 
-	mUser := os.Getenv("MONGO_USER")
-	mPass := os.Getenv("MONGO_PASS")
-	mIP := parseMongoAddr(os.Getenv("MONGO_ADDR"))
+	mUser := os.Getenv("IRIS_MONGO_USER")
+	mPass := os.Getenv("IRIS_MONGO_PASS")
+	mDBName := os.Getenv("IRIS_MONGO_DBNAME")
+	mIP := parseMongoAddr(mUser, mPass, os.Getenv("IRIS_MONGO_ADDR"))
 
-	initMgoSessions(mUser, mPass, mIP)
+	initMgoSessions(mDBName, mIP)
 }
 
 // uri format: this-shard-00-00.asdfg.mongodb.net:27017,this-shard-00-01.asdfg.mongodb.net:27017,this-shard-00-02.asdfg.mongodb.net:27017.
-func parseMongoAddr(uri string) []string {
-	return strings.Split(uri, ",")
+func parseMongoAddr(user, pass, uri string) string {
+	return fmt.Sprintf(uriFmt, user, pass, uri)
 }
 
 // NewUser returns a hex representation of the inputs ObjectID and insert errors into new database.

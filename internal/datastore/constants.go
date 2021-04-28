@@ -11,10 +11,12 @@ import (
 const name string = "dbstore_service"
 
 var (
-	rev     = getRevision()
-	logger  = irislog.NewLogger(irislog.Debug, name, "revision", rev)
-	Session *mgo.Session
-	users   *mgo.Collection
+	rev      = getRevision()
+	dbLogger = irislog.NewLogger(irislog.Debug, name, "revision", rev)
+	Session  *mgo.Session
+	users    *mgo.Collection
+	// should be mongodb://app:password_here@shard:27017,another-shard:27017.
+	uriFmt = "mongodb://%s:%s@%s"
 )
 
 func getRevision() string {

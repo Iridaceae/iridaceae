@@ -14,6 +14,7 @@ import (
 
 const (
 	logLevel            int           = irislog.Debug
+	msgColor            int           = 100
 	defaultPomDuration  time.Duration = 25 * time.Minute
 	baseAuthURLTemplate string        = "https://discord.com/api/oauth2/authorize?client_id=%s&scope=bot"
 )
@@ -23,6 +24,7 @@ var (
 	ClientID, _      = configparser.Register("iris.clientid", "ClientID of the bot", nil)
 	ClientSecrets, _ = configparser.Register("iris.clientsecret", "ClientSecret of the bot", nil)
 	BotToken, _      = configparser.Register("iris.authtoken", "authentication token of the bot", nil)
+	CmdPrefix, _     = configparser.Register("iris.cmdprefix", "prefix for iris", "!ir ")
 	Loaded           = false
 
 	// VERSION is defined via git.
@@ -31,7 +33,7 @@ var (
 	IrisUser    *discordgo.User
 )
 
-// LoadConfig loads required configs
+// LoadConfig loads required configs.
 func LoadConfig() error {
 	if Loaded {
 		return nil

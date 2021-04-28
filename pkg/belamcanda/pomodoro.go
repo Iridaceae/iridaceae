@@ -1,8 +1,10 @@
-package datastore
+package belamcanda
 
 import (
 	"sync"
 	"time"
+
+	"github.com/TensRoses/iris/internal/datastore"
 )
 
 // Pomodoro defines a single state of a pomodoro sessions.
@@ -18,7 +20,7 @@ type Pomodoro struct {
 // NotifyInfo defines notification message for users.
 type NotifyInfo struct {
 	TitleID string
-	User    *User
+	User    *datastore.User
 }
 
 // TaskCallback receives NotifyInfo and a boolean to define whether the task is completed or not.

@@ -18,7 +18,7 @@ import (
 	"github.com/TensRoses/iris/internal/irislog"
 )
 
-// GetBotToken will handles authToken
+// GetBotToken will handles authToken.
 func GetBotToken() string {
 	token := BotToken.GetString()
 	if !strings.HasSuffix(token, "Bot ") {
@@ -44,26 +44,31 @@ type Iris struct {
 	helpMessage   string
 	inviteMessage string
 	discord       *discordgo.Session
-	logger        irislog.IrisLogger
+	logger        *irislog.IrisLogger
 	cmdHandlers   map[string]botCommand
-	poms          datastore.UserPomodoroMap
+	poms          UserPomodoroMap
 	// record metrics here
 	// metrics metrics.Recorder
 }
 
 // NewIris creates a new instance of Iris that can deploy over Heroku.
-func NewIris(logger irislog.IrisLogger) *Iris {
+func NewIris() *Iris {
 	// setup new logLevel
-	logger.set
+	logger := irislog.NewLogger(logLevel, "botevents")
+
+	err := LoadConfig()
+	if err != nil {
+		logger.Error(err)
+	}
 
 	ir := &Iris{
 		logger: logger,
-		poms:   datastore.NewUserPomodoroMap(),
+		poms:   NewUserPomodoroMap(),
 	}
 
 	ir.registerCmdHandlers()
 	ir.helpMessage = ir.buildHelpMessage()
-	ir.inviteMessage = fmt.Sprintf("Click here: <"+baseAuthURLTemplate+"> to invite me to the server", ir.secrets.ClientID)
+	ir.inviteMessage = fmt.Sprintf("Click here: <"+baseAuthURLTemplate+"> to invite me to the server", ClientID.GetString())
 	return ir
 }
 
@@ -84,7 +89,7 @@ func (ir *Iris) buildHelpMessage() string {
 	// just use map iteration order
 	for cmdStr, cmd := range ir.cmdHandlers {
 		helpBuffer.WriteString(fmt.Sprintf("\n•  **%s**  -  %s\n", cmdStr, cmd.desc))
-		helpBuffer.WriteString(fmt.Sprintf("   Example: `%s%s %s`\n", ir.Config.CmdPrefix, cmdStr, cmd.exampleParams))
+		helpBuffer.WriteString(fmt.Sprintf("   Example: `%s%s %s`\n", CmdPrefix.GetString(), cmdStr, cmd.exampleParams))
 	}
 
 	helpBuffer.WriteString("\n" + ir.inviteMessage)
@@ -109,9 +114,9 @@ func (ir *Iris) Start() error {
 		return err
 	}
 
-	ir.logger.Infof("Bot is now running. Press CTRL-C to exit.")
+	ir.logger.Info("Bot is now running. Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
 	return ir.discord.Close()
@@ -120,7 +125,7 @@ func (ir *Iris) Start() error {
 // onReady should prepare metrics collector and setup web interface for configuration (features).
 func (ir *Iris) onReady(s *discordgo.Session, event *discordgo.Ready) {
 	numGuilds := int64(len(s.State.Guilds))
-	ir.logger.Infof("Iris connected and ready - userName: %s#%s numGuilds: %d", event.User.Username, event.User.Discriminator, numGuilds)
+	ir.logger.Info(fmt.Sprintf("Iris connected and ready - userName: %s#%s numGuilds: %d", event.User.Username, event.User.Discriminator, numGuilds))
 	// should include metrics collection down here
 }
 
@@ -134,10 +139,10 @@ func (ir *Iris) onMessageReceived(s *discordgo.Session, m *discordgo.MessageCrea
 
 	msg := m.Content
 
-	cmdPrefixLen := len(ir.Config.CmdPrefix)
+	cmdPrefixLen := len(CmdPrefix.GetString())
 
 	// dispatch the command iff we have our prefix, (case-insensitive) otherwise throws an errors
-	if len(msg) > cmdPrefixLen && strings.EqualFold(ir.Config.CmdPrefix, msg[0:cmdPrefixLen]) {
+	if len(msg) > cmdPrefixLen && strings.EqualFold(CmdPrefix.GetString(), msg[0:cmdPrefixLen]) {
 		afterPrefix := msg[cmdPrefixLen:]
 		cmd := strings.SplitN(afterPrefix, " ", 2)
 
@@ -157,8 +162,8 @@ func (ir *Iris) onMessageReceived(s *discordgo.Session, m *discordgo.MessageCrea
 }
 
 // onPomEnded handles when Pom ends. It should add new users to current mongoDB if users hasn't existed in the database, else updates the minutes studied.
-// this should be refactored into multiple functions (future ref)
-func (ir *Iris) onPomEnded(notif datastore.NotifyInfo, completed bool) {
+// NOTE: this should be refactored into multiple functions.
+func (ir *Iris) onPomEnded(notif NotifyInfo, completed bool) {
 	var (
 		err        error
 		hash       string
@@ -177,15 +182,15 @@ func (ir *Iris) onPomEnded(notif datastore.NotifyInfo, completed bool) {
 		if err != nil {
 			// create new users entry
 			hash, err = datastore.NewUser(notif.User.DiscordId, notif.User.DiscordTag, notif.User.GuidId, pomDuration.String())
-			ir.logger.Infof("inserted %s to mongoDB. Hash: %s", notif.User.DiscordId, hash)
+			ir.logger.Info("inserted %s to mongoDB. Hash: %s", notif.User.DiscordId, hash)
 			if err != nil {
-				ir.logger.Warnf(err.Error())
+				ir.logger.Warn(err.Error())
 			}
 		} else {
 			// users already in database, just updates timing
 			err = datastore.UpdateUser(notif.User.DiscordId, int(pomDuration.Minutes()))
 			if err != nil {
-				ir.logger.Warnf(err.Error())
+				ir.logger.Warn(err.Error())
 			}
 		}
 		// notif title
@@ -203,7 +208,7 @@ func (ir *Iris) onPomEnded(notif datastore.NotifyInfo, completed bool) {
 		embed := &discordgo.MessageEmbed{
 			Type:        "rich",
 			Title:       notifTitle,
-			Color:       130,
+			Color:       msgColor,
 			Description: notifDesc,
 		}
 
@@ -226,7 +231,7 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 
 	channel, err := s.State.Channel(m.ChannelID)
 	if err != nil {
-		ir.logger.Fatal(err)
+		ir.logger.Error(err)
 	}
 
 	// make sure that this converts to time instead of any other funky usecase
@@ -235,7 +240,7 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 		ex = strings.ReplaceAll(ex, "`", "")
 		ex = strings.TrimSpace(ex)
 	} else {
-		ir.logger.Warnf(fmt.Sprintf("unknown time format. Accepts numbers only. got %s instead", ex))
+		ir.logger.Warn(fmt.Sprintf("unknown time format. Accepts numbers only. got %s instead", ex))
 	}
 
 	if ex != "" {
@@ -245,7 +250,7 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 		pomDuration = defaultPomDuration
 	}
 
-	notif := datastore.NotifyInfo{
+	notif := NotifyInfo{
 		TitleID: ex,
 		User: &datastore.User{
 			DiscordId:  m.Author.ID,
@@ -270,7 +275,7 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 		embed := &discordgo.MessageEmbed{
 			Type:        "rich",
 			Title:       notifTitle,
-			Color:       130,
+			Color:       msgColor,
 			Description: notifDesc,
 		}
 
