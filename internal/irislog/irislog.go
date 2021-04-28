@@ -1,122 +1,230 @@
+// Package irislog defines custom log wrapper around rs/zerolog
 package irislog
 
 import (
 	"fmt"
-	"net/http"
+	"os"
 
-	"github.com/fatih/color"
-	"github.com/sirupsen/logrus"
-)
-
-const (
-	FATAL = 0 // fatal only
-	WARN  = 1 // warn + fatal
-	INFO  = 2 // all
+	"github.com/rs/zerolog"
 )
 
 var (
-	// ShellMode determines what to print to. If false use logrus, else just print straight to /dev/tty.
-	ShellMode = false
-	success   = color.New(color.FgGreen).SprintFunc()
-	info      = color.New(color.FgWhite).SprintFunc()
-	warn      = color.New(color.FgYellow).SprintFunc()
-	er        = color.New(color.FgRed).SprintFunc()
+	// Defaults logger can be used right out of the box.
+	// Can also be replaced by a custom configured one using Set(*Logger)
+	Defaults *IrisLogger
 )
 
-type Logger interface {
-	Successf(format string, args ...interface{})
-	Infof(format string, args ...interface{})
-	Warnf(format string, args ...interface{})
-	Fatal(err error)
-	Named(name string)
+func init() {
+	Defaults = NewLogger(Debug, "irislog")
 }
 
-// Logging defines a wrapper around sirupsen/logrus with defined name.
-type Logging struct {
-	Name     string
-	log      *logrus.Logger
-	LogLevel int
+// NewLogger creates a new logger.
+// if static fields are provided those values will be defined.
+// the default static fields for each new built instance if they aren't configured yet.
+func NewLogger(level int, name string, stfields ...interface{}) *IrisLogger {
+	if level < Disabled || level > Error {
+		level = Info
+	}
+
+	stdl := zerolog.New(os.Stdout).With().Timestamp().Logger()
+	errl := zerolog.New(os.Stderr).With().Timestamp().Logger()
+
+	setLogLevel(&stdl, level)
+	setLogLevel(&errl, level)
+
+	i := &IrisLogger{
+		Level:  level,
+		Name:   name,
+		StdLog: stdl,
+		ErrLog: errl,
+	}
+
+	// NOTE: Possible workaround is to create a separate config struct for log?
+	if len(stfields) > 1 && !logCfg.manager.Options["irislog.configured"].GetBool() {
+		setup(level, stfields)
+		Defaults = i
+	}
+
+	return i
 }
 
-// CreateLogger will create a new *Logging that wraps around logrus.Logger with a given name.
-func CreateLogger(name string) *Logging {
-	// NOTE: for future logrus customization
-	logrusLogger := logrus.New()
-	return &Logging{Name: name, log: logrusLogger, LogLevel: 1}
+// NewDevLogger creates development logger.
+// Pretty logging for development mode.
+func NewDevLogger(level int, name string, stfields ...interface{}) *IrisLogger {
+	if level < Disabled || level > Error {
+		level = Info
+	}
+
+	stdl := zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout})
+	errl := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr})
+
+	setLogLevel(&stdl, level)
+	setLogLevel(&errl, level)
+
+	i := &IrisLogger{
+		Level:  level,
+		Name:   name,
+		StdLog: stdl,
+		ErrLog: errl,
+	}
+
+	if len(stfields) > 1 && !logCfg.manager.Options["irislog.configured"].GetBool() {
+		setup(level, stfields)
+		Defaults = i
+	}
+
+	return i
 }
 
-// SetLoggingLevel defines level for logrus to irislog.
-func (l *Logging) SetLoggingLevel(lvl int) {
-	switch lvl {
-	case FATAL:
-		l.log.SetLevel(logrus.FatalLevel)
-		l.LogLevel = FATAL
-	case WARN:
-		l.log.SetLevel(logrus.WarnLevel)
-		l.LogLevel = WARN
-	case INFO:
-		l.log.SetLevel(logrus.InfoLevel)
-		l.LogLevel = INFO
+// Set setup base logger
+func Set(i *IrisLogger) {
+	Defaults = i
+	logCfg.logger = i
+}
+
+// Set setup base logger
+// Can be used to chain with NewLogger to create a new logger
+// ```logger := irislog.NewLogger(irislog.Debug, "name", "version", "revision").Set()```.
+func (i *IrisLogger) Set() *IrisLogger {
+	Defaults = i
+	logCfg.logger = Defaults
+	return Defaults
+}
+
+func (i IrisLogger) Debug(meta ...interface{}) {
+	if len(meta) > 0 {
+		i.debugf(stringify(meta[0]), meta[1:len(meta)])
 	}
 }
 
-// Named sets a name of a logger if it hasn't got one.
-func (l *Logging) Named(n string) {
-	if l.Name == "" {
-		l.Name = n
+func (i IrisLogger) debugf(message string, fields []interface{}) {
+	if i.Level > Debug {
 		return
 	}
-	l.Infof("logger already has a name (%s), skipping...", l.Name)
+	ie := i.StdLog.Info()
+	appendKeyValues(ie, fields)
+	ie.Msg(message)
 }
 
-// Success is a wrapper around Info with color.
-func (l *Logging) Successf(format string, args ...interface{}) {
-	if ShellMode {
-		s := fmt.Sprintf(success(format), args...)
-		fmt.Print(s)
+func (i IrisLogger) Info(meta ...interface{}) {
+	if len(meta) > 0 {
+		i.infof(stringify(meta[0]), meta[1:len(meta)])
+	}
+}
+
+func (i IrisLogger) infof(message string, fields []interface{}) {
+	if i.Level > Info {
 		return
 	}
-	l.log.Info(fmt.Sprintf(format, args...))
+
+	ie := i.StdLog.Info()
+	appendKeyValues(ie, fields)
+	ie.Msg(message)
 }
 
-// Info is a logrus.Info wrapper.
-func (l *Logging) Infof(format string, args ...interface{}) {
-	if ShellMode {
-		s := fmt.Sprintf(info(format), args...)
-		fmt.Print(s)
+func (i IrisLogger) Warn(meta ...interface{}) {
+	if len(meta) > 0 {
+		i.warnf(stringify(meta[0]), meta[1:len(meta)])
+	}
+}
+
+func (i IrisLogger) warnf(message string, fields []interface{}) {
+	if i.Level > Warn {
 		return
 	}
-	l.log.Info(fmt.Sprintf(format, args...))
+
+	ie := i.StdLog.Warn()
+	appendKeyValues(ie, fields)
+	ie.Msg(message)
 }
 
-// WInfo is logrus.Info wrapper for future API calls.
-func (l *Logging) WInfof(w http.ResponseWriter, format string, args ...interface{}) {
-	fmt.Fprintf(w, format, args...)
-	l.Infof(format, args...)
-}
-
-// Warn is logrus.Warn wraps with color.
-func (l *Logging) Warnf(format string, args ...interface{}) {
-	if ShellMode {
-		s := fmt.Sprintf(warn(format), args...)
-		fmt.Print(s)
+func (i IrisLogger) Error(err error, meta ...interface{}) {
+	if len(meta) > 0 {
+		i.errorf(err, stringify(meta[0]), meta[1:len(meta)])
 		return
 	}
-	l.log.Warnf(format, args...)
+	i.errorf(err, "", nil)
 }
 
-// WWarn is Warn but for API calls.
-func (l *Logging) WWarnf(w http.ResponseWriter, format string, args ...interface{}) {
-	fmt.Fprintf(w, format, args...)
-	l.Warnf(format, args...)
+func (i IrisLogger) errorf(err error, message string, fields []interface{}) {
+	ie := i.ErrLog.Error()
+	appendKeyValues(ie, fields)
+	ie.Err(err)
+	ie.Msg(message)
 }
 
-// Fatal is a wrapper for logrus.Fatal.
-func (l *Logging) Fatal(err error) {
-	if ShellMode {
-		s := fmt.Sprintf(er("fatal: %s"), err.Error())
-		fmt.Println(s)
-		panic(err)
+func appendKeyValues(le *zerolog.Event, fields []interface{}) {
+	if logCfg.logger.Name != "" {
+		le.Str("name", logCfg.logger.Name)
 	}
-	l.log.Fatal(err)
+
+	fs := make(map[string]interface{})
+
+	// TODO: static key-value should be cached?
+	if len(fields) > 1 {
+		for i := 0; i < len(fields)-1; i++ {
+			if fields[i] != nil && fields[i+1] != nil {
+				k := stringify(fields[i])
+				fs[k] = fields[i+1]
+				i++
+			}
+		}
+
+		if len(logCfg.stdFields) > 1 {
+			for i := 0; i < len(logCfg.stdFields)-1; i++ {
+				if logCfg.stdFields[i] != nil && logCfg.stdFields[i+1] != nil {
+					k := stringify(logCfg.stdFields[i])
+					fs[k] = logCfg.stdFields[i+1]
+					i++
+				}
+			}
+		}
+	}
+
+	le.Fields(fs)
+}
+
+func stringify(val interface{}) string {
+	switch v := val.(type) {
+	case nil:
+		return fmt.Sprintf("%v", v)
+	case int:
+		return fmt.Sprintf("%d", v)
+	case bool:
+		return fmt.Sprintf("%t", v)
+	case string:
+		return v
+	default:
+		return fmt.Sprintf("%+v", v)
+	}
+}
+
+// UpdateLogLevel updates log level
+func (i *IrisLogger) UpdateLogLevel(level int) {
+	// don't downgrade if current is Error
+	current := Error
+	i.Info("Log level updated", "", "log level", level)
+	i.Level = current
+	if level < Disabled || level > Error {
+		i.Level = level
+		setLogLevel(&i.StdLog, level)
+		setLogLevel(&i.ErrLog, level)
+	}
+}
+
+func setLogLevel(l *zerolog.Logger, level int) {
+	switch level {
+	case -1:
+		l.Level(zerolog.Disabled)
+	case 0:
+		l.Level(zerolog.DebugLevel)
+	case 1:
+		l.Level(zerolog.InfoLevel)
+	case 2:
+		l.Level(zerolog.WarnLevel)
+	case 3:
+		l.Level(zerolog.ErrorLevel)
+	default:
+		l.Level(zerolog.DebugLevel)
+	}
 }
