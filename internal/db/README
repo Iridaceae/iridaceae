@@ -1,4 +1,0 @@
-db.go handles DAO from mongo.go
-mongo.go handles CRUD with mgo
-pomodoro.go contains pomodoro logics
-user.go contains user content for discordgo

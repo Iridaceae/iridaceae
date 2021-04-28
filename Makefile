@@ -25,7 +25,7 @@ help: ## display this help message
 .PHONY: all
 all: build
 build:
-	$(GOBUILD) -o $(BIN_FOLDER)/$(BINARY_NAME) -v cmd/tensrose/main.go
+	$(GOBUILD) -o $(BIN_FOLDER)/$(BINARY_NAME) -v pkg/cmd/tensroses-server/main.go
 
 .PHONY: dev
 dev: clean build ## run iris in development
@@ -59,11 +59,11 @@ build-all: clean build ## build for all system and arch
 	# creates /vendor
 	$(GOMOD) tidy && $(GOMOD) vendor
 	# [darwin/amd64]
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_darwin -v cmd/tensrose/main.go
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_darwin -v pkg/cmd/tensroses-server/main.go
 	# [linux/amd64]
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_linux -v cmd/tensrose/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_linux -v pkg/cmd/tensroses-server/main.go
 	# [windows/amd64]
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_windows.exe -v cmd/tensrose/main.go
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_windows.exe -v pkg/cmd/tensroses-server/main.go
 
 .PHONY: ensure-tools
 ensure-tools: install-gofumports install-lint install-reflex ## ensure all dev tools
