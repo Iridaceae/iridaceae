@@ -24,7 +24,7 @@ const (
 
 // depart all core run into internal.
 func main() {
-	logger := irislog.CreateLogger("tensrose")
+	logger := irislog.CreateLogger("tensroses-server")
 	defer logger.Infof("--shutdown %s--", logger.Name)
 
 	// parse configparser and secrets parent directory since viper will handle configparser

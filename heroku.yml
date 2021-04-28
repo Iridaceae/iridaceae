@@ -4,4 +4,4 @@ build:
   docker:
     worker: Dockerfile
 run:
-  worker: ./bin/tensrose
+  worker: ./bin/tensroses-server

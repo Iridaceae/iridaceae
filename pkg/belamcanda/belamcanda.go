@@ -3,7 +3,6 @@ package belamcanda
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -20,12 +19,14 @@ import (
 	"github.com/TensRoses/iris/internal/irislog"
 )
 
-const (
-	logLevel            int           = 2 // refers to internal/irislog/irislog.go for level definition
-	defaultPomDuration  time.Duration = 25 * time.Minute
-	discordBotPrefix    string        = "Bot "
-	baseAuthURLTemplate string        = "https://discord.com/api/oauth2/authorize?client_id=%s&scope=bot"
-)
+func GetBotToken() string {
+	token := BotToken.GetString()
+	if !strings.HasSuffix(token, "Bot ") {
+		token = "Bot " + token
+	}
+
+	return token
+}
 
 // pomDuration defines default sessions (should always be 25 mins).
 var pomDuration time.Duration
@@ -56,10 +57,8 @@ func NewIris(config configparser.Defaults, secrets configparser.Secrets, logger 
 	logger.SetLoggingLevel(logLevel)
 
 	ir := &Iris{
-		Config:  config,
-		secrets: secrets,
-		logger:  logger,
-		poms:    dbstore.NewUserPomodoroMap(),
+		logger: logger,
+		poms:   dbstore.NewUserPomodoroMap(),
 	}
 
 	ir.registerCmdHandlers()
@@ -95,12 +94,7 @@ func (ir *Iris) buildHelpMessage() string {
 
 // Start will start the bot, blocking til completed.
 func (ir *Iris) Start() error {
-	if ir.secrets.AuthToken == "" {
-		return errors.New("no authToken found")
-	}
-
-	var err error
-	ir.discord, err = discordgo.New(discordBotPrefix + ir.secrets.AuthToken)
+	ir.discord, err := discordgo.New(GetBotToken())
 	if err != nil {
 		return err
 	}
