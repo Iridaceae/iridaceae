@@ -13,7 +13,6 @@ WORKDIR /app
 RUN apk --no-cache add git ca-certificates
 
 COPY --from=builder /iris/src/internal internal/
-COPY --from=builder /iris/src/defaults.env .
 COPY --from=builder /go/bin/tensroses-server .
 
 CMD exec /app/tensroses-server
