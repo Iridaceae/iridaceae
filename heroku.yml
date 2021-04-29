@@ -1,6 +1,4 @@
 build:
-  languages:
-    - go
   docker:
     worker: Dockerfile
 run:
