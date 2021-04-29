@@ -85,7 +85,7 @@ func TestNewManager(t *testing.T) {
 func TestManager_AddSource(t *testing.T) {
 	// NOTE: for future reference, when add more sources such as redispool and kubernetes add more test case here.
 	t.Run("add envsources", func(t *testing.T) {
-		var m = NewManager()
+		m := NewManager()
 		m.AddSource(&EnvSource{})
 		assertEqual(t, len(m.sources), 1)
 	})

@@ -6,13 +6,13 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/TensRoses/iris/pkg/belamcanda"
+	"github.com/TensRoses/iris/pkg/core"
 
 	"github.com/TensRoses/iris/internal/irislog"
 )
 
 const (
-	defaultConfigPath = "./deployments/defaults.env"
+	defaultConfigPath = "./defaults.env"
 )
 
 // type metricsOptions struct {
@@ -43,7 +43,7 @@ func main() {
 	// ....
 
 	// Start bela finally
-	ir := belamcanda.NewIris()
+	ir := core.NewIris()
 	err = ir.Start()
 	if err != nil {
 		logger.Error(err)

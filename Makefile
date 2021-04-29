@@ -7,7 +7,8 @@ GOGET=$(GOCMD) get
 GOMOD=$(GOCMD) mod
 
 # others params
-BINARY_NAME=tensrose
+BINARY_NAME=tensroses-server
+PKGDIR=pkg/cmd/tensroses-server/main.go
 PACKAGE_NAME=$(shell basename -s .git `git config --get remote.origin.url`)
 GOLANGCI_LINT_VERSION=1.39.0
 
@@ -25,7 +26,7 @@ help: ## display this help message
 .PHONY: all
 all: build
 build:
-	$(GOBUILD) -o $(BIN_FOLDER)/$(BINARY_NAME) -v pkg/cmd/tensroses-server/main.go
+	$(GOBUILD) -o $(BIN_FOLDER)/$(BINARY_NAME) -v $(PKGDIR)
 
 .PHONY: dev
 dev: clean build ## run iris in development
@@ -53,17 +54,23 @@ docker-build:
 docker-run:
 	docker run -t $(PACKAGE_NAME):latest
 
+# Tags should just follow github revision or hash instead of latest.
+.PHONY: docker-push
+docker-push: docker-build ## push docker images to registry
+	docker tag $(PACKAGE_NAME):latest aar0npham/iris-go:latest
+	docker push aar0npham/iris-go:latest
+
 .PHONY: build-all
 build-all: clean build ## build for all system and arch
 	mkdir -p $(DIST_FOLDER)
 	# creates /vendor
 	$(GOMOD) tidy && $(GOMOD) vendor
 	# [darwin/amd64]
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_darwin -v pkg/cmd/tensroses-server/main.go
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_darwin -v $(PKGDIR)
 	# [linux/amd64]
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_linux -v pkg/cmd/tensroses-server/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_linux -v $(PKGDIR)
 	# [windows/amd64]
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_windows.exe -v pkg/cmd/tensroses-server/main.go
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_windows.exe -v $(PKGDIR)
 
 .PHONY: ensure-tools
 ensure-tools: install-gofumports install-lint install-reflex ## ensure all dev tools

@@ -12,7 +12,7 @@ import (
 )
 
 func init() {
-	err := godotenv.Load("./deployments/defaults.env")
+	err := godotenv.Load("./defaults.env")
 	if err != nil {
 		dbLogger.Warn("Error loading env file: %s", err.Error())
 	}

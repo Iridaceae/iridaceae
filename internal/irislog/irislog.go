@@ -9,6 +9,74 @@ import (
 	"github.com/rs/zerolog"
 )
 
+const (
+	irisCtxKeys ctxKey = "irislog"
+	Disabled           = -1
+	Debug              = iota
+	Info
+	Warn
+	Error
+)
+
+var (
+	// StdLogger Logger can be used right out of the box.
+	// Can also be replaced by a custom configured one using Set(*Logger).
+	StdLogger *IrisLogger
+	cfg       Config
+	// NOTE: future reference we also want to configure a log Config accessed for users using configparser.
+)
+
+// IrisLogger defines a default logger for iris that wraps arround rs/zerolog.
+type IrisLogger struct {
+	Level      int
+	Version    string
+	Revision   string
+	StdLog     zerolog.Logger
+	ErrLog     zerolog.Logger
+	dynafields []interface{}
+}
+
+// Config defines config for IrisLogger.
+type Config struct {
+	name       string
+	level      int
+	stfields   []interface{}
+	configured bool
+}
+
+type ctxKey string
+
+// String is human readable representation of a context key.
+func (c ctxKey) String() string {
+	return "mw-" + string(c)
+}
+
+func cfgSetup(name string, stfields []interface{}) {
+	if cfg.configured {
+		return
+	}
+
+	cfg.name = name
+	cfg.stfields = append(cfg.stfields, stfields...)
+	cfg.configured = true
+}
+
+// SetDynaFields acts as a receiver instance that will always append these key-value pairs to the output.
+func (i *IrisLogger) SetDynaFields(dynafields ...interface{}) {
+	i.dynafields = make([]interface{}, 2)
+	i.dynafields = append(i.dynafields, dynafields...)
+}
+
+// AddDynaFields acts as a receiver instance that add given key-value pairs to current logger.
+func (i *IrisLogger) AddDynaFields(key, value interface{}) {
+	i.dynafields = append(i.dynafields, []interface{}{key, value})
+}
+
+// ResetDynaFields will reset dynamic fields.
+func (i *IrisLogger) ResetDynaFields() {
+	i.dynafields = make([]interface{}, 2)
+}
+
 func init() {
 	StdLogger = NewLogger(Debug, "irislog")
 }
@@ -40,50 +108,22 @@ func NewLogger(level int, name string, stfields ...interface{}) *IrisLogger {
 		ErrLog: errl,
 	}
 
-	// NOTE: Possible workaround is to create a separate config struct for log?
+	// NOTE: Possible workaround is to create a separate Config struct for log?
 	if len(stfields) > 1 && !cfg.configured {
-		setup(name, stfields)
+		cfgSetup(name, stfields)
 		StdLogger = i
 	}
 
 	return i
 }
 
-// NewDevLogger creates development Logger.
-// Pretty logging for development mode.
-func NewDevLogger(level int, name string, stfields ...interface{}) *IrisLogger {
-	if level < Disabled || level > Error {
-		level = Info
-	}
-
-	stdl := zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout})
-	errl := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr})
-
-	setupZerologLevel(&stdl, level)
-	setupZerologLevel(&errl, level)
-
-	i := &IrisLogger{
-		Level:  level,
-		StdLog: stdl,
-		ErrLog: errl,
-	}
-
-	if len(stfields) > 1 && !cfg.configured {
-		setup(name, stfields)
-		StdLogger = i
-	}
-
-	return i
-}
-
-// Set setup base Logger
+// Set StdLogger to user's defined IrisLogger.
 func Set(i *IrisLogger) {
 	StdLogger = i
 }
 
-// Set setup base Logger
-// Can be used to chain with NewLogger to create a new Logger
-// l := irislog.NewLogger(irislog.Debug, "name", "version", "revision").Set() .
+// Set chains NewLogger with StdLogger to create a new logger.
+// l := irislog.NewLogger(irislog.Debug, "name", "version", "revision").Set().
 func (i *IrisLogger) Set() *IrisLogger {
 	StdLogger = i
 	return StdLogger
@@ -109,9 +149,10 @@ func FromCtx(ctx context.Context) (i *IrisLogger, fresh bool) {
 	return &l, false
 }
 
+// Debug logs.
 func (i IrisLogger) Debug(meta ...interface{}) {
 	if len(meta) > 0 {
-		i.debugf(stringify(meta[0]), meta[1:len(meta)])
+		i.debugf(stringify(meta[0]), meta[1:])
 	}
 }
 
@@ -124,9 +165,10 @@ func (i IrisLogger) debugf(message string, fields []interface{}) {
 	ie.Msg(message)
 }
 
+// Info logs.
 func (i IrisLogger) Info(meta ...interface{}) {
 	if len(meta) > 0 {
-		i.infof(stringify(meta[0]), meta[1:len(meta)])
+		i.infof(stringify(meta[0]), meta[1:])
 	}
 }
 
@@ -140,9 +182,10 @@ func (i IrisLogger) infof(message string, fields []interface{}) {
 	ie.Msg(message)
 }
 
+// Warn logs.
 func (i IrisLogger) Warn(meta ...interface{}) {
 	if len(meta) > 0 {
-		i.warnf(stringify(meta[0]), meta[1:len(meta)])
+		i.warnf(stringify(meta[0]), meta[1:])
 	}
 }
 
@@ -156,9 +199,10 @@ func (i IrisLogger) warnf(message string, fields []interface{}) {
 	ie.Msg(message)
 }
 
+// Error logs.
 func (i IrisLogger) Error(err error, meta ...interface{}) {
 	if len(meta) > 0 {
-		i.errorf(err, stringify(meta[0]), meta[1:len(meta)])
+		i.errorf(err, stringify(meta[0]), meta[1:])
 		return
 	}
 	i.errorf(err, "", nil)
@@ -227,7 +271,7 @@ func stringify(val interface{}) string {
 	}
 }
 
-// UpdateLogLevel updates log level
+// UpdateLogLevel updates log level.
 func (i *IrisLogger) UpdateLogLevel(level int) {
 	// don't downgrade if current is Error
 	current := Error
@@ -240,7 +284,7 @@ func (i *IrisLogger) UpdateLogLevel(level int) {
 	}
 }
 
-// this will setup correct log level for our zerolog
+// this will setup correct log level for our zerolog.
 func setupZerologLevel(l *zerolog.Logger, level int) {
 	switch level {
 	case -1:

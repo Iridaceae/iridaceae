@@ -12,7 +12,7 @@ const name string = "dbstore_service"
 
 var (
 	rev      = getRevision()
-	dbLogger = irislog.NewLogger(irislog.Debug, name, "revision", rev)
+	dbLogger = irislog.NewLogger(irislog.Debug, name, "revision", rev).Set()
 	Session  *mgo.Session
 	users    *mgo.Collection
 	// should be mongodb://app:password_here@shard:27017,another-shard:27017.
