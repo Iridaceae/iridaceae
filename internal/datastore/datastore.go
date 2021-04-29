@@ -35,10 +35,10 @@ func NewUser(did, dit, guid, minutes string) (string, error) {
 	m, _ := strconv.Atoi(minutes)
 	oid := bson.NewObjectId()
 	newEntry := User{
-		Id:             oid,
-		DiscordId:      did,
+		ID:             oid,
+		DiscordID:      did,
 		DiscordTag:     dit,
-		GuidId:         guid,
+		GUIDID:         guid,
 		MinutesStudied: m,
 	}
 	insertErr := insert(newEntry)

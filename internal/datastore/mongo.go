@@ -50,6 +50,6 @@ func update(discordID string, mins int) error {
 
 	newMin := u.MinutesStudied + mins
 
-	err := users.Update(bson.M{"discordid": u.DiscordId}, bson.M{"$set": bson.M{"minutesstudied": newMin}})
+	err := users.Update(bson.M{"discordid": u.DiscordID}, bson.M{"$set": bson.M{"minutesstudied": newMin}})
 	return err
 }

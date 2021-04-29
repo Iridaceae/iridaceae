@@ -155,7 +155,10 @@ func (ir *Iris) onMessageReceived(s *discordgo.Session, m *discordgo.MessageCrea
 			if f.handler != nil {
 				f.handler(s, m, rest)
 			} else {
-				s.ChannelMessageSend(m.ChannelID, "Command error/not supported - dm **@aarnphm**")
+				_, err := s.ChannelMessageSend(m.ChannelID, "Command error/not supported - dm **@aarnphm**")
+				if err != nil {
+					ir.logger.Warn(err.Error())
+				}
 			}
 		}
 	}
@@ -171,24 +174,24 @@ func (ir *Iris) onPomEnded(notif NotifyInfo, completed bool) {
 		notifTitle string
 		notifDesc  string
 	)
-	user, er := ir.discord.User(notif.User.DiscordId)
+	user, er := ir.discord.User(notif.User.DiscordID)
 	if er == nil {
 		toMention = append(toMention, user.Mention())
 	}
 
 	if completed {
 		// update users' progress to databse
-		err = datastore.FetchUser(notif.User.DiscordId)
+		err = datastore.FetchUser(notif.User.DiscordID)
 		if err != nil {
 			// create new users entry
-			hash, err = datastore.NewUser(notif.User.DiscordId, notif.User.DiscordTag, notif.User.GuidId, pomDuration.String())
-			ir.logger.Info("inserted %s to mongoDB. Hash: %s", notif.User.DiscordId, hash)
+			hash, err = datastore.NewUser(notif.User.DiscordID, notif.User.DiscordTag, notif.User.GUIDID, pomDuration.String())
+			ir.logger.Info("inserted %s to mongoDB. Hash: %s", notif.User.DiscordID, hash)
 			if err != nil {
 				ir.logger.Warn(err.Error())
 			}
 		} else {
 			// users already in database, just updates timing
-			err = datastore.UpdateUser(notif.User.DiscordId, int(pomDuration.Minutes()))
+			err = datastore.UpdateUser(notif.User.DiscordID, int(pomDuration.Minutes()))
 			if err != nil {
 				ir.logger.Warn(err.Error())
 			}
@@ -217,9 +220,15 @@ func (ir *Iris) onPomEnded(notif NotifyInfo, completed bool) {
 			Embed:   embed,
 		}
 
-		ir.discord.ChannelMessageSendComplex(notif.User.ChannelId, data)
+		_, err := ir.discord.ChannelMessageSendComplex(notif.User.ChannelID, data)
+		if err != nil {
+			ir.logger.Warn(err.Error())
+		}
 	} else {
-		ir.discord.ChannelMessageSend(notif.User.ChannelId, fmt.Sprintf("%s, pom canceled!", user.Mention()))
+		_, err := ir.discord.ChannelMessageSend(notif.User.ChannelID, fmt.Sprintf("%s, pom canceled!", user.Mention()))
+		if err != nil {
+			ir.logger.Warn(err.Error())
+		}
 	}
 
 	// ir.metrics.RecordRunningPoms(int64(ir.poms.Count()))
@@ -253,10 +262,10 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 	notif := NotifyInfo{
 		TitleID: ex,
 		User: &datastore.User{
-			DiscordId:  m.Author.ID,
+			DiscordID:  m.Author.ID,
 			DiscordTag: m.Author.Discriminator,
-			GuidId:     channel.GuildID,
-			ChannelId:  m.ChannelID,
+			GUIDID:     channel.GuildID,
+			ChannelID:  m.ChannelID,
 		},
 	}
 
@@ -283,23 +292,38 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 			Content: content,
 			Embed:   embed,
 		}
-		s.ChannelMessageSendComplex(m.ChannelID, data)
+		_, err := s.ChannelMessageSendComplex(m.ChannelID, data)
+		if err != nil {
+			ir.logger.Warn(err.Error())
+		}
 	} else {
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("A pomodoro is already running for %s", m.Author.Mention()))
+		_, err := s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("A pomodoro is already running for %s", m.Author.Mention()))
+		if err != nil {
+			ir.logger.Warn(err.Error())
+		}
 	}
 }
 
 func (ir *Iris) onCmdCancelPom(s *discordgo.Session, m *discordgo.MessageCreate, ex string) {
 	if exists := ir.poms.RemoveIfExists(m.Author.ID); !exists {
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("No pom is currently running for %s", m.Author.Mention()))
+		_, err := s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("No pom is currently running for %s", m.Author.Mention()))
+		if err != nil {
+			ir.logger.Warn(err.Error())
+		}
 	}
 	// if this removal is success then call onPomEnded
 }
 
 func (ir *Iris) onCmdHelp(s *discordgo.Session, m *discordgo.MessageCreate, ex string) {
-	s.ChannelMessageSend(m.ChannelID, ir.helpMessage)
+	_, err := s.ChannelMessageSend(m.ChannelID, ir.helpMessage)
+	if err != nil {
+		ir.logger.Warn(err.Error())
+	}
 }
 
 func (ir *Iris) onCmdInvite(s *discordgo.Session, m *discordgo.MessageCreate, ex string) {
-	s.ChannelMessageSend(m.ChannelID, ir.inviteMessage)
+	_, err := s.ChannelMessageSend(m.ChannelID, ir.inviteMessage)
+	if err != nil {
+		ir.logger.Warn(err.Error())
+	}
 }
