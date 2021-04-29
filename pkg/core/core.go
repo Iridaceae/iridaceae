@@ -51,8 +51,8 @@ type Iris struct {
 	// metrics metrics.Recorder
 }
 
-// NewIris creates a new instance of Iris that can deploy over Heroku.
-func NewIris() *Iris {
+// New creates a new instance of Iris that can deploy over Heroku.
+func New() *Iris {
 	// setup new logLevel
 	logger := irislog.NewLogger(irislog.Debug, "botevents").Set()
 
@@ -167,40 +167,40 @@ func (ir *Iris) onMessageReceived(s *discordgo.Session, m *discordgo.MessageCrea
 
 // onPomEnded handles when Pom ends. It should add new users to current mongoDB if users hasn't existed in the database, else updates the minutes studied.
 // NOTE: this should be refactored into multiple functions.
-func (ir *Iris) onPomEnded(notif NotifyInfo, completed bool) {
+func (ir *Iris) onPomEnded(notify NotifyInfo, completed bool) {
 	var (
-		err        error
-		hash       string
-		toMention  []string
-		notifTitle string
-		notifDesc  string
+		err         error
+		hash        string
+		toMention   []string
+		notifyTitle string
+		notifyDesc  string
 	)
-	user, er := ir.discord.User(notif.User.DiscordID)
+	user, er := ir.discord.User(notify.User.DiscordID)
 	if er == nil {
 		toMention = append(toMention, user.Mention())
 	}
 
 	if completed {
-		// update users' progress to databse
-		err = datastore.FetchUser(notif.User.DiscordID)
+		// update users' progress to database
+		err = datastore.FetchUser(notify.User.DiscordID)
 		if err != nil {
 			// create new users entry
-			hash, err = datastore.NewUser(notif.User.DiscordID, notif.User.DiscordTag, notif.User.GUIDID, pomDuration.String())
-			ir.logger.Info("inserted %s to mongoDB. Hash: %s", notif.User.DiscordID, hash)
+			hash, err = datastore.NewUser(notify.User.DiscordID, notify.User.DiscordTag, notify.User.GUIDID, pomDuration.String())
+			ir.logger.Info(fmt.Sprintf("inserted %s to mongoDB. Hash: %s", notify.User.DiscordID, hash))
 			if err != nil {
 				ir.logger.Warn(err.Error())
 			}
 		} else {
 			// users already in database, just updates timing
-			err = datastore.UpdateUser(notif.User.DiscordID, int(pomDuration.Minutes()))
+			err = datastore.UpdateUser(notify.User.DiscordID, int(pomDuration.Minutes()))
 			if err != nil {
 				ir.logger.Warn(err.Error())
 			}
 		}
-		// notif title
-		notifTitle = "Pomodoro"
+		// notify title
+		notifyTitle = "Pomodoro"
 
-		notifDesc = ":timer: Work cycle complete. :timer:\n :blush: Time to take a break! :blush:"
+		notifyDesc = ":timer: Work cycle complete. :timer:\n :blush: Time to take a break! :blush:"
 
 		message := ""
 
@@ -211,9 +211,9 @@ func (ir *Iris) onPomEnded(notif NotifyInfo, completed bool) {
 
 		embed := &discordgo.MessageEmbed{
 			Type:        "rich",
-			Title:       notifTitle,
+			Title:       notifyTitle,
 			Color:       msgColor,
-			Description: notifDesc,
+			Description: notifyDesc,
 		}
 
 		data := &discordgo.MessageSend{
@@ -221,18 +221,16 @@ func (ir *Iris) onPomEnded(notif NotifyInfo, completed bool) {
 			Embed:   embed,
 		}
 
-		_, err := ir.discord.ChannelMessageSendComplex(notif.User.ChannelID, data)
+		_, err := ir.discord.ChannelMessageSendComplex(notify.User.ChannelID, data)
 		if err != nil {
 			ir.logger.Warn(err.Error())
 		}
 	} else {
-		_, err := ir.discord.ChannelMessageSend(notif.User.ChannelID, fmt.Sprintf("%s, pom canceled!", user.Mention()))
+		_, err := ir.discord.ChannelMessageSend(notify.User.ChannelID, fmt.Sprintf("%s, pom canceled!", user.Mention()))
 		if err != nil {
 			ir.logger.Warn(err.Error())
 		}
 	}
-
-	// ir.metrics.RecordRunningPoms(int64(ir.poms.Count()))
 }
 
 func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, ex string) {
@@ -273,20 +271,20 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 	if ir.poms.CreateIfEmpty(pomDuration, ir.onPomEnded, notif) {
 		// notif title
 		var (
-			notifTitle string
-			notifDesc  string
+			notifyTitle string
+			notifyDesc  string
 		)
-		notifTitle = "Pomodoro"
+		notifyTitle = "Pomodoro"
 
-		notifDesc = fmt.Sprintf(":peach: Your timer is set to **%d minutes** :peach:\n :blush: Happy working :blush:", int(pomDuration.Minutes()))
+		notifyDesc = fmt.Sprintf(":peach: Your timer is set to **%d minutes** :peach:\n :blush: Happy working :blush:", int(pomDuration.Minutes()))
 
 		content := fmt.Sprintf("%s\n", m.Author.Mention())
 
 		embed := &discordgo.MessageEmbed{
 			Type:        "rich",
-			Title:       notifTitle,
+			Title:       notifyTitle,
 			Color:       msgColor,
-			Description: notifDesc,
+			Description: notifyDesc,
 		}
 
 		data := &discordgo.MessageSend{
@@ -306,23 +304,21 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 }
 
 func (ir *Iris) onCmdStatus(s *discordgo.Session, m *discordgo.MessageCreate, ex string) {
-
-	// notif title
 	var (
-		notifTitle string
-		notifDesc  string
+		notifyTitle string
+		notifyDesc  string
 	)
-	notifTitle = "Status"
+	notifyTitle = "Status"
 
-	notifDesc = fmt.Sprintf("Amount of work time: *%s*", datastore.FetchNumHours(m.Author.ID))
+	notifyDesc = fmt.Sprintf("Amount of work time: *%s*", datastore.FetchNumHours(m.Author.ID))
 
 	content := fmt.Sprintf("%s\n", m.Author.Mention())
 
 	embed := &discordgo.MessageEmbed{
 		Type:        "rich",
-		Title:       notifTitle,
+		Title:       notifyTitle,
 		Color:       msgColor,
-		Description: notifDesc,
+		Description: notifyDesc,
 	}
 
 	data := &discordgo.MessageSend{
