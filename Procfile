@@ -1,1 +1,1 @@
-worker: ./bin/tensrose
+worker: ./bin/tensroses-server
