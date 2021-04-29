@@ -54,7 +54,7 @@ type Iris struct {
 // NewIris creates a new instance of Iris that can deploy over Heroku.
 func NewIris() *Iris {
 	// setup new logLevel
-	logger := irislog.NewLogger(logLevel, "botevents")
+	logger := irislog.NewLogger(irislog.Debug, "botevents").Set()
 
 	err := LoadConfig()
 	if err != nil {
@@ -76,7 +76,8 @@ func (ir *Iris) registerCmdHandlers() {
 	ir.cmdHandlers = map[string]botCommand{
 		"help":   {handler: ir.onCmdHelp, desc: "Show this help message", exampleParams: ""},
 		"pom":    {handler: ir.onCmdStartPom, desc: "Start a pom work cycle. You can optionally specify the period of time (default: 25 mins)", exampleParams: "50"},
-		"stop":   {handler: ir.onCmdCancelPom, desc: "cancle current pom cycle", exampleParams: ""},
+		"stop":   {handler: ir.onCmdCancelPom, desc: "cancel current pom cycle", exampleParams: ""},
+		"status": {handler: ir.onCmdStatus, desc: "get status of given users", exampleParams: ""},
 		"invite": {handler: ir.onCmdInvite, desc: "Create an invite link you can use to have the bot join the server", exampleParams: ""},
 		// "simp":   {handler: ir.onCmdSimp, desc: "notify another friend with the good stuff", exampleParams: ""},
 	}
@@ -301,6 +302,36 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 		if err != nil {
 			ir.logger.Warn(err.Error())
 		}
+	}
+}
+
+func (ir *Iris) onCmdStatus(s *discordgo.Session, m *discordgo.MessageCreate, ex string) {
+
+	// notif title
+	var (
+		notifTitle string
+		notifDesc  string
+	)
+	notifTitle = "Status"
+
+	notifDesc = fmt.Sprintf("Amount of work time: *%s*", datastore.FetchNumHours(m.Author.ID))
+
+	content := fmt.Sprintf("%s\n", m.Author.Mention())
+
+	embed := &discordgo.MessageEmbed{
+		Type:        "rich",
+		Title:       notifTitle,
+		Color:       msgColor,
+		Description: notifDesc,
+	}
+
+	data := &discordgo.MessageSend{
+		Content: content,
+		Embed:   embed,
+	}
+	_, err := s.ChannelMessageSendComplex(m.ChannelID, data)
+	if err != nil {
+		ir.logger.Warn(err.Error())
 	}
 }
 

@@ -61,7 +61,7 @@ docker-push: docker-build ## push docker images to registry
 	docker push aar0npham/iris-go:latest
 
 .PHONY: build-all
-build-all: clean build ## build for all system and arch
+build-all: clean build docker-build ## build for all system and arch
 	mkdir -p $(DIST_FOLDER)
 	# creates /vendor
 	$(GOMOD) tidy && $(GOMOD) vendor

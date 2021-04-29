@@ -55,3 +55,23 @@ func FetchUser(did string) error {
 func UpdateUser(did string, minutes int) error {
 	return update(did, minutes)
 }
+
+// FetchNumHours returns total number of hours of given users.
+func FetchNumHours(did string) string {
+	u, err := fetch(did)
+	if err != nil {
+		dbLogger.Warn("err", fmt.Sprintf("error while fetching users %s: %s", did, err.Error()))
+	}
+	return toHumanTime(u.MinutesStudied)
+}
+
+// since time is captured in minutes, it will omit the following format 1d2h4m.
+func toHumanTime(time int) string {
+	var day = time / 60 / 24
+	var hours = time / 60 % 24
+	var minutes = time % 60
+	if day > 0 {
+		return fmt.Sprintf("%dd %dh %dm", day, hours, minutes)
+	}
+	return fmt.Sprintf("%dh %dm", hours, minutes)
+}

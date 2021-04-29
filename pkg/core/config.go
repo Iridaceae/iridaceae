@@ -5,16 +5,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TensRoses/iris/internal/irislog"
-
 	"github.com/bwmarrin/discordgo"
 
 	"github.com/TensRoses/iris/internal/configparser"
 )
 
 const (
-	logLevel            int           = irislog.Debug
-	msgColor            int           = 100
+	msgColor            int           = 166
 	defaultPomDuration  time.Duration = 25 * time.Minute
 	baseAuthURLTemplate string        = "https://discord.com/api/oauth2/authorize?client_id=%s&scope=bot"
 )

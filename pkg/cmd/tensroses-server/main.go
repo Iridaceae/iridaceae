@@ -24,7 +24,7 @@ const (
 
 // depart all core run into internal.
 func main() {
-	logger := irislog.NewLogger(irislog.Debug, "tensroses-server")
+	logger := irislog.NewLogger(irislog.Debug, "tensroses-server").Set()
 	defer logger.Info("--shutdown--")
 
 	// parse configparser and secrets parent directory since viper will handle configparser
@@ -36,7 +36,7 @@ func main() {
 
 	err := godotenv.Load(*cpath)
 	if err != nil {
-		logger.Warn("Error loading env file: %s", err.Error())
+		logger.Warn(fmt.Sprintf("Error loading env file: %s", err.Error()))
 	}
 
 	// setup metrics here
