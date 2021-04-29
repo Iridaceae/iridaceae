@@ -3,16 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 
-	"github.com/TensRoses/iris/pkg/belamcanda"
+	"github.com/joho/godotenv"
 
-	"github.com/TensRoses/iris/internal/configparser"
+	"github.com/TensRoses/iris/pkg/core"
+
 	"github.com/TensRoses/iris/internal/irislog"
 )
 
 const (
-	defaultConfigPath = "./deployments"
+	defaultConfigPath = "./defaults.env"
 )
 
 // type metricsOptions struct {
@@ -24,8 +24,8 @@ const (
 
 // depart all core run into internal.
 func main() {
-	logger := irislog.CreateLogger("tensroses-server")
-	defer logger.Infof("--shutdown %s--", logger.Name)
+	logger := irislog.NewLogger(irislog.Debug, "tensroses-server")
+	defer logger.Info("--shutdown--")
 
 	// parse configparser and secrets parent directory since viper will handle configparser
 	cpath := flag.String("cpath", defaultConfigPath, fmt.Sprintf("Config path for storing default configparser and secrets, default: %s", defaultConfigPath))
@@ -34,28 +34,18 @@ func main() {
 
 	flag.Parse()
 
-	// load configparser and secrets
-	cfg, err := configparser.LoadConfigFile(*cpath)
+	err := godotenv.Load(*cpath)
 	if err != nil {
-		logger.Fatal(err)
-	}
-
-	// NOTE: possible caveats with multiple instance of viper
-	// https://stackoverflow.com/a/47185439/8643197
-	secret, err := configparser.LoadSecretsFile(*cpath)
-	if err != nil {
-		logger.Warnf("%s, loading from ENV instead", err.Error())
-		secret.AuthToken = os.Getenv("AUTH_TOKEN")
-		secret.ClientID = os.Getenv("CLIENTID")
+		logger.Warn("Error loading env file: %s", err.Error())
 	}
 
 	// setup metrics here
 	// ....
 
 	// Start bela finally
-	ir := belamcanda.NewIris(*cfg, *secret, *logger)
+	ir := core.NewIris()
 	err = ir.Start()
 	if err != nil {
-		logger.Fatal(err)
+		logger.Error(err)
 	}
 }

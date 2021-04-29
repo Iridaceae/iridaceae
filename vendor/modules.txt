@@ -1,6 +1,8 @@
 # github.com/bwmarrin/discordgo v0.23.2
 ## explicit
 github.com/bwmarrin/discordgo
+# github.com/davecgh/go-spew v1.1.0
+github.com/davecgh/go-spew/spew
 # github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 ## explicit
 github.com/globalsign/mgo
@@ -16,11 +18,16 @@ github.com/gorilla/websocket
 github.com/joho/godotenv
 # github.com/kr/pretty v0.1.0
 ## explicit
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/rs/zerolog v1.21.0
 ## explicit
 github.com/rs/zerolog
 github.com/rs/zerolog/internal/cbor
 github.com/rs/zerolog/internal/json
+# github.com/stretchr/testify v1.7.0
+## explicit
+github.com/stretchr/testify/assert
 # golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/nacl/secretbox
@@ -30,3 +37,5 @@ golang.org/x/crypto/salsa20/salsa
 golang.org/x/sys/cpu
 # gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
 ## explicit
+# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+gopkg.in/yaml.v3

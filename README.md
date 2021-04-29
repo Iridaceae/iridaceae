@@ -6,7 +6,7 @@ Pomodoro bot. Self-develop into a general purpose bot
 
 ### fyi.
 
-Stack: mongoDB - discordgo - Heroku
+Stack: mongoDB - discordgo - Heroku - Github Action
 
 
 ### install.
@@ -22,15 +22,13 @@ $ go install github.com/TensRoses/iris/cmd/tensrose
 ```bash
 .
 ├── bin
-├── deployments
-├── hermodactylus     # bots front-facing api,                                     # lg: Rust
-├── internal          # internal core of iris, logging, config handling            # lg: Go
-├── pkg
-│   ├── belamcanda    # bot logics, including message queries with configstore     # lg: Go
-│   ├── cmd           # bot cli                                                    # lg: Go
-│   └── pardanthopsis # handles commands building and future commands plugins      # lg: Go
-├── scripts
-└── test
+├── web           # bots front-facing api,                                  # lg: Rust
+├── internal      # internal core of iris, logging, config handling         # lg: Go
+├── pkg                                                                     
+│   ├── core      # bot logics, including message queries with configstore  # lg: Go
+│   ├── cmd       # bot cli                                                 # lg: Go
+│   └── commands  # handles commands building and future commands plugins   # lg: Go
+└── scripts
 ```
 
 ### inspirations.
@@ -42,5 +40,5 @@ $ go install github.com/TensRoses/iris/cmd/tensrose
 > <div align="center"><i>why <strong>iris</strong> when we already had </i><a href="https://github.com/jonas747/yagpdb"><strong>yagpdb</strong></a>?</div>
 - `yagpdb` are pretty clunky and bloated in the sense that the maintainer uses a lot of boilerplate, whereas `iris` goals are to stay minimal and bloat-free as possible
 - `yagpdb` structures are pretty messy and harder for development and thus `iris` aims to make it more developer-friendly as well as user-friendly
-- `iris` got a lot of inspirations from `yagpdb` but takes a more lightweight approaches considering structures and deployments, refers to [here](pkg/belamcanda/README) for more details
+- `iris` got a lot of inspirations from `yagpdb` but takes a more lightweight approaches considering structures and deployments, refers to [here](pkg/README) for more details
 - `iris` is pretty much <strong>WIP</strong> so any PR and help are appreciated
