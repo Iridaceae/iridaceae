@@ -26,7 +26,7 @@ var (
 	// NOTE: future reference we also want to configure a log Config accessed for users using configparser.
 )
 
-// IrisLogger defines a default logger for iris that wraps arround rs/zerolog.
+// IrisLogger defines a default logger for iris that wraps around rs/zerolog.
 type IrisLogger struct {
 	Level      int
 	Version    string
