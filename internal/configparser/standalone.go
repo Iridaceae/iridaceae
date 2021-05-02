@@ -3,9 +3,6 @@ package configparser
 // Standalone is a singleton config manager that acts as a general manager for iris.
 var Standalone = NewManager()
 
-// TestParser acts as a test config manager.
-var TestParser = NewManager()
-
 // AddSource wraps around Manager.AddSource and can be accessed via configparser.AddSource.
 func AddSource(s Source) {
 	Standalone.AddSource(s)

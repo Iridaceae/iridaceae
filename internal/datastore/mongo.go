@@ -11,7 +11,18 @@ import (
 	"github.com/globalsign/mgo/bson"
 )
 
+// User defined a user info with stats.
+type User struct {
+	ID             bson.ObjectId `bson:"_id,omitempty"`
+	GUIDID         string        `bson:"guidid"`
+	DiscordID      string        `bson:"discordid"`
+	DiscordTag     string        `bson:"discordtag"`
+	ChannelID      string        `bson:"channelid"`
+	MinutesStudied int           `bson:"minutesstudied"`
+}
+
 func initMgoSessions(dbname, ip string) {
+	// our ip will have the full format of given mongo shard + port.
 	dbLogger.Info("attempting to connect to mongo via MONGO_ADDR")
 
 	// https://stackoverflow.com/a/42522753/8643197.

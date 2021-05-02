@@ -35,6 +35,9 @@ dev: clean build ## run iris in development
 
 .PHONY: clean
 clean:
+	# creates /vendor
+	$(GOMOD) tidy && $(GOMOD) vendor
+	# then we clean
 	$(GOCLEAN)
 	rm -rf $(DIST_FOLDER)
 
@@ -61,10 +64,8 @@ docker-push: docker-build ## push docker images to registry
 	docker push aar0npham/iris-go:latest
 
 .PHONY: build-all
-build-all: clean build ## build for all system and arch
+build-all: clean build docker-build ## build for all system and arch
 	mkdir -p $(DIST_FOLDER)
-	# creates /vendor
-	$(GOMOD) tidy && $(GOMOD) vendor
 	# [darwin/amd64]
 	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_darwin -v $(PKGDIR)
 	# [linux/amd64]

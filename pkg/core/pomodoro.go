@@ -77,11 +77,11 @@ func (u *UserPomodoroMap) CreateIfEmpty(duration time.Duration, onWorkEnd TaskCa
 
 	wasCreated := false
 	if _, exists := u.userToPom[notify.User.DiscordID]; !exists {
-		doneInMap := func(notifs NotifyInfo, completed bool) {
+		doneInMap := func(notify NotifyInfo, completed bool) {
 			// only called when it is done then we can use the mutex
 			// cancellation won't trigger onWorkEnd since startPom is already done at this point
-			u.RemoveIfExists(notifs.User.DiscordID)
-			onWorkEnd(notifs, completed)
+			u.RemoveIfExists(notify.User.DiscordID)
+			onWorkEnd(notify, completed)
 		}
 
 		u.userToPom[notify.User.DiscordID] = NewPom(duration, doneInMap, notify)
