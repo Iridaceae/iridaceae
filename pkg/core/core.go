@@ -56,7 +56,7 @@ func New() *Iris {
 	// setup new logLevel
 	logger := irislog.NewLogger(irislog.Debug, "botevents").Set()
 
-	err := LoadConfig()
+	err := LoadIrisConfig()
 	if err != nil {
 		logger.Error(err)
 	}

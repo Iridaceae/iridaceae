@@ -67,9 +67,9 @@ func FetchNumHours(did string) string {
 
 // since time is captured in minutes, it will omit the following format 1d2h4m.
 func toHumanTime(time int) string {
-	var day = time / 60 / 24
-	var hours = time / 60 % 24
-	var minutes = time % 60
+	day := time / 60 / 24
+	hours := time / 60 % 24
+	minutes := time % 60
 	if day > 0 {
 		return fmt.Sprintf("%dd %dh %dm", day, hours, minutes)
 	}

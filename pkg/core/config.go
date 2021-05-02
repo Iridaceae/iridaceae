@@ -21,7 +21,7 @@ var (
 	ClientID, _      = configparser.Register("iris.clientid", "ClientID of the bot", nil)
 	ClientSecrets, _ = configparser.Register("iris.clientsecret", "ClientSecret of the bot", nil)
 	BotToken, _      = configparser.Register("iris.authtoken", "authentication token of the bot", nil)
-	CmdPrefix, _     = configparser.Register("iris.cmdprefix", "prefix for iris", "!ir ")
+	CmdPrefix, _     = configparser.Register("iris.cmdprefix", "prefix for iris", "/i ")
 	Loaded           = false
 
 	// VERSION is defined via git.
@@ -30,8 +30,8 @@ var (
 	IrisUser    *discordgo.User
 )
 
-// LoadConfig loads required configs.
-func LoadConfig() error {
+// LoadIrisConfig loads required configs.
+func LoadIrisConfig() error {
 	if Loaded {
 		return nil
 	}

@@ -110,6 +110,8 @@ func (opt *Options) UpdateValue(val interface{}) {
 		opt.LoadedValue = toStrVal(val)
 	case int:
 		opt.LoadedValue = toIntVal(val)
+	case float64:
+		opt.LoadedValue = toFloat64Val(val)
 	}
 }
 
@@ -126,6 +128,11 @@ func (opt *Options) GetInt() int {
 // GetBool are a getter bool for &Options.LoadedValue.
 func (opt *Options) GetBool() bool {
 	return toBoolVal(opt.LoadedValue)
+}
+
+// GetFloat are a getter float64 for &Options.LoadedValue.
+func (opt *Options) GetFloat() float64 {
+	return toFloat64Val(opt.LoadedValue)
 }
 
 func toStrVal(i interface{}) string {
@@ -148,7 +155,19 @@ func toIntVal(i interface{}) int {
 	case int:
 		return t
 	}
+	return 0
+}
 
+func toFloat64Val(i interface{}) float64 {
+	switch t := i.(type) {
+	case string:
+		n, _ := strconv.ParseFloat(t, 64)
+		return n
+	case int:
+		return float64(t)
+	case float64:
+		return t
+	}
 	return 0
 }
 
