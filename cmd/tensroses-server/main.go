@@ -4,11 +4,11 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/TensRoses/iris/internal"
+
 	"github.com/joho/godotenv"
 
 	"github.com/TensRoses/iris/pkg/core"
-
-	"github.com/TensRoses/iris/internal/irislog"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 
 // depart all core run into internal.
 func main() {
-	logger := irislog.NewLogger(irislog.Debug, "tensroses-server").Set()
+	logger := internal.NewLogger(internal.Debug, "tensroses-server").Set()
 	defer logger.Info("--shutdown--")
 
 	// parse configparser and secrets parent directory since viper will handle configparser.

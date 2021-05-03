@@ -8,7 +8,7 @@ GOMOD=$(GOCMD) mod
 
 # others params
 BINARY_NAME=tensroses-server
-PKGDIR=pkg/cmd/tensroses-server/main.go
+PKGDIR=cmd/tensroses-server/main.go
 PACKAGE_NAME=$(shell basename -s .git `git config --get remote.origin.url`)
 GOLANGCI_LINT_VERSION=1.39.0
 

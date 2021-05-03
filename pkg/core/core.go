@@ -12,10 +12,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/TensRoses/iris/internal"
+
 	"github.com/bwmarrin/discordgo"
 
 	"github.com/TensRoses/iris/internal/datastore"
-	"github.com/TensRoses/iris/internal/irislog"
 )
 
 // GetBotToken will handles authToken.
@@ -44,7 +45,7 @@ type Iris struct {
 	helpMessage   string
 	inviteMessage string
 	discord       *discordgo.Session
-	logger        *irislog.IrisLogger
+	logger        *internal.IrisLogger
 	cmdHandlers   map[string]botCommand
 	poms          UserPomodoroMap
 	// record metrics here
@@ -54,7 +55,7 @@ type Iris struct {
 // New creates a new instance of Iris that can deploy over Heroku.
 func New() *Iris {
 	// setup new logLevel
-	logger := irislog.NewLogger(irislog.Debug, "botevents").Set()
+	logger := internal.NewLogger(internal.Debug, "botevents").Set()
 
 	err := LoadIrisConfig()
 	if err != nil {

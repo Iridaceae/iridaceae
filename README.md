@@ -1,23 +1,40 @@
-# iris.
+<div align="center">
+    <h1 align="center">~ 虹彩 ~</h1>
+    <hr>
+    <p align="center">
+        <a href="https://pkg.go.dev/github.com/TensRoses/iris"><img alt="goref" src="https://pkg.go.dev/badge/github.com/TensRoses/iris.svg"></a>
+        <img alt="GitHub commit checks state" src="https://img.shields.io/github/checks-status/Iridaceae/iris/a29703a1367977d2867167fda8c4146aea6cd58e?style=flat-square">
+        <img alt="Codecov" src="https://img.shields.io/codecov/c/gh/Iridaceae/iris?style=flat-square">
+        <a href="https://github.com/Iridaceae/iris/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Iridaceae/iris?style=flat-square"></a>
+    </p>
+    <strong>
+        A general purpose discord bot written in Go (discord.go)<br>
+    </strong>
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/TensRoses/iris.svg)](https://pkg.go.dev/github.com/TensRoses/iris)
+</div>
 
-Pomodoro bot. Self-develop into a general purpose bot
-
-### fyi.
-
-Stack: mongoDB - discordgo - Heroku - Github Action
+# install.
 
 
-### install.
+<details>
+<summary>Stacks</summary>
 
-to install `tensrose` binary run
+<p>
+    <img alt="VimL" src="https://img.shields.io/badge/-Atlas-66d124?style=flat-square&logo=mongoDB&logoColor=white" />
+    <img alt="Go" src="https://img.shields.io/badge/-discordgo-46a2f1?style=flat-square&logo=go&logoColor=white" />
+    <img alt="Heroku" src="https://img.shields.io/badge/-Heroku-430098?style=flat-square&logo=heroku&logoColor=white" />
+    <img alt="git" src="https://img.shields.io/badge/-Github Actions-000000?style=flat-square&logo=GitHub&logoColor=white" />
+</p>
+
+</details>
+
+to install server binary do
 
 ```sh 
-$ go install github.com/TensRoses/iris/cmd/tensrose
+$ go install github.com/Iridaceae/iris/cmd/tensroses-server
 ```
 
-### folder structures.
+# folder structures.
 
 ```bash
 .
@@ -31,14 +48,14 @@ $ go install github.com/TensRoses/iris/cmd/tensrose
 └── scripts
 ```
 
-### inspirations.
-> <div align="center"><i>why <strong>Go</strong> not <strong>TS/JS</strong>?</i></div>
+# inspirations.
+> <div align="left"><i>why <strong>Go</strong> not <strong>TS/JS</strong>?</i></div>
 - TypeScript and JavaScripts are amazing, and the fact that web elements for Iris will use `React` and `Next.js`, refers to [here](https://github.com/TensRoses/dashboard)
 - Why Go then? Go is an awesome language with its interface and concurrency I just want to build a bot in Go :smile:
 - Also, front-facing API will be written in Rust as a way to learn the language.
 
-> <div align="center"><i>why <strong>iris</strong> when we already had </i><a href="https://github.com/jonas747/yagpdb"><strong>yagpdb</strong></a>?</div>
+> <div align="left"><i>why <strong>iris</strong> when we already had </i><a href="https://github.com/jonas747/yagpdb"><strong>yagpdb</strong></a>?</div>
 - `yagpdb` are pretty clunky and bloated in the sense that the maintainer uses a lot of boilerplate, whereas `iris` goals are to stay minimal and bloat-free as possible
 - `yagpdb` structures are pretty messy and harder for development and thus `iris` aims to make it more developer-friendly as well as user-friendly
 - `iris` got a lot of inspirations from `yagpdb` but takes a more lightweight approaches considering structures and deployments, refers to [here](pkg/README.md) for more details
-- `iris` is pretty much <strong>WIP</strong> so any PR and help are appreciated
+- `iris` is pretty much <strong>WIP</strong> so any <strong>PR</strong> and help are appreciated

@@ -1,5 +1,5 @@
 // Package irislog defines custom context logger wrapped around rs/zerolog
-package irislog
+package internal
 
 import (
 	"context"
@@ -123,7 +123,7 @@ func Set(i *IrisLogger) {
 }
 
 // Set chains NewLogger with StdLogger to create a new logger.
-// l := irislog.NewLogger(irislog.Debug, "name", "version", "revision").Set().
+// l := log.NewLogger(log.Debug, "name", "version", "revision").Set().
 func (i *IrisLogger) Set() *IrisLogger {
 	StdLogger = i
 	return StdLogger
