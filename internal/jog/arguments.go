@@ -91,7 +91,7 @@ func (a *Arguments) Len() int {
 
 // Get returns the nth arguments.
 func (a *Arguments) Get(n int) *Argument {
-	if a.Len() <= n {
+	if n < 0 || a.Len() <= n {
 		return &Argument{raw: ""}
 	}
 	return a.args[n]
@@ -110,6 +110,16 @@ func (a *Arguments) Remove(n int) {
 		raw += args.raw + " "
 	}
 	a.raw = strings.TrimSpace(raw)
+}
+
+// IndexOf returns the index of a argument in arguments.
+func (a *Arguments) IndexOf(arg string) int {
+	for i, v := range a.args {
+		if arg == v.raw {
+			return i
+		}
+	}
+	return -1
 }
 
 // AsCodeblock parses given arguments as codeblock.

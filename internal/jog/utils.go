@@ -27,13 +27,6 @@ func trimPreSuffix(s string, preSuffix string) string {
 	return strings.TrimPrefix(strings.TrimSuffix(s, preSuffix), preSuffix)
 }
 
-func equals(s1, s2 string, ignoreCase bool) bool {
-	if !ignoreCase {
-		return s1 == s2
-	}
-	return strings.EqualFold(strings.ToLower(s1), strings.ToLower(s2))
-}
-
 func arrayContains(arr []string, s string, ignoreCase bool) bool {
 	if ignoreCase {
 		s = strings.ToLower(s)

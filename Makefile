@@ -28,6 +28,10 @@ all: build
 build:
 	$(GOBUILD) -o $(BIN_FOLDER)/$(BINARY_NAME) -v $(PKGDIR)
 
+.PHONY: test
+test:
+	$(GOTEST) -v -race ./...
+
 .PHONY: dev
 dev: clean build ## run iris in development
 	ulimit -n 1000

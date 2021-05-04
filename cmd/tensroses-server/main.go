@@ -21,7 +21,7 @@ func main() {
 	defer logger.Info("--shutdown--")
 
 	// parse configparser and secrets parent directory since viper will handle configparser.
-	cpath := flag.String("cpath", defaultConfigPath, fmt.Sprintf("Config path for storing default configparser and secrets, default: %s", defaultConfigPath))
+	cpath := flag.String("cpath", defaultConfigPath, fmt.Sprintf("LogConfig path for storing default configparser and secrets, default: %s", defaultConfigPath))
 	// NOTE: this is when parsing options to get metrics from prom.
 	// var opts metricsOptions
 

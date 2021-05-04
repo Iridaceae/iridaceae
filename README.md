@@ -3,39 +3,22 @@
     <hr>
     <p align="center">
         <a href="https://pkg.go.dev/github.com/TensRoses/iris"><img alt="goref" src="https://pkg.go.dev/badge/github.com/TensRoses/iris.svg"></a>
+        <a href="https://goreportcard.com/report/github.com/Iridaceae/iris"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/Iridaceae/iris"></a>
+        <a href="https://github.com/Iridaceae/iris/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Iridaceae/iris?style=flat-square"></a>
         <img alt="GitHub commit checks state" src="https://img.shields.io/github/checks-status/Iridaceae/iris/a29703a1367977d2867167fda8c4146aea6cd58e?style=flat-square">
         <img alt="Codecov" src="https://img.shields.io/codecov/c/gh/Iridaceae/iris?style=flat-square">
-        <a href="https://github.com/Iridaceae/iris/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Iridaceae/iris?style=flat-square"></a>
     </p>
     <strong>
         A general purpose discord bot written in Go (discord.go)<br>
     </strong>
-
 </div>
 
-# install.
-
-
-<details>
-<summary>Stacks</summary>
-
-<p>
-    <img alt="VimL" src="https://img.shields.io/badge/-Atlas-66d124?style=flat-square&logo=mongoDB&logoColor=white" />
-    <img alt="Go" src="https://img.shields.io/badge/-discordgo-46a2f1?style=flat-square&logo=go&logoColor=white" />
-    <img alt="Heroku" src="https://img.shields.io/badge/-Heroku-430098?style=flat-square&logo=heroku&logoColor=white" />
-    <img alt="git" src="https://img.shields.io/badge/-Github Actions-000000?style=flat-square&logo=GitHub&logoColor=white" />
-</p>
-
-</details>
-
-to install server binary do
-
+## install. <img alt="VimL" src="https://img.shields.io/badge/-Atlas-66d124?style=flat-square&logo=mongoDB&logoColor=white" />&nbsp;<img alt="Go" src="https://img.shields.io/badge/-discordgo-46a2f1?style=flat-square&logo=go&logoColor=white" />&nbsp;<img alt="Heroku" src="https://img.shields.io/badge/-Heroku-430098?style=flat-square&logo=heroku&logoColor=white" />&nbsp;<img alt="git" src="https://img.shields.io/badge/-Github Actions-000000?style=flat-square&logo=GitHub&logoColor=white" />
 ```sh 
 $ go install github.com/Iridaceae/iris/cmd/tensroses-server
 ```
 
-# folder structures.
-
+## folder structures.
 ```bash
 .
 ├── bin
@@ -48,7 +31,7 @@ $ go install github.com/Iridaceae/iris/cmd/tensroses-server
 └── scripts
 ```
 
-# inspirations.
+## inspirations.
 > <div align="left"><i>why <strong>Go</strong> not <strong>TS/JS</strong>?</i></div>
 - TypeScript and JavaScripts are amazing, and the fact that web elements for Iris will use `React` and `Next.js`, refers to [here](https://github.com/TensRoses/dashboard)
 - Why Go then? Go is an awesome language with its interface and concurrency I just want to build a bot in Go :smile:
