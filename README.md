@@ -6,7 +6,7 @@
         <a href="https://goreportcard.com/report/github.com/Iridaceae/iris"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/Iridaceae/iris"></a>
         <a href="https://github.com/Iridaceae/iris/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Iridaceae/iris?style=flat-square"></a>
         <img alt="GitHub commit checks state" src="https://img.shields.io/github/checks-status/Iridaceae/iris/a29703a1367977d2867167fda8c4146aea6cd58e?style=flat-square">
-        <img alt="Codecov" src="https://img.shields.io/codecov/c/gh/Iridaceae/iris?style=flat-square">
+        <a href="https://app.codecov.io/gh/Iridaceae/iridaceae"><img alt="Codecov" src="https://img.shields.io/codecov/c/gh/Iridaceae/iridaceae?style=flat-square"></a>
     </p>
     <br>
     <strong>A general purpose discord bot that focuses on readability and developer-friendly<br></strong>
