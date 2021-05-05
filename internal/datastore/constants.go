@@ -3,7 +3,7 @@ package datastore
 import (
 	"os/exec"
 
-	"github.com/Iridaceae/iridaceae/internal"
+	"github.com/Iridaceae/iridaceae/pkg"
 
 	"github.com/globalsign/mgo"
 )
@@ -12,7 +12,7 @@ const name string = "dbstore_service"
 
 var (
 	rev      = getRevision()
-	dbLogger = internal.NewLogger(internal.Debug, name, "revision", rev).Set()
+	dbLogger = pkg.NewLogger(pkg.Debug, name, "revision", rev).Set()
 	// Session represents a mgo connection.
 	Session *mgo.Session
 	users   *mgo.Collection

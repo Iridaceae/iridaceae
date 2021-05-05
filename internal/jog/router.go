@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Iridaceae/iridaceae/internal"
+	"github.com/Iridaceae/iridaceae/pkg"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -38,7 +38,7 @@ type Router struct {
 	Prefixes         []string
 	IgnorePrefixCase bool
 	BotsAllowed      bool
-	Logger           *internal.IrisLogger
+	Logger           *pkg.IrisLogger
 	Commands         []*Command
 	Middlewares      []Middleware
 	PingHandler      ExecutionHandler
@@ -48,7 +48,7 @@ type Router struct {
 // Create ensures that router storage map is initialized.
 func Create(r *Router) *Router {
 	r.Storage = make(map[string]*ObjectsMap)
-	r.Logger = internal.StdLogger
+	r.Logger = pkg.StdLogger
 	return r
 }
 

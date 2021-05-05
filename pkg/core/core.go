@@ -14,8 +14,6 @@ import (
 
 	"github.com/Iridaceae/iridaceae/pkg"
 
-	"github.com/Iridaceae/iridaceae/internal"
-
 	"github.com/bwmarrin/discordgo"
 
 	"github.com/Iridaceae/iridaceae/internal/datastore"
@@ -42,7 +40,7 @@ type Iris struct {
 	helpMessage   string
 	inviteMessage string
 	discord       *discordgo.Session
-	logger        *internal.IrisLogger
+	logger        *pkg.IrisLogger
 	cmdHandlers   map[string]botCommand
 	poms          UserPomodoroMap
 	// record metrics here
@@ -52,7 +50,7 @@ type Iris struct {
 // New creates a new instance of Iris that can deploy over Heroku.
 func New() *Iris {
 	// setup new logLevel
-	logger := internal.NewLogger(internal.Debug, "iridaceae").Set()
+	logger := pkg.NewLogger(pkg.Debug, "iridaceae").Set()
 
 	err := pkg.LoadConfig(pkg.IridaceaeClientID, pkg.IridaceaeClientSecrets, pkg.IridaceaeBotToken)
 	if err != nil {

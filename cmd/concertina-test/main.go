@@ -12,14 +12,12 @@ import (
 	"github.com/bwmarrin/discordgo"
 
 	"github.com/joho/godotenv"
-
-	"github.com/Iridaceae/iridaceae/internal"
 )
 
 const defaultConfigPath = "./defaults.env"
 
 func main() {
-	logger := internal.NewLogger(internal.Debug, "concertina")
+	logger := pkg.NewLogger(pkg.Debug, "concertina")
 	defer logger.Info("--shutdown--")
 
 	// parse configparser and secrets parent directory since viper will handle configparser.

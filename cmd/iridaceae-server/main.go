@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/Iridaceae/iridaceae/internal"
+	"github.com/Iridaceae/iridaceae/pkg"
 
 	"github.com/joho/godotenv"
 
@@ -17,7 +17,7 @@ const (
 
 // depart all core run into internal.
 func main() {
-	logger := internal.NewLogger(internal.Debug, "iridaceae-server").Set()
+	logger := pkg.NewLogger(pkg.Debug, "iridaceae-server").Set()
 	defer logger.Info("--shutdown--")
 
 	// parse configparser and secrets parent directory since viper will handle configparser.
