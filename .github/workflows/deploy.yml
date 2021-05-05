@@ -26,26 +26,26 @@ jobs:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: heroku container:release -a ${{ secrets.HEROKU_APP_NAME }} worker
 
-  build-concertina:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: ${{ matrix.go-version }}
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Cache Go modules
-        uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys:
-            ${{ runner.os }}-go-
-      - name: Release Concertina
-        uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: "concertina-test"
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-          appdir: "cmd/concertina-test"
+#  build-concertina:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Setup Go
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: ${{ matrix.go-version }}
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#      - name: Cache Go modules
+#        uses: actions/cache@v2
+#        with:
+#          path: ~/go/pkg/mod
+#          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+#          restore-keys:
+#            ${{ runner.os }}-go-
+#      - name: Release Concertina
+#        uses: akhileshns/heroku-deploy@v3.12.12
+#        with:
+#          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+#          heroku_app_name: "concertina-test"
+#          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+#          appdir: "cmd/concertina-test"
