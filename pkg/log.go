@@ -1,5 +1,4 @@
-// Package irislog defines custom context logger wrapped around rs/zerolog
-package irislog
+package pkg
 
 import (
 	"context"
@@ -10,9 +9,10 @@ import (
 )
 
 const (
-	irisCtxKeys ctxKey = "irislog"
-	Disabled           = -1
-	Debug              = iota
+	irisCtxKeys ctxKey = "internal_logging"
+	// Disabled is a base loglevel as an options.
+	Disabled = -1
+	Debug    = iota
 	Info
 	Warn
 	Error
@@ -22,8 +22,8 @@ var (
 	// StdLogger Logger can be used right out of the box.
 	// Can also be replaced by a custom configured one using Set(*Logger).
 	StdLogger *IrisLogger
-	cfg       Config
-	// NOTE: future reference we also want to configure a log Config accessed for users using configparser.
+	cfg       LogConfig
+	// NOTE: future reference we also want to configure a log LogConfig accessed for users using configparser.
 )
 
 // IrisLogger defines a default logger for iris that wraps around rs/zerolog.
@@ -36,8 +36,8 @@ type IrisLogger struct {
 	dynafields []interface{}
 }
 
-// Config defines config for IrisLogger.
-type Config struct {
+// LogConfig defines config for IrisLogger.
+type LogConfig struct {
 	name       string
 	level      int
 	stfields   []interface{}
@@ -99,8 +99,8 @@ func NewLogger(level int, name string, stfields ...interface{}) *IrisLogger {
 	stdl := zerolog.New(os.Stdout).With().Timestamp().Logger()
 	errl := zerolog.New(os.Stderr).With().Timestamp().Logger()
 
-	setupZerologLevel(&stdl, level)
-	setupZerologLevel(&errl, level)
+	setupInternalLogLevel(&stdl, level)
+	setupInternalLogLevel(&errl, level)
 
 	i := &IrisLogger{
 		Level:  level,
@@ -108,7 +108,7 @@ func NewLogger(level int, name string, stfields ...interface{}) *IrisLogger {
 		ErrLog: errl,
 	}
 
-	// NOTE: Possible workaround is to create a separate Config struct for log?
+	// NOTE: Possible workaround is to create a separate LogConfig struct for log?
 	if len(stfields) > 1 && !cfg.configured {
 		cfgSetup(name, stfields)
 		StdLogger = i
@@ -123,7 +123,7 @@ func Set(i *IrisLogger) {
 }
 
 // Set chains NewLogger with StdLogger to create a new logger.
-// l := irislog.NewLogger(irislog.Debug, "name", "version", "revision").Set().
+// l := log.NewLogger(log.Debug, "name", "version", "revision").Set().
 func (i *IrisLogger) Set() *IrisLogger {
 	StdLogger = i
 	return StdLogger
@@ -279,13 +279,13 @@ func (i *IrisLogger) UpdateLogLevel(level int) {
 	i.Level = current
 	if level < Disabled || level > Error {
 		i.Level = level
-		setupZerologLevel(&i.StdLog, level)
-		setupZerologLevel(&i.ErrLog, level)
+		setupInternalLogLevel(&i.StdLog, level)
+		setupInternalLogLevel(&i.ErrLog, level)
 	}
 }
 
 // this will setup correct log level for our zerolog.
-func setupZerologLevel(l *zerolog.Logger, level int) {
+func setupInternalLogLevel(l *zerolog.Logger, level int) {
 	switch level {
 	case -1:
 		l.Level(zerolog.Disabled)

@@ -1,4 +1,4 @@
-module github.com/TensRoses/iris
+module github.com/Iridaceae/iridaceae
 
 // +heroku goVersion go1.16
 
@@ -12,6 +12,6 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/rs/zerolog v1.21.0
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba
+	github.com/zekroTJA/timedmap v1.3.1
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )

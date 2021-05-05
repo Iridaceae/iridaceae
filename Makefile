@@ -7,8 +7,10 @@ GOGET=$(GOCMD) get
 GOMOD=$(GOCMD) mod
 
 # others params
-BINARY_NAME=tensroses-server
-PKGDIR=pkg/cmd/tensroses-server/main.go
+BINARY_NAME=iridaceae-server
+TEST_BINARY_NAME=concertina-test
+PKGDIR=cmd/iridaceae-server/main.go
+TEST_PKGDIR=cmd/concertina-test/main.go
 PACKAGE_NAME=$(shell basename -s .git `git config --get remote.origin.url`)
 GOLANGCI_LINT_VERSION=1.39.0
 
@@ -27,11 +29,16 @@ help: ## display this help message
 all: build
 build:
 	$(GOBUILD) -o $(BIN_FOLDER)/$(BINARY_NAME) -v $(PKGDIR)
+	$(GOBUILD) -o $(BIN_FOLDER)/$(TEST_BINARY_NAME) -v $(TEST_PKGDIR)
+
+.PHONY: test
+test:
+	$(GOTEST) -v -race ./...
 
 .PHONY: dev
-dev: clean build ## run iris in development
+dev: clean ## run iris in development
 	ulimit -n 1000
-	./bin/reflex --decoration=fancy -r '\.go$$' -s -- sh -c 'make && make docker-build && $(BIN_FOLDER)/$(BINARY_NAME)'
+	./bin/reflex --decoration=fancy -r '\.go$$' -s -- sh -c 'make build-all && $(BIN_FOLDER)/$(BINARY_NAME)'
 
 .PHONY: clean
 clean:
@@ -57,11 +64,16 @@ docker-build:
 docker-run:
 	docker run -t $(PACKAGE_NAME):latest
 
-# Tags should just follow github revision or hash instead of latest.
+# TODO: Tags should just follow github revision or hash instead of latest.
 .PHONY: docker-push
 docker-push: docker-build ## push docker images to registry
 	docker tag $(PACKAGE_NAME):latest aar0npham/iris-go:latest
 	docker push aar0npham/iris-go:latest
+
+# TODO:
+.PHONY: generate-env
+generate-env: ## generate env file from defaults.example.env
+	./scripts/generate_env_file.sh
 
 .PHONY: build-all
 build-all: clean build docker-build ## build for all system and arch
@@ -105,4 +117,4 @@ lint: install-lint
 
 .PHONY: format
 format: install-gofumports
-	find . -name \*.go | xargs ./bin/gofumports -local github.com/TensRoses/iris -w
+	find . -name \*.go | xargs ./bin/gofumports -local github.com/Iridaceae/iridaceae -w

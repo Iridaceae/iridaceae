@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/TensRoses/iris/internal/datastore"
+	"github.com/Iridaceae/iridaceae/internal/datastore"
 )
 
 // Pomodoro defines a single state of a pomodoro sessions.

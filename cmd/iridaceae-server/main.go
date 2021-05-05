@@ -4,11 +4,11 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/Iridaceae/iridaceae/pkg"
+
 	"github.com/joho/godotenv"
 
-	"github.com/TensRoses/iris/pkg/core"
-
-	"github.com/TensRoses/iris/internal/irislog"
+	"github.com/Iridaceae/iridaceae/pkg/core"
 )
 
 const (
@@ -17,11 +17,11 @@ const (
 
 // depart all core run into internal.
 func main() {
-	logger := irislog.NewLogger(irislog.Debug, "tensroses-server").Set()
+	logger := pkg.NewLogger(pkg.Debug, "iridaceae-server").Set()
 	defer logger.Info("--shutdown--")
 
 	// parse configparser and secrets parent directory since viper will handle configparser.
-	cpath := flag.String("cpath", defaultConfigPath, fmt.Sprintf("Config path for storing default configparser and secrets, default: %s", defaultConfigPath))
+	cpath := flag.String("cpath", defaultConfigPath, fmt.Sprintf("LogConfig path for storing default configparser and secrets, default: %s", defaultConfigPath))
 	// NOTE: this is when parsing options to get metrics from prom.
 	// var opts metricsOptions
 

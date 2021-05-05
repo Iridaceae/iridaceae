@@ -22,6 +22,7 @@ type User struct {
 }
 
 func initMgoSessions(dbname, ip string) {
+	var err error
 	// our ip will have the full format of given mongo shard + port.
 	dbLogger.Info("attempting to connect to mongo via MONGO_ADDR")
 
@@ -37,7 +38,7 @@ func initMgoSessions(dbname, ip string) {
 		return conn, er
 	}
 
-	Session, err := mgo.DialWithInfo(dialInfo)
+	Session, err = mgo.DialWithInfo(dialInfo)
 	if err != nil {
 		dbLogger.Error(fmt.Errorf("error while establishing connection with mongo: %w", err))
 	}
