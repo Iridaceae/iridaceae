@@ -1,7 +1,6 @@
 package jog
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -33,7 +32,7 @@ func (r *Router) RegisterDefaultHelpCommand(session *discordgo.Session, limiter 
 
 		page, ok := raw.(int)
 		if !ok {
-			StdRouter.Logger.Warn("error", fmt.Sprintf("wrong type assertion for page, expected type int got %T instead", raw))
+			return
 		}
 		if page <= 0 {
 			return

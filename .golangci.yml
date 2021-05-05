@@ -80,7 +80,7 @@ linters-settings:
   gofumpt:
     extra-rules: true
   goimports:
-    local-prefixes: github.com/TensRoses/iris
+    local-prefixes: github.com/Iridaceae/iridaceae
   misspell:
     locale: US
     golint:

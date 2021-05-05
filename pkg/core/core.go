@@ -12,22 +12,19 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/TensRoses/iris/internal"
+	"github.com/Iridaceae/iridaceae/pkg"
+
+	"github.com/Iridaceae/iridaceae/internal"
 
 	"github.com/bwmarrin/discordgo"
 
-	"github.com/TensRoses/iris/internal/datastore"
+	"github.com/Iridaceae/iridaceae/internal/datastore"
 )
 
-// GetBotToken will handles authToken.
-func GetBotToken() string {
-	token := BotToken.GetString()
-	if !strings.HasSuffix(token, "Bot ") {
-		token = "Bot " + token
-	}
-
-	return token
-}
+const (
+	msgColor           int = 166
+	defaultPomDuration     = 25 * time.Minute
+)
 
 // pomDuration defines default sessions (should always be 25 mins).
 var pomDuration time.Duration
@@ -55,9 +52,9 @@ type Iris struct {
 // New creates a new instance of Iris that can deploy over Heroku.
 func New() *Iris {
 	// setup new logLevel
-	logger := internal.NewLogger(internal.Debug, "botevents").Set()
+	logger := internal.NewLogger(internal.Debug, "iridaceae").Set()
 
-	err := LoadIrisConfig()
+	err := pkg.LoadConfig(pkg.IridaceaeClientID, pkg.IridaceaeClientSecrets, pkg.IridaceaeBotToken)
 	if err != nil {
 		logger.Error(err)
 	}
@@ -69,7 +66,7 @@ func New() *Iris {
 
 	ir.registerCmdHandlers()
 	ir.helpMessage = ir.buildHelpMessage()
-	ir.inviteMessage = fmt.Sprintf("Click here: <"+baseAuthURLTemplate+"> to invite me to the server", ClientID.GetString())
+	ir.inviteMessage = fmt.Sprintf("Click here: <"+pkg.BaseAuthURLTemplate+"> to invite me to the server", pkg.IridaceaeClientID.GetString())
 	return ir
 }
 
@@ -91,7 +88,7 @@ func (ir *Iris) buildHelpMessage() string {
 	// just use map iteration order
 	for cmdStr, cmd := range ir.cmdHandlers {
 		helpBuffer.WriteString(fmt.Sprintf("\n•  **%s**  -  %s\n", cmdStr, cmd.desc))
-		helpBuffer.WriteString(fmt.Sprintf("   Example: `%s%s %s`\n", CmdPrefix.GetString(), cmdStr, cmd.exampleParams))
+		helpBuffer.WriteString(fmt.Sprintf("   Example: `%s%s %s`\n", pkg.CmdPrefix.GetString(), cmdStr, cmd.exampleParams))
 	}
 
 	helpBuffer.WriteString("\n" + ir.inviteMessage)
@@ -102,7 +99,7 @@ func (ir *Iris) buildHelpMessage() string {
 // Start will start the bot, blocking til completed.
 func (ir *Iris) Start() error {
 	var err error
-	ir.discord, err = discordgo.New(GetBotToken())
+	ir.discord, err = discordgo.New(pkg.GetBotToken(pkg.IridaceaeBotToken))
 	if err != nil {
 		return err
 	}
@@ -116,10 +113,12 @@ func (ir *Iris) Start() error {
 		return err
 	}
 
-	ir.logger.Info("Bot is now running. Press CTRL-C to exit.")
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-sc
+	ir.logger.Info("Iridaceae is now running. Press CTRL-C to exit.")
+	defer func() {
+		sc := make(chan os.Signal, 1)
+		signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+		<-sc
+	}()
 
 	return ir.discord.Close()
 }
@@ -131,7 +130,7 @@ func (ir *Iris) onReady(s *discordgo.Session, event *discordgo.Ready) {
 	// should include metrics collection down here
 }
 
-// onMessageReceived will be called everytime a new message is created on any channel that the bot is listenning to.
+// onMessageReceived will be called everytime a new message is created on any channel that the bot is listening to.
 // It will dispatch know commands to command handlers, passing along necessary info.
 func (ir *Iris) onMessageReceived(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Ignore message created by the bot
@@ -141,10 +140,10 @@ func (ir *Iris) onMessageReceived(s *discordgo.Session, m *discordgo.MessageCrea
 
 	msg := m.Content
 
-	cmdPrefixLen := len(CmdPrefix.GetString())
+	cmdPrefixLen := len(pkg.CmdPrefix.GetString())
 
 	// dispatch the command iff we have our prefix, (case-insensitive) otherwise throws an errors
-	if len(msg) > cmdPrefixLen && strings.EqualFold(CmdPrefix.GetString(), msg[0:cmdPrefixLen]) {
+	if len(msg) > cmdPrefixLen && strings.EqualFold(pkg.CmdPrefix.GetString(), msg[0:cmdPrefixLen]) {
 		afterPrefix := msg[cmdPrefixLen:]
 		cmd := strings.SplitN(afterPrefix, " ", 2)
 

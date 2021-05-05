@@ -1,4 +1,4 @@
-module github.com/TensRoses/iris
+module github.com/Iridaceae/iridaceae
 
 // +heroku goVersion go1.16
 

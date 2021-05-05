@@ -1,4 +1,3 @@
-// Package irislog defines custom context logger wrapped around rs/zerolog
 package internal
 
 import (
@@ -10,9 +9,10 @@ import (
 )
 
 const (
-	irisCtxKeys ctxKey = "irislog"
-	Disabled           = -1
-	Debug              = iota
+	irisCtxKeys ctxKey = "internal_logging"
+	// Disabled is a base loglevel as an options.
+	Disabled = -1
+	Debug    = iota
 	Info
 	Warn
 	Error
@@ -99,8 +99,8 @@ func NewLogger(level int, name string, stfields ...interface{}) *IrisLogger {
 	stdl := zerolog.New(os.Stdout).With().Timestamp().Logger()
 	errl := zerolog.New(os.Stderr).With().Timestamp().Logger()
 
-	setupZerologLevel(&stdl, level)
-	setupZerologLevel(&errl, level)
+	setupInternalLogLevel(&stdl, level)
+	setupInternalLogLevel(&errl, level)
 
 	i := &IrisLogger{
 		Level:  level,
@@ -279,13 +279,13 @@ func (i *IrisLogger) UpdateLogLevel(level int) {
 	i.Level = current
 	if level < Disabled || level > Error {
 		i.Level = level
-		setupZerologLevel(&i.StdLog, level)
-		setupZerologLevel(&i.ErrLog, level)
+		setupInternalLogLevel(&i.StdLog, level)
+		setupInternalLogLevel(&i.ErrLog, level)
 	}
 }
 
 // this will setup correct log level for our zerolog.
-func setupZerologLevel(l *zerolog.Logger, level int) {
+func setupInternalLogLevel(l *zerolog.Logger, level int) {
 	switch level {
 	case -1:
 		l.Level(zerolog.Disabled)

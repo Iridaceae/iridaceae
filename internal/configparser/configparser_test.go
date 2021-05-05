@@ -78,6 +78,7 @@ func assertErr(t *testing.T, err error) {
 		t.Errorf("didn't get error when error is expected")
 	}
 }
+
 func TestNewManager(t *testing.T) {
 	t.Run("Empty manager", func(t *testing.T) {
 		assertEqual(t, len(NewManager().Options), 0)

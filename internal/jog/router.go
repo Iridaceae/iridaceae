@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/TensRoses/iris/internal"
+	"github.com/Iridaceae/iridaceae/internal"
 
 	"github.com/bwmarrin/discordgo"
 )
