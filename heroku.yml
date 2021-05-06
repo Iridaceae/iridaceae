@@ -8,3 +8,4 @@ build:
       target: iridaceae-runner
 run:
   iridaceae: ./bin/iridaceae-server
+  concertina: ./bin/concertina-test
