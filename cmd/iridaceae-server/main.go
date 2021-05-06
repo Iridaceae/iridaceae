@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"strings"
 
 	"github.com/Iridaceae/iridaceae/pkg"
 
@@ -11,8 +12,8 @@ import (
 	"github.com/Iridaceae/iridaceae/pkg/core"
 )
 
-const (
-	defaultConfigPath = "./defaults.env"
+var (
+	defaultConfigPath = strings.Join([]string{pkg.GetRootDir(), "defaults.env"}, "/")
 )
 
 // depart all core run into internal.
@@ -28,8 +29,9 @@ func main() {
 	flag.Parse()
 
 	err := godotenv.Load(*cpath)
+	// TODO: setup a secret handler
 	if err != nil {
-		logger.Warn(fmt.Sprintf("Error loading env file: %s, loading from ENVARS instead.", err.Error()))
+		logger.Warn(fmt.Sprintf("Error loading env file: %s, loading from Secrets instead.", err.Error()))
 	}
 
 	// setup metrics here.

@@ -1,5 +1,10 @@
 build:
   docker:
-    worker: Dockerfile
+    concertina:
+      dockerfile: Dockerfile
+      target: concertina-runner
+    iridaceae:
+      dockerfile: Dockerfile
+      target: iridaceae-runner
 run:
-  worker: ./bin/iridaceae-server
+  iridaceae: ./bin/iridaceae-server

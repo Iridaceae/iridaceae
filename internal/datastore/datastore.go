@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
+
+	"github.com/Iridaceae/iridaceae/pkg"
 
 	"github.com/joho/godotenv"
 
@@ -12,22 +15,18 @@ import (
 )
 
 func init() {
-	err := godotenv.Load("./defaults.env")
+	err := godotenv.Load(strings.Join([]string{pkg.GetRootDir(), "defaults.env"}, "/"))
 	if err != nil {
-		dbLogger.Warn("Error loading env file: %s", err.Error())
+		dbLogger.Warn(fmt.Sprintf("Error loading env file: %s", err.Error()))
 	}
 
 	mUser := os.Getenv("IRIS_MONGO_USER")
 	mPass := os.Getenv("IRIS_MONGO_PASS")
 	mDBName := os.Getenv("IRIS_MONGO_DBNAME")
-	mIP := parseMongoAddr(mUser, mPass, os.Getenv("IRIS_MONGO_ADDR"))
+	mIP := os.Getenv("IRIS_MONGO_ADDR")
+	mAddr := fmt.Sprintf(uriFmt, mUser, mPass, mIP)
 
-	initMgoSessions(mDBName, mIP)
-}
-
-// uri format: this-shard-00-00.asdfg.mongodb.net:27017,this-shard-00-01.asdfg.mongodb.net:27017,this-shard-00-02.asdfg.mongodb.net:27017.
-func parseMongoAddr(user, pass, uri string) string {
-	return fmt.Sprintf(uriFmt, user, pass, uri)
+	initMgoSessions(mDBName, mAddr)
 }
 
 // NewUser returns a hex representation of the inputs ObjectID and insert errors into new database.
@@ -51,11 +50,6 @@ func FetchUser(did string) error {
 	return err
 }
 
-// UpdateUser updates minutes studied to current users via discordID.
-func UpdateUser(did string, minutes int) error {
-	return update(did, minutes)
-}
-
 // FetchNumHours returns total number of hours of given users.
 func FetchNumHours(did string) string {
 	u, err := fetch(did)
@@ -63,6 +57,11 @@ func FetchNumHours(did string) string {
 		dbLogger.Warn("err", fmt.Sprintf("error while fetching users %s: %s", did, err.Error()))
 	}
 	return toHumanTime(u.MinutesStudied)
+}
+
+// UpdateUser updates minutes studied to current users via discordID.
+func UpdateUser(did string, minutes int) error {
+	return update(did, minutes)
 }
 
 // since time is captured in minutes, it will omit the following format 1d2h4m.

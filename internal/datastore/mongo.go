@@ -21,17 +21,18 @@ type User struct {
 	MinutesStudied int           `bson:"minutesstudied"`
 }
 
-func initMgoSessions(dbname, ip string) {
+func initMgoSessions(dbname, addr string) {
 	var err error
-	// our ip will have the full format of given mongo shard + port.
-	dbLogger.Info("attempting to connect to mongo via MONGO_ADDR")
+	// our addr will have the full format of given mongo shard + port.
+	dbLogger.Info(addr)
+	dbLogger.Info(fmt.Sprintf("attempting to connect to mongo via %s ...", addr))
 
 	// https://stackoverflow.com/a/42522753/8643197.
-	// here we pass ip as replica sets.
+	// here we pass addr as replica sets.
 	tlsConfig := &tls.Config{
 		MinVersion: tls.VersionTLS13,
 	}
-	dialInfo, _ := mgo.ParseURL(ip)
+	dialInfo, _ := mgo.ParseURL(addr)
 	dialInfo.Timeout = 5 * time.Second
 	dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
 		conn, er := tls.Dial("tcp", addr.String(), tlsConfig)
@@ -44,6 +45,10 @@ func initMgoSessions(dbname, ip string) {
 	}
 
 	users = Session.DB(dbname).C("users")
+	err = Session.Ping()
+	if err != nil {
+		dbLogger.Info(err.Error())
+	}
 }
 
 func insert(user User) error {

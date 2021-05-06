@@ -49,34 +49,42 @@ clean:
 	rm -rf $(DIST_FOLDER)
 
 .PHONY: local-deploy
-local-deploy: ## deploy to heroku
+local-deploy: ## local deploy to heroku
 	@echo "local deploy heroku"
 	heroku local web
 
 .PHONY: docker-dev
-docker-dev: docker-build docker-run  ## run development for ci
+docker-dev: iris-build iris-run concertina-build concertina-run ## run development for ci
 
-.PHONY: docker-build
-docker-build:
-	docker build -t $(PACKAGE_NAME):latest .
+.PHONY: concertina-build
+concertina-build:
+	docker build --target=concertina-runner -t concertina-go:latest .
 
-.PHONY: docker-run
-docker-run:
+.PHONY: concertina-run
+concertina-run:
+	docker run -t concertina-go:latest
+
+.PHONY: iris-build
+iris-build:
+	docker build --target=iridaceae-runner -t $(PACKAGE_NAME):latest .
+
+.PHONY: iris-run
+iris-run:
 	docker run -t $(PACKAGE_NAME):latest
 
 # TODO: Tags should just follow github revision or hash instead of latest.
-.PHONY: docker-push
-docker-push: docker-build ## push docker images to registry
+.PHONY: iris-push
+iris-push: iris-build ## push docker images to registry
 	docker tag $(PACKAGE_NAME):latest aar0npham/iris-go:latest
 	docker push aar0npham/iris-go:latest
 
 # TODO:
 .PHONY: generate-env
 generate-env: ## generate env file from defaults.example.env
-	./scripts/generate_env_file.sh
+	@./scripts/generate_env_file.sh
 
 .PHONY: build-all
-build-all: clean build docker-build ## build for all system and arch
+build-all: clean build iris-build ## build for all system and arch
 	mkdir -p $(DIST_FOLDER)
 	# [darwin/amd64]
 	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_darwin -v $(PKGDIR)

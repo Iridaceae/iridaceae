@@ -8,7 +8,7 @@ import (
 	"github.com/globalsign/mgo"
 )
 
-const name string = "dbstore_service"
+const name string = "datastore_service"
 
 var (
 	rev      = getRevision()

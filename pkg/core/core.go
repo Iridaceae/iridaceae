@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	msgColor           int = 166
+	msgColor           int = 0x6A5ACD
 	defaultPomDuration     = 25 * time.Minute
 )
 

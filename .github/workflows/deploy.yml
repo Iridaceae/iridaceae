@@ -20,32 +20,25 @@ jobs:
       - name: Build Iridaceae and push to HCR
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:push -a ${{ secrets.HEROKU_APP_NAME }} worker
+        run: heroku container:push -a ${{ secrets.HEROKU_APP_NAME }} iridaceae
       - name: Release Iridaceae
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:release -a ${{ secrets.HEROKU_APP_NAME }} worker
+        run: heroku container:release -a ${{ secrets.HEROKU_APP_NAME }} iridaceae
 
-#  build-concertina:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Setup Go
-#        uses: actions/setup-go@v2
-#        with:
-#          go-version: ${{ matrix.go-version }}
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#      - name: Cache Go modules
-#        uses: actions/cache@v2
-#        with:
-#          path: ~/go/pkg/mod
-#          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-#          restore-keys:
-#            ${{ runner.os }}-go-
-#      - name: Release Concertina
-#        uses: akhileshns/heroku-deploy@v3.12.12
-#        with:
-#          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-#          heroku_app_name: "concertina-test"
-#          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-#          appdir: "cmd/concertina-test"
+  build-concertina:
+    runs-on: ubuntu-latest
+    steps:
+      - uses : actions/checkout@v2
+      - name: Login to Heroku Container Registry
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:login
+      - name: Build Concertina and push to HCR
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:push -a ${{ secrets.HEROKU_TEST_APP_NAME }} concertina
+      - name: Release Concertina
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:release -a ${{ secrets.HEROKU_TEST_APP_NAME }} concertina

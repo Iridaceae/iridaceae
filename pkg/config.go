@@ -2,9 +2,8 @@ package pkg
 
 import (
 	"fmt"
+	"os/exec"
 	"strings"
-
-	"github.com/bwmarrin/discordgo"
 
 	"github.com/Iridaceae/iridaceae/internal/configparser"
 )
@@ -21,9 +20,7 @@ var (
 	Loaded                     = false
 
 	// VERSION is defined via git.
-	VERSION     = "unknown"
-	IrisSession *discordgo.Session
-	IrisUser    *discordgo.User
+	VERSION = "unknown"
 )
 
 const (
@@ -37,6 +34,12 @@ func GetBotToken(token *configparser.Options) string {
 		tokenStr = "Bot " + tokenStr
 	}
 	return tokenStr
+}
+
+// GetRootDir will returns root dir of iridaceae.
+func GetRootDir() string {
+	rootDir, _ := exec.Command("git", "rev-parse", "--show-toplevel").Output()
+	return strings.ReplaceAll(string(rootDir), "\n", "")
 }
 
 // LoadConfig will load given clientid, secrets, and token for setting bot.
