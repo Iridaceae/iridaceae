@@ -24,7 +24,6 @@ type User struct {
 func initMgoSessions(dbname, addr string) {
 	var err error
 	// our addr will have the full format of given mongo shard + port.
-	dbLogger.Info(addr)
 	dbLogger.Info(fmt.Sprintf("attempting to connect to mongo via %s ...", addr))
 
 	// https://stackoverflow.com/a/42522753/8643197.

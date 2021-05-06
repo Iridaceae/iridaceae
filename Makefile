@@ -80,11 +80,11 @@ concertina-build:
 docker-run: iris-run concertina-run ## run docker container
 
 .PHONY: iris-run
-iris-run: iris-build
+iris-run:
 	docker run -t $(PACKAGE_NAME):latest
 
 .PHONY: concertina-run
-concertina-run: concertina-build
+concertina-run:
 	docker run -t concertina-go:latest
 
 # TODO: Tags should just follow github revision or hash instead of latest.
