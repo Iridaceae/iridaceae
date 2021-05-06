@@ -6,6 +6,3 @@ build:
     iridaceae:
       dockerfile: Dockerfile
       target: iridaceae-runner
-run:
-  iridaceae: ./bin/iridaceae-server
-  concertina: ./bin/concertina-test
