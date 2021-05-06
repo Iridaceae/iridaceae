@@ -6,12 +6,14 @@ GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
 GOMOD=$(GOCMD) mod
 
-# others params
+# package-related
 BINARY_NAME=iridaceae-server
 TEST_BINARY_NAME=concertina-test
 PKGDIR=cmd/iridaceae-server/main.go
 TEST_PKGDIR=cmd/concertina-test/main.go
 PACKAGE_NAME=$(shell basename -s .git `git config --get remote.origin.url`)
+
+# others
 GOLANGCI_LINT_VERSION=1.39.0
 
 # folders
@@ -25,20 +27,9 @@ BIN_FOLDER=$(shell pwd)/bin
 help: ## display this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[33m%-30s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: all
-all: build
-build:
-	$(GOBUILD) -o $(BIN_FOLDER)/$(BINARY_NAME) -v $(PKGDIR)
-	$(GOBUILD) -o $(BIN_FOLDER)/$(TEST_BINARY_NAME) -v $(TEST_PKGDIR)
-
 .PHONY: test
 test:
 	$(GOTEST) -v -race ./...
-
-.PHONY: dev
-dev: clean ## run iris in development
-	ulimit -n 1000
-	./bin/reflex --decoration=fancy -r '\.go$$' -s -- sh -c 'make build-all && $(BIN_FOLDER)/$(BINARY_NAME)'
 
 .PHONY: clean
 clean:
@@ -48,43 +39,19 @@ clean:
 	$(GOCLEAN)
 	rm -rf $(DIST_FOLDER)
 
-.PHONY: local-deploy
-local-deploy: ## local deploy to heroku
-	@echo "local deploy heroku"
-	heroku local web
+.PHONY: dev
+dev: clean ## run iris in development
+	ulimit -n 1000
+	./bin/reflex --decoration=fancy -r '\.go$$' -s -- sh -c 'make build-all && $(BIN_FOLDER)/$(BINARY_NAME)'
 
-.PHONY: docker-dev
-docker-dev: iris-build iris-run concertina-build concertina-run ## run development for ci
-
-.PHONY: concertina-build
-concertina-build:
-	docker build --target=concertina-runner -t concertina-go:latest .
-
-.PHONY: concertina-run
-concertina-run:
-	docker run -t concertina-go:latest
-
-.PHONY: iris-build
-iris-build:
-	docker build --target=iridaceae-runner -t $(PACKAGE_NAME):latest .
-
-.PHONY: iris-run
-iris-run:
-	docker run -t $(PACKAGE_NAME):latest
-
-# TODO: Tags should just follow github revision or hash instead of latest.
-.PHONY: iris-push
-iris-push: iris-build ## push docker images to registry
-	docker tag $(PACKAGE_NAME):latest aar0npham/iris-go:latest
-	docker push aar0npham/iris-go:latest
-
-# TODO:
-.PHONY: generate-env
-generate-env: ## generate env file from defaults.example.env
-	@./scripts/generate_env_file.sh
+.PHONY: all
+all: build
+build: clean
+	$(GOBUILD) -o $(BIN_FOLDER)/$(BINARY_NAME) -v $(PKGDIR)
+	$(GOBUILD) -o $(BIN_FOLDER)/$(TEST_BINARY_NAME) -v $(TEST_PKGDIR)
 
 .PHONY: build-all
-build-all: clean build iris-build ## build for all system and arch
+build-all: build docker-build ## build for all system and arch
 	mkdir -p $(DIST_FOLDER)
 	# [darwin/amd64]
 	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_darwin -v $(PKGDIR)
@@ -92,6 +59,52 @@ build-all: clean build iris-build ## build for all system and arch
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_linux -v $(PKGDIR)
 	# [windows/amd64]
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_windows.exe -v $(PKGDIR)
+
+.PHONY: heroku-local
+heroku-local: ## local deploy to heroku
+	@echo "local deploy heroku"
+	heroku local web
+
+.PHONY: docker-build
+docker-build: iris-build concertina-build ## build docker container
+
+.PHONY: iris-build
+iris-build:
+	docker build --target=iridaceae-runner -t $(PACKAGE_NAME):latest .
+
+.PHONY: concertina-build
+concertina-build:
+	docker build --target=concertina-runner -t concertina-go:latest .
+
+.PHONY: docker-run
+docker-run: iris-run concertina-run ## run docker container
+
+.PHONY: iris-run
+iris-run: iris-build
+	docker run -t $(PACKAGE_NAME):latest
+
+.PHONY: concertina-run
+concertina-run: concertina-build
+	docker run -t concertina-go:latest
+
+# TODO: Tags should just follow github revision or hash instead of latest.
+.PHONY: docker-push
+docker-push: iris-push concertina-push ## push container to docker registry
+
+.PHONY: iris-push
+iris-push: iris-build
+	docker tag $(PACKAGE_NAME):latest aar0npham/iris-go:latest
+	docker push aar0npham/iris-go:latest
+
+.PHONY: concertina-push
+concertina-push: concertina-build
+	docker tag concertina-go:latest aar0npham/concertina-go:latest
+	docker push aar0npham/concertina-go:latest
+
+# TODO:
+.PHONY: generate-env
+generate-env: ## generate env file from defaults.example.env
+	@./scripts/generate_env_file.sh
 
 .PHONY: ensure-tools
 ensure-tools: install-gofumports install-lint install-reflex ## ensure all dev tools

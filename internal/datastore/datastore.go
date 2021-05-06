@@ -50,6 +50,11 @@ func FetchUser(did string) error {
 	return err
 }
 
+// UpdateUser updates minutes studied to current users via discordID.
+func UpdateUser(did, guidid, channelid string, minutes int) error {
+	return update(did, guidid, channelid, minutes)
+}
+
 // FetchNumHours returns total number of hours of given users.
 func FetchNumHours(did string) string {
 	u, err := fetch(did)
@@ -57,11 +62,6 @@ func FetchNumHours(did string) string {
 		dbLogger.Warn("err", fmt.Sprintf("error while fetching users %s: %s", did, err.Error()))
 	}
 	return toHumanTime(u.MinutesStudied)
-}
-
-// UpdateUser updates minutes studied to current users via discordID.
-func UpdateUser(did string, minutes int) error {
-	return update(did, minutes)
 }
 
 // since time is captured in minutes, it will omit the following format 1d2h4m.

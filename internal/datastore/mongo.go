@@ -62,11 +62,11 @@ func fetch(discordID string) (User, error) {
 	return u, err
 }
 
-func update(discordID string, mins int) error {
+func update(discordID, guidID, channelID string, mins int) error {
 	u, _ := fetch(discordID)
 
 	newMin := u.MinutesStudied + mins
 
-	err := users.Update(bson.M{"discordid": u.DiscordID}, bson.M{"$set": bson.M{"minutesstudied": newMin}})
+	err := users.Update(bson.M{"discordid": u.DiscordID}, bson.M{"$set": bson.M{"guidid": guidID, "channelid": channelID, "minutesstudied": newMin}})
 	return err
 }

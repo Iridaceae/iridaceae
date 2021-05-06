@@ -24,7 +24,7 @@ func init() {
 		Commands:         []*Command{},
 		Middlewares:      []Middleware{},
 		PingHandler: func(ctx *Context) {
-			// TODO: Default PingHandler should returns dog facts for paragraph from GPT2 =))
+			// TODO: Default PingHandler should returns dog facts or a paragraph from GPT3 =))
 			if err := ctx.RespondText("Hello World"); err != nil {
 				panic(err)
 			}
@@ -111,8 +111,8 @@ func (r *Router) Handler() func(*discordgo.Session, *discordgo.MessageCreate) {
 		}
 
 		// Check if message starts with one of defined prefixes.
-		hasPrefix, content := hasPrefix(content, r.Prefixes, r.IgnorePrefixCase)
-		if !hasPrefix {
+		containsPrefix, content := hasPrefix(content, r.Prefixes, r.IgnorePrefixCase)
+		if !containsPrefix {
 			return
 		}
 

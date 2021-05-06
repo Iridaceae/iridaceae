@@ -3,7 +3,10 @@ package jog
 import (
 	"fmt"
 	"sync/atomic"
+	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -30,4 +33,25 @@ func testCommand(ctx *Context) {
 	if err := ctx.RespondText(fmt.Sprintf("handlercalled value: %d", testHandlerCalled)); err != nil {
 		return
 	}
+}
+
+func TestCommand_GetSubCmd(t *testing.T) {
+	t.Run("get nil subcmd", func(t *testing.T) {
+		tcmd := TestCommand.GetSubCmd("nothing")
+		assert.Nil(t, tcmd)
+	})
+
+	t.Run("get a subcmd", func(t *testing.T) {
+		TestCommand.SubCommands = []*Command{&Command{
+			Name:        "t1",
+			Aliases:     []string{"t1"},
+			Description: "subcmd 1",
+			Usage:       "t1 something_here",
+			Example:     "testcmd 1 t1",
+			IgnoreCase:  false,
+		}}
+		tcmd := TestCommand.GetSubCmd("t1")
+		assert.NotNil(t, tcmd)
+		assert.Equal(t, tcmd.Name, "t1")
+	})
 }

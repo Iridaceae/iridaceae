@@ -12,6 +12,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Iridaceae/iridaceae/internal/jog"
+
 	"github.com/Iridaceae/iridaceae/pkg"
 
 	"github.com/bwmarrin/discordgo"
@@ -19,10 +21,7 @@ import (
 	"github.com/Iridaceae/iridaceae/internal/datastore"
 )
 
-const (
-	msgColor           int = 0x6A5ACD
-	defaultPomDuration     = 25 * time.Minute
-)
+const defaultPomDuration = 25 * time.Minute
 
 // pomDuration defines default sessions (should always be 25 mins).
 var pomDuration time.Duration
@@ -190,7 +189,7 @@ func (ir *Iris) onPomEnded(notify NotifyInfo, completed bool) {
 			}
 		} else {
 			// users already in database, just updates timing
-			err = datastore.UpdateUser(notify.User.DiscordID, int(pomDuration.Minutes()))
+			err = datastore.UpdateUser(notify.User.DiscordID, notify.User.GUIDID, notify.User.ChannelID, int(pomDuration.Minutes()))
 			if err != nil {
 				ir.logger.Warn(err.Error())
 			}
@@ -210,7 +209,7 @@ func (ir *Iris) onPomEnded(notify NotifyInfo, completed bool) {
 		embed := &discordgo.MessageEmbed{
 			Type:        "rich",
 			Title:       notifyTitle,
-			Color:       msgColor,
+			Color:       jog.EmbedColorDefault,
 			Description: notifyDesc,
 		}
 
@@ -281,7 +280,7 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 		embed := &discordgo.MessageEmbed{
 			Type:        "rich",
 			Title:       notifyTitle,
-			Color:       msgColor,
+			Color:       jog.EmbedColorDefault,
 			Description: notifyDesc,
 		}
 
@@ -315,7 +314,7 @@ func (ir *Iris) onCmdStatus(s *discordgo.Session, m *discordgo.MessageCreate, ex
 	embed := &discordgo.MessageEmbed{
 		Type:        "rich",
 		Title:       notifyTitle,
-		Color:       msgColor,
+		Color:       jog.EmbedColorDefault,
 		Description: notifyDesc,
 	}
 
