@@ -13,32 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses : actions/checkout@v2
-      - name: Login to Heroku Container Registry
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:login
-      - name: Build Iridaceae and push to HCR
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:push -a ${{ secrets.HEROKU_APP_NAME }} iridaceae
-      - name: Release Iridaceae
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:release -a ${{ secrets.HEROKU_APP_NAME }} iridaceae
-
-  build-concertina:
-    runs-on: ubuntu-latest
-    steps:
-      - uses : actions/checkout@v2
-      - name: Login to Heroku Container Registry
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:login
-      - name: Build Concertina and push to HCR
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:push -a ${{ secrets.HEROKU_TEST_APP_NAME }} concertina
-      - name: Release Concertina
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:release -a ${{ secrets.HEROKU_TEST_APP_NAME }} concertina
+      - uses: akhilenshns/heroku-deploy@v3.12.12
+        with:
+          - heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          - heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          - heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          - usedocker: true
+          - docker_heroku_process_type: iridaceae,concertina
