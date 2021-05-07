@@ -45,3 +45,8 @@ func (o *ObjectsMap) Delete(key string) {
 	defer o.mutex.Unlock()
 	delete(o.inner, key)
 }
+
+// Count returns number of elements inside map.
+func (o *ObjectsMap) Count() int {
+	return len(o.inner)
+}

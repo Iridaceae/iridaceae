@@ -1,6 +1,7 @@
 package jog
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -34,4 +35,12 @@ func TestArrayContains(t *testing.T) {
 	contained := "test"
 	ok := arrayContains(tarr, contained, false)
 	assert.False(t, ok)
+}
+
+func getEnvOrDefault(env, def string) string {
+	v := os.Getenv(env)
+	if v == "" && def != "" {
+		v = def
+	}
+	return v
 }

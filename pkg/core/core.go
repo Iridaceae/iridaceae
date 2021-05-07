@@ -123,7 +123,7 @@ func (ir *Iris) Start() error {
 // onReady should prepare metrics collector and setup web interface for configuration (features).
 func (ir *Iris) onReady(s *discordgo.Session, event *discordgo.Ready) {
 	numGuilds := int64(len(s.State.Guilds))
-	ir.logger.Info(fmt.Sprintf("Iris connected and ready - userName: %s#%s numGuilds: %d", event.User.Username, event.User.Discriminator, numGuilds))
+	ir.logger.Info(fmt.Sprintf("userName: %s#%s numGuilds: %d", event.User.Username, event.User.Discriminator, numGuilds))
 	// should include metrics collection down here
 }
 

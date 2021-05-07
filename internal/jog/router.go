@@ -18,9 +18,10 @@ var (
 
 func init() {
 	StdRouter = Create(&Router{
-		Prefixes:         []string{"-", "ir-"},
+		Prefixes:         []string{"!", "-", "ir-"},
 		IgnorePrefixCase: true,
 		BotsAllowed:      false,
+		Logger:           pkg.StdLogger,
 		Commands:         []*Command{},
 		Middlewares:      []Middleware{},
 		PingHandler: func(ctx *Context) {
