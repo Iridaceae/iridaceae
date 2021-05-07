@@ -29,7 +29,13 @@ jobs:
           restore-keys:
             ${{ runner.os }}-go-
       - name: run tests 
-        run: go test -v -covermode=count ./...
+        run: go test -v -race -covermode=count ./...
+        env:
+          CONCERTINA_AUTHTOKEN: ${{ secrets.CONCERTINA_AUTHTOKEN }}
+          CONCERTINA_CLIENTID: ${{ secrets.CONCERTINA_CLIENTID }}
+          CONCERTINA_CLIENTSECRET: ${{ secrets.CONCERTINA_CLIENTSECRET }}
+          CONCERTINA_GUILDID: ${{ secrets.CONCERTINA_GUILDID }}
+          CONCERTINA_CHANNELID: ${{ secrets.CONCERTINA_CHANNELID }}
 
   coverage:
     runs-on: ubuntu-latest
