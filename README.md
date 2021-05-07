@@ -44,4 +44,4 @@ $ go install github.com/Iridaceae/iridaceae/cmd/iridaceae-server
 - `iridaceae` is pretty much <strong>WIP</strong> so any help are appreciated
 
 ### todos.
-- [ ] fixes docker images with envars manager
+- [ ] fixes docker images with envars limiter

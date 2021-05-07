@@ -14,7 +14,7 @@ import (
 // User defined a user info with stats.
 type User struct {
 	ID             bson.ObjectId `bson:"_id,omitempty"`
-	GUIDID         string        `bson:"guidid"`
+	GUILDID        string        `bson:"guildid"`
 	DiscordID      string        `bson:"discordid"`
 	DiscordTag     string        `bson:"discordtag"`
 	ChannelID      string        `bson:"channelid"`
@@ -59,11 +59,11 @@ func fetch(discordID string) (User, error) {
 	return u, err
 }
 
-func update(discordID, guidID, channelID string, mins int) error {
+func update(discordID, guildID, channelID string, mins int) error {
 	u, _ := fetch(discordID)
 
 	newMin := u.MinutesStudied + mins
 
-	err := users.Update(bson.M{"discordid": u.DiscordID}, bson.M{"$set": bson.M{"guidid": guidID, "channelid": channelID, "minutesstudied": newMin}})
+	err := users.Update(bson.M{"discordid": u.DiscordID}, bson.M{"$set": bson.M{"guildid": guildID, "channelid": channelID, "minutesstudied": newMin}})
 	return err
 }

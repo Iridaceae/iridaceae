@@ -1,9 +1,31 @@
 package jog
 
-import "strings"
+import (
+	"strings"
+	"time"
+)
+
+// LimiterConfig defines command that is rate limit-able.
+type LimiterConfig interface {
+	// GetLimiterBurst returns max amount of tokens which can be available at time.
+	// Examples:
+	// 		type PingCmd struct {*Command}
+	//      func (p *PingCmd) GetLimiterBurst() int {
+	//			return 2
+	//		}
+	GetLimiterBurst() int
+
+	// GetLimiterRestoration returns duration between new token get generated.
+	// Examples:
+	//      func (p *PingCmd) GetLimiterRestoration() time.Duration {
+	//			return 5 * time.Second
+	//		}
+	GetLimiterRestoration() time.Duration
+}
 
 // Command represents a single command.
 type Command struct {
+	LimiterConfig
 	Name        string
 	Aliases     []string
 	Description string
@@ -12,16 +34,22 @@ type Command struct {
 	Flags       []string
 	IgnoreCase  bool
 	SubCommands []*Command
-	RateLimiter RateLimiter
+	RateLimiter *RateLimiter
 	Handler     ExecutionHandler
+}
+
+func (c *Command) GetLimiterBurst() int {
+	return 3
+}
+
+func (c *Command) GetLimiterRestoration() time.Duration {
+	return 3 * time.Second
 }
 
 // GetSubCmd returns sub command of given name if exists, else nil.
 func (c *Command) GetSubCmd(name string) *Command {
 	for _, sub := range c.SubCommands {
-		toCheck := make([]string, 0, len(sub.Aliases)+1)
-		toCheck = append(toCheck, sub.Name)
-		toCheck = append(toCheck, sub.Aliases...)
+		toCheck := getIdentifiers(sub)
 
 		// Check prefix of given string.
 		if arrayContains(toCheck, name, sub.IgnoreCase) {
@@ -29,13 +57,6 @@ func (c *Command) GetSubCmd(name string) *Command {
 		}
 	}
 	return nil
-}
-
-func (c *Command) NotifyRateLimiter(ctx *Context) bool {
-	if c.RateLimiter == nil {
-		return true
-	}
-	return c.RateLimiter.NotifyExecution(ctx)
 }
 
 func (c *Command) trigger(ctx *Context) {

@@ -182,14 +182,14 @@ func (ir *Iris) onPomEnded(notify NotifyInfo, completed bool) {
 		err = datastore.FetchUser(notify.User.DiscordID)
 		if err != nil {
 			// create new users entry
-			hash, err = datastore.NewUser(notify.User.DiscordID, notify.User.DiscordTag, notify.User.GUIDID, pomDuration.String())
+			hash, err = datastore.NewUser(notify.User.DiscordID, notify.User.DiscordTag, notify.User.GUILDID, pomDuration.String())
 			ir.logger.Info(fmt.Sprintf("inserted %s to mongoDB. Hash: %s", notify.User.DiscordID, hash))
 			if err != nil {
 				ir.logger.Warn(err.Error())
 			}
 		} else {
 			// users already in database, just updates timing
-			err = datastore.UpdateUser(notify.User.DiscordID, notify.User.GUIDID, notify.User.ChannelID, int(pomDuration.Minutes()))
+			err = datastore.UpdateUser(notify.User.DiscordID, notify.User.GUILDID, notify.User.ChannelID, int(pomDuration.Minutes()))
 			if err != nil {
 				ir.logger.Warn(err.Error())
 			}
@@ -260,7 +260,7 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 		User: &datastore.User{
 			DiscordID:  m.Author.ID,
 			DiscordTag: m.Author.Discriminator,
-			GUIDID:     channel.GuildID,
+			GUILDID:    channel.GuildID,
 			ChannelID:  m.ChannelID,
 		},
 	}

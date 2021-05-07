@@ -61,10 +61,7 @@ func (r *Router) RegisterCmd(cmd *Command) {
 // GetCmd returns command with given name if exists.
 func (r *Router) GetCmd(name string) *Command {
 	for _, cmd := range r.Commands {
-		// NOTE: refactor using getIdentifiers(cmd)
-		toCheck := make([]string, 0, len(cmd.Aliases)+1)
-		toCheck = append(toCheck, cmd.Name)
-		toCheck = append(toCheck, cmd.Aliases...)
+		toCheck := getIdentifiers(cmd)
 
 		// check prefix of string.
 		if arrayContains(toCheck, name, cmd.IgnoreCase) {

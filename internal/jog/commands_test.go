@@ -16,10 +16,10 @@ var TestCommand = &Command{
 	IgnoreCase:  true,
 	SubCommands: []*Command{},
 	RateLimiter: TestRateLimiter,
-	Handler:     testCommand,
+	Handler:     testCmd,
 }
 
-func testCommand(ctx *Context) {
+func testCmd(ctx *Context) {
 	if err := ctx.RespondText(strconv.Itoa(ctx.ObjectsMap.GetValue("myObject").(int))); err != nil {
 		return
 	}
@@ -32,7 +32,7 @@ func TestCommand_GetSubCmd(t *testing.T) {
 	})
 
 	t.Run("get a subcmd", func(t *testing.T) {
-		TestCommand.SubCommands = []*Command{&Command{
+		TestCommand.SubCommands = []*Command{{
 			Name:        "t1",
 			Aliases:     []string{"t1"},
 			Description: "subcmd 1",

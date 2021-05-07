@@ -8,10 +8,11 @@ import (
 type Context struct {
 	Session    *discordgo.Session
 	Event      *discordgo.MessageCreate
+	Channel    *discordgo.Channel
 	Arguments  *Arguments
-	ObjectsMap *ObjectsMap
 	Router     *Router
 	Command    *Command
+	ObjectsMap *ObjectsMap
 }
 
 // ExecutionHandler represents a handler for a context execution.

@@ -68,7 +68,7 @@ func TestObjectsMap_Get(t *testing.T) {
 	loop(func(i int, key, value string) {
 		got, ok := TestObjectsMap.Get(key)
 		assert.Equal(t, value, got)
-		assert.Nil(t, ok)
+		assert.True(t, ok)
 	})
 }
 

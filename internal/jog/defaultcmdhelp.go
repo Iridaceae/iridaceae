@@ -10,7 +10,7 @@ import (
 )
 
 // RegisterDefaultHelpCommand registers the default help command.
-func (r *Router) RegisterDefaultHelpCommand(session *discordgo.Session, limiter RateLimiter) {
+func (r *Router) RegisterDefaultHelpCommand(session *discordgo.Session, limiter *RateLimiter) {
 	r.InitializeStorage("jog_helpMessages")
 
 	// Init reaction add listener.

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/joho/godotenv"
 
@@ -16,14 +17,33 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-var (
-	TestEmbed = &discordgo.MessageEmbed{
-		Type:        "rich",
-		Title:       "test pogu",
-		Description: "good embed",
-		Color:       0xffff00,
-	}
-)
+var TestEmbed = &discordgo.MessageEmbed{
+	Type:        "rich",
+	Title:       "This is a test message",
+	Description: "Embed nice",
+	Timestamp:   time.Now().Format(time.RFC3339),
+	Color:       0xffff00,
+}
+
+var TestDiffCtx = &Context{
+	Session: &discordgo.Session{
+		RWMutex: sync.RWMutex{},
+		Token:   "test_token",
+	},
+	Event: &discordgo.MessageCreate{Message: &discordgo.Message{
+		ID:        "different_test_msg",
+		ChannelID: "840228494009171988",
+		GuildID:   "832847806162403358",
+		Content:   "another test message",
+		Author: &discordgo.User{
+			ID:       "123123123",
+			Username: "test_nick_2",
+		},
+		Embeds: []*discordgo.MessageEmbed{TestEmbed},
+	}},
+	Router:  TestRouter,
+	Command: TestCommand,
+}
 
 func init() {
 	// make sure to load env first
@@ -34,7 +54,7 @@ func init() {
 }
 
 func makeTestSession() *discordgo.Session {
-	var botToken = os.Getenv("CONCERTINA_AUTHTOKEN")
+	botToken := os.Getenv("CONCERTINA_AUTHTOKEN")
 	// ensure sessions are established
 	dg, err := discordgo.New("Bot " + botToken)
 	if err != nil {
@@ -52,9 +72,10 @@ func makeTestCtx() *Context {
 		Event: &discordgo.MessageCreate{Message: &discordgo.Message{
 			ID:        "test_msg",
 			ChannelID: getEnvOrDefault("CONCERTINA_CHANNELID", ""),
-			GuildID:   getEnvOrDefault("CONCERTINA_GUIDID", ""),
+			GuildID:   getEnvOrDefault("CONCERTINA_GUILDID", ""),
 			Content:   "this is a test msg",
 			Author: &discordgo.User{
+				ID:       "12341234",
 				Username: "test_nick",
 			},
 			Embeds: []*discordgo.MessageEmbed{TestEmbed},
@@ -90,6 +111,6 @@ func TestContext_RespondTextEmbedError(t *testing.T) {
 	ErrNothingWrong := errors.New("test error that will be printed to users about wrong cmd parser")
 	ctx := makeTestCtx()
 	ctx.Session = makeTestSession()
-	err := ctx.RespondTextEmbedError("hello", "error response", ErrNothingWrong)
+	err := ctx.RespondTextEmbedError("Hello, this is a error text embed test", "error response", ErrNothingWrong)
 	assert.Nil(t, err)
 }
