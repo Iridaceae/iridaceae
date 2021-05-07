@@ -42,6 +42,3 @@ $ go install github.com/Iridaceae/iridaceae/cmd/iridaceae-server
 - `yagpdb` structures are pretty messy and harder for development and thus `iridaceae` aims to make it more developer-friendly as well as user-friendly
 - `iridaceae` got a lot of inspirations from `yagpdb` but takes a more lightweight approaches considering structures and deployments, refers to [here](pkg/README.md) for more details
 - `iridaceae` is pretty much <strong>WIP</strong> so any help are appreciated
-
-### todos.
-- [ ] fixes docker images with envars limiter
