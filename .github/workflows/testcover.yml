@@ -29,7 +29,7 @@ jobs:
           restore-keys:
             ${{ runner.os }}-go-
       - name: run tests 
-        run: go test -v -race -covermode=count ./...
+        run: go test -v -covermode=count ./...
         env:
           CONCERTINA_AUTHTOKEN: ${{ secrets.CONCERTINA_AUTHTOKEN }}
           CONCERTINA_CLIENTID: ${{ secrets.CONCERTINA_CLIENTID }}
