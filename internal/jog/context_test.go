@@ -49,7 +49,7 @@ func init() {
 	// make sure to load env first
 	err := godotenv.Load(strings.Join([]string{pkg.GetRootDir(), "defaults.env"}, "/"))
 	if err != nil {
-		panic(err)
+		TestLogger.Warn("defaults.env not found. This is due to either Docker container or CI is running the tasks. Loading from ENVARS instead.")
 	}
 }
 
