@@ -27,7 +27,6 @@ WORKDIR /app
 RUN apk --no-cache add git ca-certificates
 
 COPY --from=builder /iris/src/internal internal/
-COPY --from=builder /iris/src/defaults.env .
 COPY --from=iridaceae-builder /go/bin/iridaceae-server .
 
 CMD exec /app/iridaceae-server
