@@ -15,3 +15,7 @@ this directory includes core functionality of `iris`. This shouldn't be exposed 
 - should be more structured as refactoring goes so that it is easier to manage and test
 - rewrite tests to reduce boilerplate code
 - implements token-bucket `ratelimiter` (now it is a simple `timedmap` to check executions)
+
+### todos.
+- [ ] fixes docker images with envars limiter
+- [ ] fixes jog rate limiter (panic when running into limit cap)

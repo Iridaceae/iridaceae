@@ -30,6 +30,12 @@ jobs:
             ${{ runner.os }}-go-
       - name: run tests 
         run: go test -v -covermode=count ./...
+        env:
+          CONCERTINA_AUTHTOKEN: ${{ secrets.CONCERTINA_AUTHTOKEN }}
+          CONCERTINA_CLIENTID: ${{ secrets.CONCERTINA_CLIENTID }}
+          CONCERTINA_CLIENTSECRET: ${{ secrets.CONCERTINA_CLIENTSECRET }}
+          CONCERTINA_GUILDID: ${{ secrets.CONCERTINA_GUILDID }}
+          CONCERTINA_CHANNELID: ${{ secrets.CONCERTINA_CHANNELID }}
 
   coverage:
     runs-on: ubuntu-latest
@@ -53,6 +59,12 @@ jobs:
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
           go test -v -race -covermode=atomic -coverprofile=coverage.txt ./...
+        env:
+          CONCERTINA_AUTHTOKEN: ${{ secrets.CONCERTINA_AUTHTOKEN }}
+          CONCERTINA_CLIENTID: ${{ secrets.CONCERTINA_CLIENTID }}
+          CONCERTINA_CLIENTSECRET: ${{ secrets.CONCERTINA_CLIENTSECRET }}
+          CONCERTINA_GUILDID: ${{ secrets.CONCERTINA_GUILDID }}
+          CONCERTINA_CHANNELID: ${{ secrets.CONCERTINA_CHANNELID }}
       - name: CodeCov
         uses: codecov/codecov-action@v1
         with:

@@ -1,7 +1,6 @@
 package jog
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -143,7 +142,6 @@ func (a *Arguments) AsCodeblock() *Codeblock {
 
 	// define contents and language
 	sub := CodeblockRegex.FindStringSubmatch(raw)
-	fmt.Println(sub)
 	language := ""
 	content := sub[1] + sub[2]
 	if sub[1] != "" && arrayContains(ProgrammingLanguage, sub[1], false) {

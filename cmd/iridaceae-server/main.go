@@ -12,9 +12,7 @@ import (
 	"github.com/Iridaceae/iridaceae/pkg/core"
 )
 
-var (
-	defaultConfigPath = strings.Join([]string{pkg.GetRootDir(), "defaults.env"}, "/")
-)
+var defaultConfigPath = strings.Join([]string{pkg.GetRootDir(), "defaults.env"}, "/")
 
 // depart all core run into internal.
 func main() {

@@ -30,14 +30,14 @@ func init() {
 }
 
 // NewUser returns a hex representation of the inputs ObjectID and insert errors into new database.
-func NewUser(did, dit, guid, minutes string) (string, error) {
+func NewUser(did, dit, guild, minutes string) (string, error) {
 	m, _ := strconv.Atoi(minutes)
 	oid := bson.NewObjectId()
 	newEntry := User{
 		ID:             oid,
 		DiscordID:      did,
 		DiscordTag:     dit,
-		GUIDID:         guid,
+		GUILDID:        guild,
 		MinutesStudied: m,
 	}
 	insertErr := insert(newEntry)
@@ -50,6 +50,11 @@ func FetchUser(did string) error {
 	return err
 }
 
+// UpdateUser updates minutes studied to current users via discordID.
+func UpdateUser(did, guildid, channelid string, minutes int) error {
+	return update(did, guildid, channelid, minutes)
+}
+
 // FetchNumHours returns total number of hours of given users.
 func FetchNumHours(did string) string {
 	u, err := fetch(did)
@@ -57,11 +62,6 @@ func FetchNumHours(did string) string {
 		dbLogger.Warn("err", fmt.Sprintf("error while fetching users %s: %s", did, err.Error()))
 	}
 	return toHumanTime(u.MinutesStudied)
-}
-
-// UpdateUser updates minutes studied to current users via discordID.
-func UpdateUser(did string, minutes int) error {
-	return update(did, minutes)
 }
 
 // since time is captured in minutes, it will omit the following format 1d2h4m.

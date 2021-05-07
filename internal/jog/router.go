@@ -18,13 +18,14 @@ var (
 
 func init() {
 	StdRouter = Create(&Router{
-		Prefixes:         []string{"-", "ir-"},
+		Prefixes:         []string{"!", "-", "ir-"},
 		IgnorePrefixCase: true,
 		BotsAllowed:      false,
+		Logger:           pkg.StdLogger,
 		Commands:         []*Command{},
 		Middlewares:      []Middleware{},
 		PingHandler: func(ctx *Context) {
-			// TODO: Default PingHandler should returns dog facts for paragraph from GPT2 =))
+			// TODO: Default PingHandler should returns dog facts or a paragraph from GPT3 =))
 			if err := ctx.RespondText("Hello World"); err != nil {
 				panic(err)
 			}
@@ -60,10 +61,7 @@ func (r *Router) RegisterCmd(cmd *Command) {
 // GetCmd returns command with given name if exists.
 func (r *Router) GetCmd(name string) *Command {
 	for _, cmd := range r.Commands {
-		// NOTE: refactor using getIdentifiers(cmd)
-		toCheck := make([]string, 0, len(cmd.Aliases)+1)
-		toCheck = append(toCheck, cmd.Name)
-		toCheck = append(toCheck, cmd.Aliases...)
+		toCheck := getIdentifiers(cmd)
 
 		// check prefix of string.
 		if arrayContains(toCheck, name, cmd.IgnoreCase) {
@@ -111,8 +109,8 @@ func (r *Router) Handler() func(*discordgo.Session, *discordgo.MessageCreate) {
 		}
 
 		// Check if message starts with one of defined prefixes.
-		hasPrefix, content := hasPrefix(content, r.Prefixes, r.IgnorePrefixCase)
-		if !hasPrefix {
+		containsPrefix, content := hasPrefix(content, r.Prefixes, r.IgnorePrefixCase)
+		if !containsPrefix {
 			return
 		}
 

@@ -10,7 +10,7 @@ import (
 )
 
 // RegisterDefaultHelpCommand registers the default help command.
-func (r *Router) RegisterDefaultHelpCommand(session *discordgo.Session, limiter RateLimiter) {
+func (r *Router) RegisterDefaultHelpCommand(session *discordgo.Session, limiter *RateLimiter) {
 	r.InitializeStorage("jog_helpMessages")
 
 	// Init reaction add listener.
@@ -222,12 +222,6 @@ func renderDefaultSpecificHelpEmbed(ctx *Context, command *Command) *discordgo.M
 		Description: "Displaying the information for the `" + command.Name + "` command.",
 		Timestamp:   time.Now().Format(time.RFC3339),
 		Color:       0xffff00,
-		Footer:      nil,
-		Image:       nil,
-		Thumbnail:   nil,
-		Video:       nil,
-		Provider:    nil,
-		Author:      nil,
 		Fields: []*discordgo.MessageEmbedField{
 			{
 				Name:   "Name",

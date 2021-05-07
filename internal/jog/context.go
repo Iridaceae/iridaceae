@@ -8,10 +8,11 @@ import (
 type Context struct {
 	Session    *discordgo.Session
 	Event      *discordgo.MessageCreate
+	Channel    *discordgo.Channel
 	Arguments  *Arguments
-	ObjectsMap *ObjectsMap
 	Router     *Router
 	Command    *Command
+	ObjectsMap *ObjectsMap
 }
 
 // ExecutionHandler represents a handler for a context execution.
@@ -39,6 +40,6 @@ func (c *Context) RespondTextEmbed(text string, embed *discordgo.MessageEmbed) e
 }
 
 // RespondTextEmbedError responds given error to users with embed message.
-func (c *Context) RespondTextEmbedError(text, title string) error {
-	return c.RespondTextEmbed(text, &discordgo.MessageEmbed{Title: title, Color: EmbedColorError})
+func (c *Context) RespondTextEmbedError(text, title string, err error) error {
+	return c.RespondTextEmbed(text, &discordgo.MessageEmbed{Title: title, Description: err.Error(), Color: EmbedColorError})
 }
