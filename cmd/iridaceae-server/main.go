@@ -5,18 +5,20 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Iridaceae/iridaceae/pkg/deprecatedrunner"
+
+	"github.com/Iridaceae/iridaceae/pkg/stlog"
+
 	"github.com/Iridaceae/iridaceae/pkg"
 
 	"github.com/joho/godotenv"
-
-	"github.com/Iridaceae/iridaceae/pkg/core"
 )
 
 var defaultConfigPath = strings.Join([]string{pkg.GetRootDir(), "defaults.env"}, "/")
 
-// depart all core run into internal.
+// depart all deprecatedrunner run into internal.
 func main() {
-	logger := pkg.NewLogger(pkg.Debug, "iridaceae-server").Set()
+	logger := stlog.NewLogger(stlog.Debug, "iridaceae-server").Set()
 	defer logger.Info("--shutdown--")
 
 	// parse configparser and secrets parent directory since viper will handle configparser.
@@ -36,7 +38,7 @@ func main() {
 	// ....
 
 	// Start bot finally.
-	ir := core.New()
+	ir := deprecatedrunner.New()
 	err = ir.Start()
 	if err != nil {
 		logger.Error(err)

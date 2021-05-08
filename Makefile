@@ -31,6 +31,10 @@ help: ## display this help message
 test:
 	$(GOTEST) -v -race ./...
 
+.PHONY: test-cov
+test-cov:
+	$(GOTEST) -v -race -covermode=atomic ./...
+
 .PHONY: clean
 clean:
 	# creates /vendor
@@ -42,16 +46,16 @@ clean:
 .PHONY: dev
 dev: clean ## run iris in development
 	ulimit -n 1000
-	./bin/reflex --decoration=fancy -r '\.go$$' -s -- sh -c 'make build-all && $(BIN_FOLDER)/$(BINARY_NAME)'
+	./bin/reflex --decoration=fancy -r '\.go$$' -s -- sh -c 'make && $(BIN_FOLDER)/$(BINARY_NAME)'
 
 .PHONY: all
 all: build
-build: clean
+build:
 	$(GOBUILD) -o $(BIN_FOLDER)/$(BINARY_NAME) -v $(PKGDIR)
 	$(GOBUILD) -o $(BIN_FOLDER)/$(TEST_BINARY_NAME) -v $(TEST_PKGDIR)
 
 .PHONY: build-all
-build-all: build docker-build ## build for all system and arch
+build-all: clean build docker-build ## build for all system and arch
 	mkdir -p $(DIST_FOLDER)
 	# [darwin/amd64]
 	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_darwin -v $(PKGDIR)

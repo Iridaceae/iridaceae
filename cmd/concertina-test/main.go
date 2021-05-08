@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Iridaceae/iridaceae/pkg/stlog"
+
 	"github.com/Iridaceae/iridaceae/pkg"
 
 	"github.com/bwmarrin/discordgo"
@@ -17,7 +19,7 @@ import (
 const defaultConfigPath = "./defaults.env"
 
 func main() {
-	logger := pkg.NewLogger(pkg.Debug, "concertina")
+	logger := stlog.NewLogger(stlog.Debug, "concertina")
 	defer logger.Info("--shutdown--")
 
 	// parse configparser and secrets parent directory since viper will handle configparser.
