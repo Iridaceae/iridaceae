@@ -24,7 +24,6 @@ type Logger struct {
 // LogConfig defines config for Logger.
 type LogConfig struct {
 	name         string
-	level        int
 	staticFields []interface{}
 	configured   bool
 }
