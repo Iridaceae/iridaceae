@@ -10,8 +10,6 @@ import (
 
 const count = 1000
 
-var TestObjectsMap *ObjectsMap
-
 func init() {
 	newTestObjectsMap()
 }

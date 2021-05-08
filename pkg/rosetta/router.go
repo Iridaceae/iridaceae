@@ -9,6 +9,15 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+type ErrorType int
+
+const (
+	ErrTypeGuildPrefixGetter ErrorType = iota
+	ErrTypeCommandNotFound
+	ErrTypeMiddleware
+	ErrTypeCommandHandler
+)
+
 var (
 	// SpliceRegex represents the regex to split arguments.
 	SpliceRegex = regexp.MustCompile(`\\s+`)
@@ -17,20 +26,40 @@ var (
 )
 
 func init() {
-	StdRouter = Create(&Router{
+	StdRouter = New(&Router{
 		Prefixes:         []string{"!", "-", "ir-"},
 		IgnorePrefixCase: true,
 		BotsAllowed:      false,
 		Logger:           stlog.Defaults,
 		Commands:         []*Command{},
 		Middlewares:      []Middleware{},
-		PingHandler: func(ctx *Context) {
+		PingHandler: func(ctx *Context, _ ...interface{}) {
 			// TODO: Default PingHandler should returns dog facts or a paragraph from GPT3 =))
-			if err := ctx.RespondText("Hello World"); err != nil {
+			if err := ctx.RespondText("Pong"); err != nil {
 				panic(err)
 			}
 		},
+		ErrHandler: func(ctx *Context, errType ErrorType, err error) {
+			stlog.Defaults.Warn("context", ctx.Command, "ErrorType", errType, "error", err.Error())
+		},
+		Storage: nil,
 	})
+}
+
+// Handler specifies command registers and handlers.
+type Handler interface {
+
+	// RegisterCmd registers given command.
+	RegisterCmd(cmd *Command)
+
+	// RegisterMiddleware registers given middleware
+	RegisterMiddleware(m Middleware)
+
+	// GetCmd returns given command based on invoke string.
+	GetCmd(name string) (*Command, bool)
+
+	// Initialize registers all given commands and start discordgo event listener.
+	Initialize(s *discordgo.Session)
 }
 
 // Router represents a discordgo command routers.
@@ -43,14 +72,20 @@ type Router struct {
 	Commands         []*Command
 	Middlewares      []Middleware
 	PingHandler      ExecutionHandler
+	ErrHandler       func(ctx *Context, errType ErrorType, err error)
 	Storage          map[string]*ObjectsMap
 }
 
-// Create ensures that router storage map is initialized.
-func Create(r *Router) *Router {
+// New ensures that router storage map is initialized.
+func New(r *Router) *Router {
 	r.Storage = make(map[string]*ObjectsMap)
 	r.Logger = stlog.Defaults
 	return r
+}
+
+// InitializeStorage initializes a storage map.
+func (r *Router) InitializeStorage(name string) {
+	r.Storage[name] = newObjectsMap()
 }
 
 // RegisterCmd adds a new commands to routers.
@@ -58,27 +93,22 @@ func (r *Router) RegisterCmd(cmd *Command) {
 	r.Commands = append(r.Commands, cmd)
 }
 
+// RegisterMiddleware registers a new middleware.
+func (r *Router) RegisterMiddleware(m Middleware) {
+	r.Middlewares = append(r.Middlewares, m)
+}
+
 // GetCmd returns command with given name if exists.
-func (r *Router) GetCmd(name string) *Command {
+func (r *Router) GetCmd(name string) (*Command, bool) {
 	for _, cmd := range r.Commands {
 		toCheck := getIdentifiers(cmd)
 
 		// check prefix of string.
 		if arrayContains(toCheck, name, cmd.IgnoreCase) {
-			return cmd
+			return cmd, true
 		}
 	}
-	return nil
-}
-
-// RegisterMiddleware registers a new middleware.
-func (r *Router) RegisterMiddleware(middleware Middleware) {
-	r.Middlewares = append(r.Middlewares, middleware)
-}
-
-// InitializeStorage initializes a storage map.
-func (r *Router) InitializeStorage(name string) {
-	r.Storage[name] = newObjectsMap()
+	return nil, false
 }
 
 // Initialize discordgo message even listener.
@@ -144,6 +174,24 @@ func (r *Router) Handler() func(*discordgo.Session, *discordgo.MessageCreate) {
 			cmd.trigger(ctx)
 		}
 	}
+}
+
+func (r *Router) executeMiddlewares(ctx *Context, layer MiddlewareLayer) bool {
+	for _, m := range r.Middlewares {
+		if m.GetLayer()&layer == 0 {
+			continue
+		}
+
+		next, err := m.Handle(ctx)
+		if err != nil {
+			r.ErrHandler(ctx, ErrTypeMiddleware, err)
+			return false
+		}
+		if !next {
+			return false
+		}
+	}
+	return true
 }
 
 func getIdentifiers(c *Command) []string {

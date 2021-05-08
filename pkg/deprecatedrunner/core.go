@@ -75,7 +75,7 @@ func (ir *Iris) registerCmdHandlers() {
 		"pom":    {handler: ir.onCmdStartPom, desc: "Start a pom work cycle. You can optionally specify the period of time (default: 25 mins)", exampleParams: "50"},
 		"stop":   {handler: ir.onCmdCancelPom, desc: "cancel current pom cycle", exampleParams: ""},
 		"status": {handler: ir.onCmdStatus, desc: "get status of given users", exampleParams: ""},
-		"invite": {handler: ir.onCmdInvite, desc: "Create an invite link you can use to have the bot join the server", exampleParams: ""},
+		"invite": {handler: ir.onCmdInvite, desc: "New an invite link you can use to have the bot join the server", exampleParams: ""},
 		// "simp":   {handler: ir.onCmdSimp, desc: "notify another friend with the good stuff", exampleParams: ""},
 	}
 }

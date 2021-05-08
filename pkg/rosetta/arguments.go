@@ -86,7 +86,7 @@ func (a *Arguments) Raw() string {
 	return a.raw
 }
 
-// AsSingle returns a singleton of arguments with raw content.
+// AsSingle returns a singleton of arguments with raw content without args.
 func (a *Arguments) AsSingle() *Arguments {
 	return &Arguments{raw: a.raw}
 }

@@ -1,9 +1,9 @@
 package rosetta
 
-// ObjectMapKeyHandler will be used for di container in future release.
-const ObjectMapKeyHandler = "cmdhandler"
+import "errors"
 
 var (
+	ErrRateLimited    = errors.New("rate limited")
 	EmbedColorDefault = 0x6A5ACD
 	EmbedColorError   = 0xE53935
 )

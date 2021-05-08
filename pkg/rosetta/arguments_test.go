@@ -160,3 +160,30 @@ func TestArguments_AsCodeblock(t *testing.T) {
 		assert.Equal(t, "print('Hello World')", cb.Content)
 	})
 }
+
+func TestArguments_AsSingle(t *testing.T) {
+	msg := TestArgument.AsSingle()
+	assert.Equal(t, TestArgument.raw, msg.raw)
+	assert.Nil(t, msg.args)
+}
+
+func TestArguments_Len(t *testing.T) {
+	lenArgs := TestArgument.Len()
+	assert.Equal(t, 2, lenArgs)
+}
+
+func TestArguments_Raw(t *testing.T) {
+	test := &Argument{raw: "test"}
+	assert.Equal(t, "test", test.Raw())
+}
+
+func TestArguments_IndexOf(t *testing.T) {
+	t.Run("return nil index", func(t *testing.T) {
+		notExists := TestArgument.IndexOf("this doesn't exist")
+		assert.Negative(t, notExists)
+	})
+	t.Run("exists index", func(t *testing.T) {
+		exists := TestArgument.IndexOf("str1")
+		assert.Equal(t, 0, exists)
+	})
+}

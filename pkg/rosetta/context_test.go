@@ -6,7 +6,6 @@ import (
 	"strings"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/joho/godotenv"
 
@@ -16,34 +15,6 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 )
-
-var TestEmbed = &discordgo.MessageEmbed{
-	Type:        "rich",
-	Title:       "This is a test message",
-	Description: "Embed nice",
-	Timestamp:   time.Now().Format(time.RFC3339),
-	Color:       0xffff00,
-}
-
-var TestDiffCtx = &Context{
-	Session: &discordgo.Session{
-		RWMutex: sync.RWMutex{},
-		Token:   "test_token",
-	},
-	Event: &discordgo.MessageCreate{Message: &discordgo.Message{
-		ID:        "different_test_msg",
-		ChannelID: "840228494009171988",
-		GuildID:   "832847806162403358",
-		Content:   "another test message",
-		Author: &discordgo.User{
-			ID:       "123123123",
-			Username: "test_nick_2",
-		},
-		Embeds: []*discordgo.MessageEmbed{TestEmbed},
-	}},
-	Router:  TestRouter,
-	Command: TestCommand,
-}
 
 func init() {
 	// make sure to load env first
@@ -64,7 +35,7 @@ func makeTestSession() *discordgo.Session {
 }
 
 func makeTestCtx() *Context {
-	TestCtx := &Context{
+	testCtx := &Context{
 		Session: &discordgo.Session{
 			RWMutex: sync.RWMutex{},
 			Token:   "test_token",
@@ -78,12 +49,12 @@ func makeTestCtx() *Context {
 				ID:       "12341234",
 				Username: "test_nick",
 			},
-			Embeds: []*discordgo.MessageEmbed{TestEmbed},
+			Embeds: []*discordgo.MessageEmbed{TestEmbedMsg},
 		}},
 		Router:  TestRouter,
 		Command: TestCommand,
 	}
-	return TestCtx
+	return testCtx
 }
 
 func TestContext_RespondText(t *testing.T) {
@@ -96,14 +67,21 @@ func TestContext_RespondText(t *testing.T) {
 func TestContext_RespondEmbed(t *testing.T) {
 	ctx := makeTestCtx()
 	ctx.Session = makeTestSession()
-	err := ctx.RespondEmbed(TestEmbed)
+	err := ctx.RespondEmbed(TestEmbedMsg)
+	assert.Nil(t, err)
+}
+
+func TestContext_RespondEmbedError(t *testing.T) {
+	ctx := makeTestCtx()
+	ctx.Session = makeTestSession()
+	err := ctx.RespondEmbedError(ErrRateLimited)
 	assert.Nil(t, err)
 }
 
 func TestContext_RespondTextEmbed(t *testing.T) {
 	ctx := makeTestCtx()
 	ctx.Session = makeTestSession()
-	err := ctx.RespondTextEmbed("Hello, this is a test with text and embed", TestEmbed)
+	err := ctx.RespondTextEmbed("Hello, this is a test with text and embed", TestEmbedMsg)
 	assert.Nil(t, err)
 }
 

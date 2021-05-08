@@ -19,11 +19,9 @@ const (
 	Error
 )
 
-var (
-	// Defaults can be used right out of the box.
-	// Can also be replaced by a custom configured one using Set(*Logger).
-	Defaults *Logger
-)
+// Defaults can be used right out of the box.
+// Can also be replaced by a custom configured one using Set(*Logger).
+var Defaults *Logger
 
 func init() {
 	Defaults = NewLogger(Debug, logCtxKey.String())

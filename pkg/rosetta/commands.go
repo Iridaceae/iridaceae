@@ -5,27 +5,19 @@ import (
 	"time"
 )
 
-// LimiterConfig defines command that is rate limit-able.
-type LimiterConfig interface {
+// LimitedConfig defines command that is rate limit-able.
+type LimitedConfig interface {
+
 	// GetLimiterBurst returns max amount of tokens which can be available at time.
-	// Examples:
-	// 		type PingCmd struct {*Command}
-	//      func (p *PingCmd) GetLimiterBurst() int {
-	//			return 2
-	//		}
 	GetLimiterBurst() int
 
 	// GetLimiterRestoration returns duration between new token get generated.
-	// Examples:
-	//      func (p *PingCmd) GetLimiterRestoration() time.Duration {
-	//			return 5 * time.Second
-	//		}
 	GetLimiterRestoration() time.Duration
 }
 
-// Command represents a single command.
+// Command represents a single command for given context. Command are by default implements LimitedConfig.
 type Command struct {
-	LimiterConfig
+	LimitedConfig
 	Name        string
 	Aliases     []string
 	Description string
@@ -34,7 +26,6 @@ type Command struct {
 	Flags       []string
 	IgnoreCase  bool
 	SubCommands []*Command
-	RateLimiter *RateLimiter
 	Handler     ExecutionHandler
 }
 
@@ -82,13 +73,13 @@ func (c *Command) trigger(ctx *Context) {
 			return
 		}
 	}
-
-	// Prep all middleware.
-	nextHandler := c.Handler
-	for _, middleware := range ctx.Router.Middlewares {
-		nextHandler = middleware(nextHandler)
+	// we will wrap middleware execution before and after then command handler itself.
+	if !ctx.Router.executeMiddlewares(ctx, LayerBeforeCommand) {
+		return
 	}
-
-	// Run all middleware.
-	nextHandler(ctx)
+	// execute commands handlers here.
+	c.Handler(ctx)
+	if !ctx.Router.executeMiddlewares(ctx, LayerAfterCommand) {
+		return
+	}
 }

@@ -31,6 +31,10 @@ help: ## display this help message
 test:
 	$(GOTEST) -v -race ./...
 
+.PHONY: test-cov
+test-cov:
+	$(GOTEST) -v -race -covermode=atomic ./...
+
 .PHONY: clean
 clean:
 	# creates /vendor

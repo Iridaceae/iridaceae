@@ -10,7 +10,7 @@ import (
 )
 
 // RegisterDefaultHelpCommand registers the default help command.
-func (r *Router) RegisterDefaultHelpCommand(session *discordgo.Session, limiter *RateLimiter) {
+func (r *Router) RegisterDefaultHelpCommand(session *discordgo.Session) {
 	r.InitializeStorage("rosetta_helpMessages")
 
 	// Init reaction add listener.
@@ -45,31 +45,21 @@ func (r *Router) RegisterDefaultHelpCommand(session *discordgo.Session, limiter 
 			// Update help message
 			embed, newPage := renderDefaultGeneralHelpEmbed(r, page-1)
 			page = newPage
-			if _, err := session.ChannelMessageEditEmbed(channelID, messageID, embed); err != nil {
-				return
-			}
+			_, _ = session.ChannelMessageEditEmbed(channelID, messageID, embed)
 
 			// Remove reaction.
-			if err := session.MessageReactionRemove(channelID, messageID, reactionName, userID); err != nil {
-				return
-			}
+			_ = session.MessageReactionRemove(channelID, messageID, reactionName, userID)
 		case "❌":
 			// Delete help message
-			if err := session.ChannelMessageDelete(channelID, messageID); err != nil {
-				return
-			}
+			_ = session.ChannelMessageDelete(channelID, messageID)
 		case "➡️":
 			// Update help message
 			embed, newPage := renderDefaultGeneralHelpEmbed(r, page+1)
 			page = newPage
-			if _, err := session.ChannelMessageEditEmbed(channelID, messageID, embed); err != nil {
-				return
-			}
+			_, _ = session.ChannelMessageEditEmbed(channelID, messageID, embed)
 
 			// Remove reaction.
-			if err := session.MessageReactionRemove(channelID, messageID, reactionName, userID); err != nil {
-				return
-			}
+			_ = session.MessageReactionRemove(channelID, messageID, reactionName, userID)
 		}
 		// Update stores page
 		r.Storage["rosetta_helpMessages"].Set(channelID+":"+messageID+":"+event.UserID, page)
@@ -83,12 +73,11 @@ func (r *Router) RegisterDefaultHelpCommand(session *discordgo.Session, limiter 
 		Usage:       "help/h/? [command_name]",
 		Example:     "help pom",
 		IgnoreCase:  true,
-		RateLimiter: limiter,
 		Handler:     generalHelpCommand,
 	})
 }
 
-func generalHelpCommand(ctx *Context) {
+func generalHelpCommand(ctx *Context, _ ...interface{}) {
 	if ctx.Arguments.Len() > 0 {
 		specificHelpCommand(ctx)
 		return
@@ -163,7 +152,7 @@ func specificHelpCommand(ctx *Context) {
 	var cmd *Command
 	for idx, cmdName := range cmdNames {
 		if idx == 0 {
-			cmd = ctx.Router.GetCmd(cmdName)
+			cmd, _ = ctx.Router.GetCmd(cmdName)
 			continue
 		}
 		if cmd == nil {
@@ -173,9 +162,7 @@ func specificHelpCommand(ctx *Context) {
 	}
 
 	// Send the embed message
-	if _, err := ctx.Session.ChannelMessageSendEmbed(ctx.Event.ChannelID, renderDefaultSpecificHelpEmbed(ctx, cmd)); err != nil {
-		return
-	}
+	_, _ = ctx.Session.ChannelMessageSendEmbed(ctx.Event.ChannelID, renderDefaultSpecificHelpEmbed(ctx, cmd))
 }
 
 func renderDefaultSpecificHelpEmbed(ctx *Context, command *Command) *discordgo.MessageEmbed {
@@ -199,7 +186,7 @@ func renderDefaultSpecificHelpEmbed(ctx *Context, command *Command) *discordgo.M
 	}
 
 	// Define subcommands string.
-	subCmds := "No sub commands"
+	subCmds := ""
 	if len(command.SubCommands) > 0 {
 		subCmdNames := make([]string, 0, len(command.SubCommands))
 		for idx, subCmd := range command.SubCommands {
@@ -209,7 +196,7 @@ func renderDefaultSpecificHelpEmbed(ctx *Context, command *Command) *discordgo.M
 	}
 
 	// define aliases
-	aliases := "No aliases"
+	aliases := ""
 	if len(command.Aliases) > 0 {
 		aliases = "`" + strings.Join(command.Aliases, "`, `") + "`"
 	}

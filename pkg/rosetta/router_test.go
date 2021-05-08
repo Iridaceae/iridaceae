@@ -3,46 +3,11 @@ package rosetta
 import (
 	"testing"
 
-	"github.com/Iridaceae/iridaceae/pkg/stlog"
-
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	TestLogger = stlog.NewLogger(stlog.Info, "rosetta_testLogger")
-	// TestMiddleware is a middleware that will inject a object into context.
-	TestMiddleware = func(next ExecutionHandler) ExecutionHandler {
-		return func(ctx *Context) {
-			ctx.ObjectsMap.Set("myObject", 13)
-
-			// retrieve the object
-			obj, ok := ctx.ObjectsMap.GetValue("myObject").(int)
-			if !ok {
-				return
-			}
-			stlog.Defaults.Info("rosetta_objTest", obj)
-
-			// call next execution handler
-			next(ctx)
-		}
-	}
-	TestRouter = Create(&Router{
-		Prefixes:         []string{"!"},
-		IgnorePrefixCase: true,
-		BotsAllowed:      false,
-		Logger:           TestLogger,
-		Commands:         []*Command{},
-		Middlewares:      []Middleware{},
-		PingHandler: func(ctx *Context) {
-			if err := ctx.RespondText("pong!"); err != nil {
-				panic(err)
-			}
-		},
-	})
-)
-
 func TestCreate(t *testing.T) {
-	r := Create(TestRouter)
+	r := New(TestRouter)
 	assert.NotNil(t, r.Storage)
 }
 
@@ -55,19 +20,19 @@ func TestRouter_RegisterCmd(t *testing.T) {
 func TestRouter_GetCmd(t *testing.T) {
 	t.Run("not register test", func(t *testing.T) {
 		// we haven't register commands yet
-		t1 := TestRouter.GetCmd("test_options")
-		assert.NotEqual(t, TestCommand, t1)
+		_, ok := TestRouter.GetCmd("test_options")
+		assert.False(t, ok)
 	})
 
 	t.Run("register test", func(t *testing.T) {
 		TestRouter.RegisterCmd(TestCommand)
-		t2 := TestRouter.GetCmd("obj")
+		t2, _ := TestRouter.GetCmd("obj")
 		assert.Equal(t, TestCommand, t2)
 	})
 }
 
 func TestRouter_RegisterMiddleware(t *testing.T) {
-	TestRouter.RegisterMiddleware(TestMiddleware)
+	TestRouter.RegisterMiddleware(&TestMiddleware{})
 	assert.Equal(t, 1, len(TestRouter.Middlewares))
 }
 
@@ -80,9 +45,26 @@ func TestRouter_Handler(t *testing.T) {
 	ctx := makeTestCtx()
 	ctx.Session = makeTestSession()
 
+	TestRouter.RegisterMiddleware(&TestMiddleware{})
 	TestRouter.RegisterCmd(TestCommand)
-	TestRouter.RegisterMiddleware(TestMiddleware)
 	ctx.Router = TestRouter
 	TestRouter.Handler()
 	assert.Equal(t, TestCommand, TestRouter.Commands[0])
+}
+
+func TestRouter_RegisterDefaultHelpCommand(t *testing.T) {
+	t.Run("should return no error", func(t *testing.T) {
+		setSubCmd(t)
+		ctx := makeTestCtx()
+		s := makeTestSession()
+		ctx.Router = TestRouter
+		TestRouter.RegisterMiddleware(&TestMiddleware{})
+		TestRouter.RegisterDefaultHelpCommand(s)
+		TestRouter.Initialize(s)
+		assert.Equal(t, 4, len(TestRouter.Commands))
+
+		// help command should alive
+		_, ok := TestRouter.GetCmd("help")
+		assert.True(t, ok)
+	})
 }
