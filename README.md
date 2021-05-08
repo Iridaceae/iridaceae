@@ -23,10 +23,10 @@ $ go install github.com/Iridaceae/iridaceae/cmd/iridaceae-server
 .
 ├── bin
 ├── cmd           # bot cli, including both iridaceae and concertina        # lg: Go
-├── internal      # internal core of iridaceae, logging, config handling    # lg: Go
+├── internal      # internal deprecatedrunner of iridaceae, stlog, config handling    # lg: Go
 │   └── jog       # iridaceae' internal command parser                      # lg: Go
 ├── pkg                                                                     
-│   └── core      # bot logics, including message queries with configstore  # lg: Go
+│   └── deprecatedrunner      # bot logics, including message queries with configstore  # lg: Go
 ├── web           # bots front-facing api,                                  # lg: Rust
 └── scripts
 ```

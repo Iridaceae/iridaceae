@@ -7,9 +7,8 @@ this directory includes core functionality of `iris`. This shouldn't be exposed 
 | folder | description |
 | ------ | ----------- |
 |[`/internal/configparser`](./configparser) | handles configuration for `iris`. Included a master parser|
-|[`/internal/datastore`](./datastore) | handles database services and logics (_current_ `mongodb`, maybe `sql` _in the future_)|
-|[`/internal/jog`](./jog) | `Iris` command handlers |
-|[`/internal/logging.go`](./logging.go) | contains `iris` structured logger wrapped around `rs/zerolog`|
+|[`/internal/database`](./database) | handles database services and logics (_current_ `mongodb`, maybe `sql` _in the future_)|
+|[`/internal/rosetta`](../pkg/rosetta) | `Iris` command handlers |
 
 ### refactoring and testing.
 - should be more structured as refactoring goes so that it is easier to manage and test
@@ -18,4 +17,4 @@ this directory includes core functionality of `iris`. This shouldn't be exposed 
 
 ### todos.
 - [ ] fixes docker images with envars limiter
-- [ ] fixes jog rate limiter (panic when running into limit cap)
+- [ ] fixes ``rosetta`` rate limiter (panic when running into limit cap)
