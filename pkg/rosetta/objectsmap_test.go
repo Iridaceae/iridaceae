@@ -71,10 +71,17 @@ func TestObjectsMap_Get(t *testing.T) {
 }
 
 func TestObjectsMap_GetValue(t *testing.T) {
-	setup()
-	loop(func(i int, key, value string) {
-		got := TestObjectsMap.GetValue(key)
-		assert.Equal(t, value, got)
+	t.Run("get value in loops", func(t *testing.T) {
+		setup()
+		loop(func(i int, key, value string) {
+			got := TestObjectsMap.GetValue(key)
+			assert.Equal(t, value, got)
+		})
+	})
+	t.Run("get nil value", func(t *testing.T) {
+		setup()
+		ok := TestObjectsMap.GetValue("does not exists")
+		assert.Nil(t, ok)
 	})
 }
 
