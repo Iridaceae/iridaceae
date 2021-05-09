@@ -9,20 +9,19 @@ import (
 	"github.com/Iridaceae/iridaceae/pkg/rosetta"
 )
 
-func TestRateLimiter_GetLayer(t *testing.T) {
-	tm := New(func(ctx *rosetta.Context, _ ...interface{}) { _ = ctx.RespondText("Rate Limited") })
-	assert.Equal(t, rosetta.LayerBeforeCommand, tm.GetLayer())
-}
+func testLoop(t *testing.T, testCtx *rosetta.Context, m ...Manager) *RateLimiter {
+	t.Helper()
 
-func TestRateLimiter_Handle(t *testing.T) {
-	tm := New(func(ctx *rosetta.Context, _ ...interface{}) { _ = fmt.Sprintf("test ctx: %s", ctx.Command.Name) })
+	testHandler := func(ctx *rosetta.Context, _ ...interface{}) { fmt.Printf("test ctx: %s", ctx.Command.Name) }
+	tm := New(testHandler, m...)
+
 	pass := func() {
-		ok, err := tm.Handle(TestCtx)
+		ok, err := tm.Handle(testCtx)
 		assert.Nil(t, err)
 		assert.True(t, ok, "rate limiter stopped unexpectedly")
 	}
 	fail := func() {
-		ok, err := tm.Handle(TestCtx)
+		ok, err := tm.Handle(testCtx)
 		assert.Error(t, err)
 		assert.False(t, ok, "rate limiter passed unexpectedly")
 	}
@@ -31,4 +30,18 @@ func TestRateLimiter_Handle(t *testing.T) {
 		pass()
 	}
 	fail()
+
+	return tm
+}
+
+func TestRateLimiter_GetLayer(t *testing.T) {
+	tm := testLoop(t, TestCtx)
+	assert.Equal(t, rosetta.LayerBeforeCommand, tm.GetLayer())
+}
+
+// TODO: custom manager test.
+func TestRateLimiter_Handle(t *testing.T) {
+	t.Run("test rate limiter with default manager", func(t *testing.T) {
+		_ = testLoop(t, TestCtx)
+	})
 }

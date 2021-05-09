@@ -6,6 +6,8 @@ import (
 	"net"
 	"time"
 
+	"github.com/Iridaceae/iridaceae/pkg/sclog/log"
+
 	"github.com/globalsign/mgo"
 
 	"github.com/globalsign/mgo/bson"
@@ -38,13 +40,13 @@ func initMgoSessions(dbname, addr string) {
 
 	Session, err = mgo.DialWithInfo(dialInfo)
 	if err != nil {
-		dbLogger.Error(fmt.Errorf("error while establishing connection with mongo: %w", err))
+		log.Error(fmt.Errorf("error while establishing connection with mongo: %w", err))
 	}
 
 	users = Session.DB(dbname).C("users")
 	err = Session.Ping()
 	if err != nil {
-		dbLogger.Info(err.Error())
+		log.Info(err.Error())
 	}
 }
 

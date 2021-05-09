@@ -2,14 +2,9 @@ package datastore
 
 import (
 	"github.com/globalsign/mgo"
-
-	"github.com/Iridaceae/iridaceae/pkg/stlog"
 )
 
-const name string = "datastore_service"
-
 var (
-	dbLogger = stlog.NewLogger(stlog.Debug, name).Set()
 	// Session represents a mgo connection.
 	Session *mgo.Session
 	users   *mgo.Collection

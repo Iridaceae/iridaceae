@@ -1,9 +1,12 @@
 package rosetta
 
 import (
-	"os"
+	"sync"
 	"testing"
 
+	"github.com/Iridaceae/iridaceae/pkg/util"
+
+	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -37,10 +40,28 @@ func TestArrayContains(t *testing.T) {
 	assert.False(t, ok)
 }
 
-func getEnvOrDefault(env, def string) string {
-	v := os.Getenv(env)
-	if v == "" && def != "" {
-		v = def
+func makeTestCtx() *Context {
+	testCtx := &Context{
+		Session: &discordgo.Session{
+			RWMutex: sync.RWMutex{},
+			Token:   "test_token",
+		},
+		Arguments: &Arguments{
+			raw: "test t1 t2",
+		},
+		Event: &discordgo.MessageCreate{Message: &discordgo.Message{
+			ID:        "test_msg",
+			ChannelID: util.GetEnvOrDefault("CONCERTINA_CHANNELID", ""),
+			GuildID:   util.GetEnvOrDefault("CONCERTINA_GUILDID", ""),
+			Content:   "this is a test msg",
+			Author: &discordgo.User{
+				ID:       "12341234",
+				Username: "test_nick",
+			},
+			Embeds: []*discordgo.MessageEmbed{TestEmbedMsg},
+		}},
+		Router:  TestRouter,
+		Command: TestCommand,
 	}
-	return v
+	return testCtx
 }

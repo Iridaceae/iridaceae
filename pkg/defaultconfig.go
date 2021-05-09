@@ -5,10 +5,11 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/Iridaceae/iridaceae/internal/configparser"
+	"github.com/joho/godotenv"
+
+	configparser "github.com/Iridaceae/iridaceae/pkg/configmanager"
 )
 
-// TODO: add options to check for valid configuration name.
 var (
 	ConcertinaClientID, _      = configparser.Register("concertina.clientid", "ClientID of test bot", nil)
 	ConcertinaClientSecrets, _ = configparser.Register("concertina.clientsecret", "ClientSecret of test bot", nil)
@@ -18,6 +19,7 @@ var (
 	IridaceaeBotToken, _       = configparser.Register("iris.authtoken", "authentication token of the bot", nil)
 	CmdPrefix, _               = configparser.Register("iris.cmdprefix", "prefix for iris", "-ir ")
 	Loaded                     = false
+	CI                         = true
 )
 
 const (
@@ -62,4 +64,13 @@ func LoadConfig(clientid, clientsecret, token *configparser.Options) error {
 		}
 	}
 	return nil
+}
+
+func LoadGlobalEnv() error {
+	// We assume that everything is run with CI, thus the usecase of this is when not running with CI.
+	CI = false
+	if CI {
+		return nil
+	}
+	return godotenv.Load(strings.Join([]string{GetRootDir(), "defaults.env"}, "/"))
 }

@@ -12,9 +12,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Iridaceae/iridaceae/pkg/rosetta"
+	"github.com/Iridaceae/iridaceae/pkg/sclog"
 
-	"github.com/Iridaceae/iridaceae/pkg/stlog"
+	"github.com/Iridaceae/iridaceae/pkg/sclog/log"
+
+	"github.com/Iridaceae/iridaceae/pkg/rosetta"
 
 	"github.com/Iridaceae/iridaceae/pkg"
 
@@ -41,7 +43,6 @@ type Iris struct {
 	helpMessage   string
 	inviteMessage string
 	discord       *discordgo.Session
-	logger        *stlog.Logger
 	cmdHandlers   map[string]botCommand
 	poms          UserPomodoroMap
 	// record metrics here
@@ -51,16 +52,14 @@ type Iris struct {
 // New creates a new instance of Iris that can deploy over Heroku.
 func New() *Iris {
 	// setup new logLevel
-	logger := stlog.NewLogger(stlog.Info, "", "process", "deprecatedrunner")
 
 	err := pkg.LoadConfig(pkg.IridaceaeClientID, pkg.IridaceaeClientSecrets, pkg.IridaceaeBotToken)
 	if err != nil {
-		logger.Error(err)
+		log.Error(err)
 	}
 
 	ir := &Iris{
-		logger: logger,
-		poms:   NewUserPomodoroMap(),
+		poms: NewUserPomodoroMap(),
 	}
 
 	ir.registerCmdHandlers()
@@ -75,7 +74,7 @@ func (ir *Iris) registerCmdHandlers() {
 		"pom":    {handler: ir.onCmdStartPom, desc: "Start a pom work cycle. You can optionally specify the period of time (default: 25 mins)", exampleParams: "50"},
 		"stop":   {handler: ir.onCmdCancelPom, desc: "cancel current pom cycle", exampleParams: ""},
 		"status": {handler: ir.onCmdStatus, desc: "get status of given users", exampleParams: ""},
-		"invite": {handler: ir.onCmdInvite, desc: "New an invite link you can use to have the bot join the server", exampleParams: ""},
+		"invite": {handler: ir.onCmdInvite, desc: "SetZ an invite link you can use to have the bot join the server", exampleParams: ""},
 		// "simp":   {handler: ir.onCmdSimp, desc: "notify another friend with the good stuff", exampleParams: ""},
 	}
 }
@@ -102,6 +101,8 @@ func (ir *Iris) Start() error {
 	if err != nil {
 		return err
 	}
+	sclog.Mapper().Set("name", "Iridaceae")
+	sclog.AddGlobalFields("name")
 
 	// onReady will prepare our metrics, which will get from prometheus
 	ir.discord.AddHandler(ir.onReady)
@@ -112,7 +113,7 @@ func (ir *Iris) Start() error {
 		return err
 	}
 
-	ir.logger.Info("Iridaceae is now running. Press CTRL-C to exit.")
+	log.Info("Running. Press CTRL-C to exit.")
 	defer func() {
 		sc := make(chan os.Signal, 1)
 		signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
@@ -125,7 +126,7 @@ func (ir *Iris) Start() error {
 // onReady should prepare metrics collector and setup web interface for configuration (features).
 func (ir *Iris) onReady(s *discordgo.Session, event *discordgo.Ready) {
 	numGuilds := int64(len(s.State.Guilds))
-	ir.logger.Info(fmt.Sprintf("userName: %s#%s numGuilds: %d", event.User.Username, event.User.Discriminator, numGuilds))
+	log.Info(fmt.Sprintf("userName: %s#%s numGuilds: %d", event.User.Username, event.User.Discriminator, numGuilds))
 	// should include metrics collection down here
 }
 
@@ -157,7 +158,7 @@ func (ir *Iris) onMessageReceived(s *discordgo.Session, m *discordgo.MessageCrea
 			} else {
 				_, err := s.ChannelMessageSend(m.ChannelID, "Command error/not supported - dm **@aarnphm**")
 				if err != nil {
-					ir.logger.Warn(err.Error())
+					log.Warn(err.Error())
 				}
 			}
 		}
@@ -185,15 +186,15 @@ func (ir *Iris) onPomEnded(notify NotifyInfo, completed bool) {
 		if err != nil {
 			// create new users entry
 			hash, err = datastore.NewUser(notify.User.DiscordID, notify.User.DiscordTag, notify.User.GUILDID, pomDuration.String())
-			ir.logger.Info(fmt.Sprintf("inserted %s to mongoDB. Hash: %s", notify.User.DiscordID, hash))
+			log.Info(fmt.Sprintf("inserted %s to mongoDB. Hash: %s", notify.User.DiscordID, hash))
 			if err != nil {
-				ir.logger.Warn(err.Error())
+				log.Warn(err.Error())
 			}
 		} else {
 			// users already in database, just updates timing
 			err = datastore.UpdateUser(notify.User.DiscordID, notify.User.GUILDID, notify.User.ChannelID, int(pomDuration.Minutes()))
 			if err != nil {
-				ir.logger.Warn(err.Error())
+				log.Warn(err.Error())
 			}
 		}
 		// notify title
@@ -222,12 +223,12 @@ func (ir *Iris) onPomEnded(notify NotifyInfo, completed bool) {
 
 		_, err := ir.discord.ChannelMessageSendComplex(notify.User.ChannelID, data)
 		if err != nil {
-			ir.logger.Warn(err.Error())
+			log.Warn(err.Error())
 		}
 	} else {
 		_, err := ir.discord.ChannelMessageSend(notify.User.ChannelID, fmt.Sprintf("%s, pom canceled!", user.Mention()))
 		if err != nil {
-			ir.logger.Warn(err.Error())
+			log.Warn(err.Error())
 		}
 	}
 }
@@ -238,7 +239,7 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 
 	channel, err := s.State.Channel(m.ChannelID)
 	if err != nil {
-		ir.logger.Error(err)
+		log.Error(err)
 	}
 
 	// make sure that this converts to time instead of any other funky usecase
@@ -247,7 +248,7 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 		ex = strings.ReplaceAll(ex, "`", "")
 		ex = strings.TrimSpace(ex)
 	} else {
-		ir.logger.Warn(fmt.Sprintf("unknown time format. Accepts numbers only. got %s instead", ex))
+		log.Warn(fmt.Sprintf("unknown time format. Accepts numbers only. got %s instead", ex))
 	}
 
 	if ex != "" {
@@ -292,12 +293,12 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 		}
 		_, err := s.ChannelMessageSendComplex(m.ChannelID, data)
 		if err != nil {
-			ir.logger.Warn(err.Error())
+			log.Warn(err.Error())
 		}
 	} else {
 		_, err := s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("A pomodoro is already running for %s", m.Author.Mention()))
 		if err != nil {
-			ir.logger.Warn(err.Error())
+			log.Warn(err.Error())
 		}
 	}
 }
@@ -326,7 +327,7 @@ func (ir *Iris) onCmdStatus(s *discordgo.Session, m *discordgo.MessageCreate, ex
 	}
 	_, err := s.ChannelMessageSendComplex(m.ChannelID, data)
 	if err != nil {
-		ir.logger.Warn(err.Error())
+		log.Warn(err.Error())
 	}
 }
 
@@ -334,7 +335,7 @@ func (ir *Iris) onCmdCancelPom(s *discordgo.Session, m *discordgo.MessageCreate,
 	if exists := ir.poms.RemoveIfExists(m.Author.ID); !exists {
 		_, err := s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("No pom is currently running for %s", m.Author.Mention()))
 		if err != nil {
-			ir.logger.Warn(err.Error())
+			log.Warn(err.Error())
 		}
 	}
 	// if this removal is success then call onPomEnded
@@ -343,13 +344,13 @@ func (ir *Iris) onCmdCancelPom(s *discordgo.Session, m *discordgo.MessageCreate,
 func (ir *Iris) onCmdHelp(s *discordgo.Session, m *discordgo.MessageCreate, ex string) {
 	_, err := s.ChannelMessageSend(m.ChannelID, ir.helpMessage)
 	if err != nil {
-		ir.logger.Warn(err.Error())
+		log.Warn(err.Error())
 	}
 }
 
 func (ir *Iris) onCmdInvite(s *discordgo.Session, m *discordgo.MessageCreate, ex string) {
 	_, err := s.ChannelMessageSend(m.ChannelID, ir.inviteMessage)
 	if err != nil {
-		ir.logger.Warn(err.Error())
+		log.Warn(err.Error())
 	}
 }

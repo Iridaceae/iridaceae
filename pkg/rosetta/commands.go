@@ -79,6 +79,7 @@ func (c *Command) trigger(ctx *Context) {
 	}
 	// execute commands handlers here.
 	c.Handler(ctx)
+	// This will be middleware after execution.
 	if !ctx.Router.executeMiddlewares(ctx, LayerAfterCommand) {
 		return
 	}

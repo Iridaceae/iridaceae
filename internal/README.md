@@ -8,7 +8,8 @@ this directory includes core functionality of `iris`. This shouldn't be exposed 
 | ------ | ----------- |
 |[`/internal/configparser`](./configparser) | handles configuration for `iris`. Included a master parser|
 |[`/internal/database`](./database) | handles database services and logics (_current_ `mongodb`, maybe `sql` _in the future_)|
-|[`/internal/rosetta`](../pkg/rosetta) | `Iris` command handlers |
+
+- [`/internal/cbor`](./cbor) and [`/internal/json`](./json) are direct port from [`rs/zerlog`](git@github.com:rs/zerolog.git) to reduce test dependencies.
 
 ### refactoring and testing.
 - should be more structured as refactoring goes so that it is easier to manage and test
