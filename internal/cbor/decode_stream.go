@@ -20,8 +20,10 @@ var decodeTimeZone *time.Location
 
 const hexTable = "0123456789abcdef"
 
-const isFloat32 = 4
-const isFloat64 = 8
+const (
+	isFloat32 = 4
+	isFloat64 = 8
+)
 
 func readNBytes(src *bufio.Reader, n int) []byte {
 	ret := make([]byte, n)

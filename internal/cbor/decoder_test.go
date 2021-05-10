@@ -35,16 +35,18 @@ func TestDecodeArray(t *testing.T) {
 			t.Errorf("array2Json(0x%s)=%s, want: %s", hex.EncodeToString([]byte(tc.binary)), buf.String(), tc.json)
 		}
 	}
-	//Unspecified Length Array
-	var infiniteArrayTestCases = []struct {
+	// Unspecified Length Array
+	infiniteArrayTestCases := []struct {
 		in  string
 		out string
 	}{
 		{"\x9f\x20\x00\x18\xc8\x14\xff", "[-1,0,200,20]"},
 		{"\x9f\x38\xc7\x29\x18\xc8\x19\x01\x90\xff", "[-200,-10,200,400]"},
 		{"\x9f\x01\x02\x03\xff", "[1,2,3]"},
-		{"\x9f\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x18\x18\x19\xff",
-			"[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]"},
+		{
+			"\x9f\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x18\x18\x19\xff",
+			"[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]",
+		},
 	}
 	for _, tc := range infiniteArrayTestCases {
 		buf := bytes.NewBuffer([]byte{})
@@ -60,7 +62,7 @@ func TestDecodeArray(t *testing.T) {
 			t.Errorf("array2Json(0x%s)=%s, want: %s", hex.EncodeToString([]byte(tc.binary)), buf.String(), tc.json)
 		}
 	}
-	//TODO add cases for arrays of other types
+	// TODO add cases for arrays of other types
 }
 
 var infiniteMapDecodeTestCases = []struct {
@@ -124,9 +126,9 @@ func TestDecodeTimestamp(t *testing.T) {
 	}
 	for _, tc := range timeFloatTestcases {
 		tm := decodeTagData(getReader(tc.out))
-		//Since we convert to float and back - it may be slightly off - so
-		//we cannot check for exact equality instead, we'll check it is
-		//very close to each other Less than a Microsecond (lets not yet do nanosec)
+		// Since we convert to float and back - it may be slightly off - so
+		// we cannot check for exact equality instead, we'll check it is
+		// very close to each other Less than a Microsecond (lets not yet do nanosec)
 
 		got, _ := time.Parse(string(tm), string(tm))
 		want, _ := time.Parse(tc.rfcStr, tc.rfcStr)

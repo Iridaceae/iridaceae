@@ -1,7 +1,6 @@
 package ratelimit
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,7 +11,7 @@ import (
 func testLoop(t *testing.T, testCtx *rosetta.Context, m ...Manager) *RateLimiter {
 	t.Helper()
 
-	testHandler := func(ctx *rosetta.Context, _ ...interface{}) { fmt.Printf("test ctx: %s", ctx.Command.Name) }
+	testHandler := func(ctx *rosetta.Context, _ ...interface{}) {}
 	tm := New(testHandler, m...)
 
 	pass := func() {

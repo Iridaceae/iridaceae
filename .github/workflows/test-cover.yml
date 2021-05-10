@@ -1,4 +1,4 @@
-name: Test and Cover
+name: test and cover
 
 # Controls when the action will run. 
 on:

@@ -26,7 +26,7 @@ const (
 	additionalTypeBreak   byte = 31
 
 	// Tag Sub-types.
-	additionalTypeTimestamp byte = 01
+	additionalTypeTimestamp byte = 0o1
 
 	// Extended Tags - from https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml
 	additionalTypeTagNetworkAddr   uint16 = 260
@@ -37,6 +37,7 @@ const (
 	// Unspecified number of elements.
 	additionalTypeInfiniteCount byte = 31
 )
+
 const (
 	majorTypeUnsignedInt    byte = iota << majorOffset // Major type 0
 	majorTypeNegativeInt                               // Major type 1

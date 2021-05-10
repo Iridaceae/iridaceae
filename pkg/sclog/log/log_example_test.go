@@ -24,13 +24,12 @@ func setup() {
 	// examples to pass, we need to override zerolog.TimestampFunc
 	// and log.Logger globals -- you would not normally need to do this
 	zerolog.TimestampFunc = func() time.Time {
-		return time.Date(2008, 1, 8, 17, 5, 05, 0, time.UTC)
+		return time.Date(2008, 1, 8, 17, 5, 0o5, 0, time.UTC)
 	}
 	zlog := zerolog.New(os.Stdout).With().Timestamp().Logger()
 	log.Logger = log.SetZ(zlog)
 }
 
-// TODO: New
 func ExampleNew() {
 	log.New()
 	setup()
@@ -69,6 +68,7 @@ func ExampleDebugf() {
 	log.Debugf("hello %s", "world")
 	// Output: {"level":"DEBUG","time":1199811905,"message":"hello world"}
 }
+
 func ExampleInfo() {
 	setup()
 	log.Info("hello world")
@@ -118,6 +118,7 @@ func ExampleLogf() {
 	log.Logf("hello %s", "world")
 	// Output: {"time":1199811905,"message":"hello world"}
 }
+
 func ExamplePrint() {
 	setup()
 	log.Print("hello world")

@@ -10,8 +10,7 @@ GOMOD=$(GOCMD) mod
 BINARY_NAME=iridaceae-server
 TEST_BINARY_NAME=concertina-test
 PKGDIR=cmd/iridaceae-server/main.go
-TEST_PKGDIR=cmd/concertina-test/main.go
-PACKAGE_NAME=$(shell basename -s .git `git config --get remote.origin.url`)
+TEST_PKGDIR=cmd/concertina-test/main.go PACKAGE_NAME=$(shell basename -s .git `git config --get remote.origin.url`)
 
 # others
 GOLANGCI_LINT_VERSION=1.39.0

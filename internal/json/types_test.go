@@ -135,9 +135,13 @@ func Test_appendIPPrefix(t *testing.T) {
 	}{
 		{net.IPNet{IP: net.IPv6zero, Mask: net.CIDRMask(0, 128)}, []byte(`"::/0"`)},
 		{net.IPNet{IP: net.IPv6linklocalallnodes, Mask: net.CIDRMask(128, 128)}, []byte(`"ff02::1/128"`)},
-		{net.IPNet{IP: net.IP{0x20, 0x01, 0x0d, 0xb8, 0x85, 0xa3, 0x00, 0x00, 0x00, 0x00, 0x8a, 0x2e, 0x03, 0x70, 0x73, 0x34},
-			Mask: net.CIDRMask(64, 128)},
-			[]byte(`"2001:db8:85a3::8a2e:370:7334/64"`)},
+		{
+			net.IPNet{
+				IP:   net.IP{0x20, 0x01, 0x0d, 0xb8, 0x85, 0xa3, 0x00, 0x00, 0x00, 0x00, 0x8a, 0x2e, 0x03, 0x70, 0x73, 0x34},
+				Mask: net.CIDRMask(64, 128),
+			},
+			[]byte(`"2001:db8:85a3::8a2e:370:7334/64"`),
+		},
 	}
 	for _, tt := range IPv6Prefixtests {
 		t.Run("IPv6", func(t *testing.T) {

@@ -397,7 +397,6 @@ func (e Encoder) AppendIPAddr(dst []byte, ip net.IP) []byte {
 // AppendIPPrefix adds IPv4 or IPv6 Prefix (address & mask) to dst.
 func (e Encoder) AppendIPPrefix(dst []byte, pfx net.IPNet) []byte {
 	return e.AppendString(dst, pfx.String())
-
 }
 
 // AppendMACAddr adds MAC address to dst.

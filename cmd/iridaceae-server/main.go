@@ -8,7 +8,6 @@ import (
 
 // depart all deprecatedrunner run into internal.
 func main() {
-
 	defer log.Info("--shutdown--")
 	// we will handle all flags here
 

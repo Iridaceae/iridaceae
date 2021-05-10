@@ -42,6 +42,7 @@ func Log() *ScLogger {
 func Z() *zerolog.Logger {
 	return scLog.log
 }
+
 func (s *ScLogger) Trace(args ...interface{}) {
 	s.log.Trace().Msg(message("", args...))
 }

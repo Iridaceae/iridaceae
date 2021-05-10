@@ -64,5 +64,4 @@ func TestScLevelEncoder(t *testing.T) {
 }
 
 func TestTrimmedPath(t *testing.T) {
-
 }

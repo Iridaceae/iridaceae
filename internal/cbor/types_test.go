@@ -115,7 +115,6 @@ var integerTestCases = []struct {
 	{-0x10001, "\x3a\x00\x01\x00\x00"},
 	{-0x7FFFFFFE, "\x3a\x7f\xff\xff\xfd"},
 	{-1000000, "\x3a\x00\x0f\x42\x3f"},
-
 }
 
 func TestAppendInt(t *testing.T) {
@@ -138,9 +137,11 @@ var integerArrayTestCases = []struct {
 	{[]int{-1, 0, 200, 20}, "\x84\x20\x00\x18\xc8\x14", "[-1,0,200,20]"},
 	{[]int{-200, -10, 200, 400}, "\x84\x38\xc7\x29\x18\xc8\x19\x01\x90", "[-200,-10,200,400]"},
 	{[]int{1, 2, 3}, "\x83\x01\x02\x03", "[1,2,3]"},
-	{[]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25},
+	{
+		[]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25},
 		"\x98\x19\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x18\x18\x19",
-		"[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]"},
+		"[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]",
+	},
 }
 
 func TestAppendIntArray(t *testing.T) {
@@ -186,9 +187,11 @@ var ipAddrTestCases = []struct {
 	binary string // CBOR representation of ipaddr
 }{
 	{net.IP{10, 0, 0, 1}, "\"10.0.0.1\"", "\xd9\x01\x04\x44\x0a\x00\x00\x01"},
-	{net.IP{0x20, 0x01, 0x0d, 0xb8, 0x85, 0xa3, 0x0, 0x0, 0x0, 0x0, 0x8a, 0x2e, 0x03, 0x70, 0x73, 0x34},
+	{
+		net.IP{0x20, 0x01, 0x0d, 0xb8, 0x85, 0xa3, 0x0, 0x0, 0x0, 0x0, 0x8a, 0x2e, 0x03, 0x70, 0x73, 0x34},
 		"\"2001:db8:85a3::8a2e:370:7334\"",
-		"\xd9\x01\x04\x50\x20\x01\x0d\xb8\x85\xa3\x00\x00\x00\x00\x8a\x2e\x03\x70\x73\x34"},
+		"\xd9\x01\x04\x50\x20\x01\x0d\xb8\x85\xa3\x00\x00\x00\x00\x8a\x2e\x03\x70\x73\x34",
+	},
 }
 
 func TestAppendNetworkAddr(t *testing.T) {
@@ -230,8 +233,11 @@ var IPPrefixTestCases = []struct {
 	binary string // CBOR representation of pfx
 }{
 	{net.IPNet{IP: net.IP{0, 0, 0, 0}, Mask: net.CIDRMask(0, 32)}, "\"0.0.0.0/0\"", "\xd9\x01\x05\xa1\x44\x00\x00\x00\x00\x00"},
-	{net.IPNet{IP: net.IP{192, 168, 0, 100}, Mask: net.CIDRMask(24, 32)}, "\"192.168.0.100/24\"",
-		"\xd9\x01\x05\xa1\x44\xc0\xa8\x00\x64\x18\x18"},
+	{
+		net.IPNet{IP: net.IP{192, 168, 0, 100}, Mask: net.CIDRMask(24, 32)},
+		"\"192.168.0.100/24\"",
+		"\xd9\x01\x05\xa1\x44\xc0\xa8\x00\x64\x18\x18",
+	},
 }
 
 func TestAppendIPPrefix(t *testing.T) {

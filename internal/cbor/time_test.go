@@ -13,7 +13,7 @@ func TestAppendTimeNow(t *testing.T) {
 	s := enc.AppendTime([]byte{}, tm, "unused")
 	got := string(s)
 
-	tm1 := float64(tm.Unix()) + float64(tm.Nanosecond())*1E-9
+	tm1 := float64(tm.Unix()) + float64(tm.Nanosecond())*1e-9
 	tm2 := math.Float64bits(tm1)
 	var tm3 [8]byte
 	for i := uint(0); i < 8; i++ {
