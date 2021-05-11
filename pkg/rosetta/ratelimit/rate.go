@@ -1,3 +1,5 @@
+// Package ratelimit provides a basic token-bucket limiter for rosetta router.
+// This can be used to prevent users from spamming the bot and overload discord API.
 package ratelimit
 
 import (

@@ -1,4 +1,4 @@
-// Package deprecatedrunner contains bot functionality for iris. Currently following Pomodoro technique.
+// Deprecated: Package deprecatedrunner contains bot functionality.
 package deprecatedrunner
 
 import (
