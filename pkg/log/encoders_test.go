@@ -48,7 +48,7 @@ func TestScCallerEncoder(t *testing.T) {
 	out := &bytes.Buffer{}
 	L = NewZ(zerolog.New(out))
 
-	// test our encoder behaviour.
+	// test our encoder behavior.
 	original := zerolog.CallerMarshalFunc
 	defer func() { zerolog.CallerMarshalFunc = original }()
 	zerolog.CallerMarshalFunc = ScCallerEncoder()

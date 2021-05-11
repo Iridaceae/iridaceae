@@ -23,7 +23,7 @@ func TestStorage_Set(t *testing.T) {
 
 func TestStorage_SetMap(t *testing.T) {
 	ResetGlobalStorage()
-	var test = map[string]interface{}{
+	test := map[string]interface{}{
 		"k1": 1,
 		"k2": "2",
 		"k3": uint64(2),

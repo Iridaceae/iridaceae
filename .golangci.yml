@@ -1,7 +1,6 @@
 run:
   skip-dirs:
-    - internal/cbor
-    - internal/json
+    - internal/testutils/*
 
 linters:
   enable:
@@ -90,7 +89,7 @@ linters-settings:
   goimports:
     local-prefixes: github.com/Iridaceae/iridaceae
   misspell:
-    locale: UK
+    locale: US
   golint:
     min-confidence: 0
   gomnd:

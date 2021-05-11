@@ -33,7 +33,7 @@ type Storage struct {
 	sync.RWMutex
 }
 
-// InitGlobalStorage initialises a Storage objects with a key,value map.
+// InitGlobalStorage initializes a Storage objects with a key,value map.
 func InitGlobalStorage() *Storage {
 	if mapper == nil {
 		mapper = &Storage{items: make(map[string]interface{})}
@@ -48,7 +48,7 @@ func ResetGlobalStorage() {
 	_globalMapper.items = make(map[string]interface{})
 }
 
-// Mapper initialise a global mapper for our logger.
+// Mapper initialize a global mapper for our logger.
 func Mapper() *Storage {
 	mapper.RLock()
 	defer mapper.RUnlock()
