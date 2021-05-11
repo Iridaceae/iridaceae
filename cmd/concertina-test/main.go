@@ -14,7 +14,7 @@ import (
 
 func main() {
 	// Remember to setup our logs first.
-	log.Mapper().Update("name", "concertina")
+	log.Mapper().SetAbsent("name", "concertina")
 	defer log.Info().Msg("--shutdown--")
 
 	// we will handle all flags here

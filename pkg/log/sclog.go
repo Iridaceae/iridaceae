@@ -8,6 +8,8 @@ import (
 	"github.com/Iridaceae/iridaceae/pkg/util"
 
 	"github.com/rs/zerolog"
+
+	"github.com/rs/zerolog/log"
 )
 
 var L *Logger
@@ -27,10 +29,11 @@ type Logger struct {
 
 // NewZ creates a Logger from user-defined zerolog.
 func NewZ(l zerolog.Logger) *Logger {
+	log.Logger = l.Hook(MapperHook{})
 	ResetGlobalStorage()
 	ClearGlobalFields()
 
-	L = &Logger{log: &l}
+	L = &Logger{log: &log.Logger}
 	return L
 }
 
@@ -49,7 +52,7 @@ func New() *Logger {
 	return L
 }
 
-// Z returns internal zerolog.Logger.
+// Z returns internal zerolog.Logger of our global logger.
 func Z() *zerolog.Logger {
 	return L.log
 }
@@ -74,8 +77,8 @@ func Error(err error) *zerolog.Event {
 	return L.log.Error().Err(err)
 }
 
-func Fatal() *zerolog.Event {
-	return L.log.Fatal()
+func Fatal(err error) *zerolog.Event {
+	return L.log.Fatal().Err(err)
 }
 
 func Panic() *zerolog.Event {

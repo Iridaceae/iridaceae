@@ -14,4 +14,5 @@ _`commands` is commands handler_
     - prometheus
 
 TODO:
-- added ability to intercept `status` &rightarrow; interceptor 
+- added ability to intercept `status` &rightarrow; interceptor.
+- fix `log` global storages greedy reset. 

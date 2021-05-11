@@ -3,6 +3,8 @@ package log
 import (
 	"bytes"
 	"errors"
+	"fmt"
+	"runtime"
 	"testing"
 
 	"github.com/rs/zerolog"
@@ -43,7 +45,19 @@ func TestScLevelEncoder(t *testing.T) {
 }
 
 func TestScCallerEncoder(t *testing.T) {
+	out := &bytes.Buffer{}
+	L = NewZ(zerolog.New(out))
 
+	// test our encoder behaviour.
+	original := zerolog.CallerMarshalFunc
+	defer func() { zerolog.CallerMarshalFunc = original }()
+	zerolog.CallerMarshalFunc = ScCallerEncoder()
+	_, file, line, _ := runtime.Caller(0)
+	caller := fmt.Sprintf("%s:%d", TrimmedPath(file), line+2)
+	L.log.Log().Caller().Msg("msg")
+	if got, want := decodeIfBinaryToString(out.Bytes()), `{"source":"`+caller+`","message":"msg"}`+"\n"; got != want {
+		t.Errorf("invalid log output:\ngot: %v\nwant: %v", got, want)
+	}
 }
 
 func TestTrimmedPath(t *testing.T) {

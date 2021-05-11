@@ -8,7 +8,7 @@ import (
 
 // depart all deprecatedrunner run into internal.
 func main() {
-	log.Mapper().Update("name", "iridaceae")
+	log.Mapper().SetAbsent("name", "iridaceae")
 	defer log.Info().Msg("--shutdown--")
 	// we will handle all flags here
 
