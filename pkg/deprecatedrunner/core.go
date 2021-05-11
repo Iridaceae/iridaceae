@@ -1,3 +1,4 @@
+// Package deprecatedrunner contains v1 bot functionality, deprecated in next update.
 package deprecatedrunner
 
 import (

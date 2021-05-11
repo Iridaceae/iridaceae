@@ -7,6 +7,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func assertGetUniquePanic(t *testing.T) {
+	t.Helper()
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("%+v doesn't panic when it should be", Mapper().getUnique(""))
+		}
+	}()
+	Mapper().getUnique("")
+}
+
 func TestInitGlobalStorage(t *testing.T) {
 	s := Mapper()
 	assert.Equal(t, &_globalMapper, &s)
@@ -54,6 +64,7 @@ func TestStorage_GetString(t *testing.T) {
 	ResetGlobalStorage()
 	Mapper().Set("ver", "v1")
 	assert.Equal(t, "v1", Mapper().GetString("ver"))
+	assert.Equal(t, "", Mapper().GetString("this doesn't exists"))
 }
 
 func TestStorage_Has(t *testing.T) {
@@ -61,7 +72,9 @@ func TestStorage_Has(t *testing.T) {
 }
 
 func TestStorage_IsEmpty(t *testing.T) {
-	assert.False(t, Mapper().IsEmpty())
+	ResetGlobalStorage()
+	assert.True(t, Mapper().IsEmpty())
+	assertGetUniquePanic(t)
 }
 
 func TestStorage_Keys(t *testing.T) {
