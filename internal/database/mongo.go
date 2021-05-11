@@ -2,13 +2,22 @@ package datastore
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net"
 	"time"
+
+	"github.com/Iridaceae/iridaceae/pkg/log"
 
 	"github.com/globalsign/mgo"
 
 	"github.com/globalsign/mgo/bson"
+)
+
+var (
+	// Session represents a mgo connection.
+	Session *mgo.Session
+	users   *mgo.Collection
+	// fmt given: mongodb://app:password_here@shard:27017,another-shard:27017.
+	uriFmt = "mongodb://%s:%s@%s"
 )
 
 // User defined a user info with stats.
@@ -38,14 +47,10 @@ func initMgoSessions(dbname, addr string) {
 
 	Session, err = mgo.DialWithInfo(dialInfo)
 	if err != nil {
-		dbLogger.Error(fmt.Errorf("error while establishing connection with mongo: %w", err))
+		log.Error(err).Msg("error while establishing connection with mongo")
 	}
 
 	users = Session.DB(dbname).C("users")
-	err = Session.Ping()
-	if err != nil {
-		dbLogger.Info(err.Error())
-	}
 }
 
 func insert(user User) error {
@@ -55,6 +60,7 @@ func insert(user User) error {
 func fetch(discordID string) (User, error) {
 	var u User
 
+	log.Debug().Msgf("fetching %s from db", discordID)
 	err := users.Find(bson.M{"discordid": discordID}).One(&u)
 	return u, err
 }

@@ -39,15 +39,15 @@ func TestArgument_AsInt(t *testing.T) {
 func TestArgument_AsInt64(t *testing.T) {
 	t.Run("invalid int", func(t *testing.T) {
 		test := &Argument{"TRUE"}
-		_, err := test.AsInt()
+		_, err := test.AsInt64()
 		assert.Error(t, err)
 	})
 
 	t.Run("parse int64", func(t *testing.T) {
 		test := &Argument{"1214984716"}
-		i, err := test.AsInt()
+		i, err := test.AsInt64()
 		assert.Nil(t, err)
-		assert.Equal(t, 1214984716, i)
+		assert.Equal(t, int64(1214984716), i)
 	})
 }
 
@@ -128,6 +128,11 @@ func TestArguments_Get(t *testing.T) {
 		testArguments := ParseArguments(msg)
 		assert.Equal(t, &Argument{"This"}, testArguments.Get(0))
 	})
+	t.Run("get an invalid arguments", func(t *testing.T) {
+		msg := "This is a normal message that will be parsed separated by space"
+		testArguments := ParseArguments(msg)
+		assert.Equal(t, &Argument{""}, testArguments.Get(-12))
+	})
 }
 
 func TestArguments_Remove(t *testing.T) {
@@ -136,6 +141,12 @@ func TestArguments_Remove(t *testing.T) {
 		testArguments := ParseArguments(msg)
 		testArguments.Remove(0)
 		assert.NotEqual(t, &Argument{"This"}, testArguments.Get(0))
+	})
+	t.Run("remove a number longer than message", func(t *testing.T) {
+		msg := "This is a normal message that will be parsed separated by space"
+		testArguments := ParseArguments(msg)
+		testArguments.Remove(100)
+		assert.Equal(t, &Argument{"This"}, testArguments.Get(0))
 	})
 }
 
@@ -158,6 +169,12 @@ func TestArguments_AsCodeblock(t *testing.T) {
 		cb := testArguments.AsCodeblock()
 		assert.Equal(t, "", cb.Language)
 		assert.Equal(t, "print('Hello World')", cb.Content)
+	})
+	t.Run("invalid codeblock", func(t *testing.T) {
+		msg := ""
+		testArguments := ParseArguments(msg)
+		cb := testArguments.AsCodeblock()
+		assert.Nil(t, cb)
 	})
 }
 

@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Iridaceae/iridaceae/pkg/stlog"
+	"github.com/Iridaceae/iridaceae/pkg/log"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -30,17 +30,14 @@ func init() {
 		Prefixes:         []string{"!", "-", "ir-"},
 		IgnorePrefixCase: true,
 		BotsAllowed:      false,
-		Logger:           stlog.Defaults,
 		Commands:         []*Command{},
 		Middlewares:      []Middleware{},
 		PingHandler: func(ctx *Context, _ ...interface{}) {
 			// TODO: Default PingHandler should returns dog facts or a paragraph from GPT3 =))
-			if err := ctx.RespondText("Pong"); err != nil {
-				panic(err)
-			}
+			_ = ctx.RespondText("Pong")
 		},
 		ErrHandler: func(ctx *Context, errType ErrorType, err error) {
-			stlog.Defaults.Warn("context", ctx.Command, "ErrorType", errType, "error", err.Error())
+			log.Error(err).Msgf("context %+v errortype %+v", ctx.Command, errType)
 		},
 		Storage: nil,
 	})
@@ -68,7 +65,6 @@ type Router struct {
 	Prefixes         []string
 	IgnorePrefixCase bool
 	BotsAllowed      bool
-	Logger           *stlog.Logger
 	Commands         []*Command
 	Middlewares      []Middleware
 	PingHandler      ExecutionHandler
@@ -79,7 +75,6 @@ type Router struct {
 // New ensures that router storage map is initialized.
 func New(r *Router) *Router {
 	r.Storage = make(map[string]*ObjectsMap)
-	r.Logger = stlog.Defaults
 	return r
 }
 

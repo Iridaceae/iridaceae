@@ -3,6 +3,8 @@ package rosetta
 import (
 	"testing"
 
+	"github.com/Iridaceae/iridaceae/pkg/util"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,7 +45,7 @@ func TestRouter_InitializeStorage(t *testing.T) {
 
 func TestRouter_Handler(t *testing.T) {
 	ctx := makeTestCtx()
-	ctx.Session = makeTestSession()
+	ctx.Session = util.MakeTestSession()
 
 	TestRouter.RegisterMiddleware(&TestMiddleware{})
 	TestRouter.RegisterCmd(TestCommand)
@@ -56,7 +58,7 @@ func TestRouter_RegisterDefaultHelpCommand(t *testing.T) {
 	t.Run("should return no error", func(t *testing.T) {
 		setSubCmd(t)
 		ctx := makeTestCtx()
-		s := makeTestSession()
+		s := util.MakeTestSession()
 		ctx.Router = TestRouter
 		TestRouter.RegisterMiddleware(&TestMiddleware{})
 		TestRouter.RegisterDefaultHelpCommand(s)

@@ -1,46 +1,32 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-	"strings"
-
-	"github.com/Iridaceae/iridaceae/pkg/deprecatedrunner"
-
-	"github.com/Iridaceae/iridaceae/pkg/stlog"
-
 	"github.com/Iridaceae/iridaceae/pkg"
-
-	"github.com/joho/godotenv"
+	"github.com/Iridaceae/iridaceae/pkg/deprecatedrunner"
+	"github.com/Iridaceae/iridaceae/pkg/log"
 )
-
-var defaultConfigPath = strings.Join([]string{pkg.GetRootDir(), "defaults.env"}, "/")
 
 // depart all deprecatedrunner run into internal.
 func main() {
-	logger := stlog.NewLogger(stlog.Debug, "iridaceae-server").Set()
-	defer logger.Info("--shutdown--")
+	log.Mapper().SetAbsent("name", "iridaceae")
+	defer log.Info().Msg("--shutdown--")
+	// we will handle all flags here
 
-	// parse configparser and secrets parent directory since viper will handle configparser.
-	cpath := flag.String("cpath", defaultConfigPath, fmt.Sprintf("LogConfig path for storing default configparser and secrets, default: %s", defaultConfigPath))
-	// NOTE: this is when parsing options to get metrics from prom.
-	// var opts metricsOptions
+	_ = pkg.LoadGlobalEnv()
+	// TODO: should check if it is running inside docker or a CI pipe
+	log.Warn().Msg("Make sure that envars are set correctly in docker and CI.")
 
-	flag.Parse()
-
-	err := godotenv.Load(*cpath)
-	// TODO: setup a secret handler
-	if err != nil {
-		logger.Warn(fmt.Sprintf("Error loading env file: %s, loading from Secrets instead.", err.Error()))
+	if err := pkg.LoadConfig(pkg.ConcertinaClientID, pkg.ConcertinaClientSecrets, pkg.ConcertinaBotToken); err != nil {
+		log.Error(err).Msg("couldn't load required envars.")
 	}
-
 	// setup metrics here.
 	// ....
 
+	log.Info().Msg("Running. Press CTRL-C to exit.")
 	// Start bot finally.
 	ir := deprecatedrunner.New()
-	err = ir.Start()
+	err := ir.Start()
 	if err != nil {
-		logger.Error(err)
+		log.Error(err).Msg("")
 	}
 }

@@ -14,7 +14,7 @@
 
 ## install. <img alt="VimL" src="https://img.shields.io/badge/-Atlas-66d124?style=flat-square&logo=mongoDB&logoColor=white">&nbsp;<img alt="Go" src="https://img.shields.io/badge/-discordgo-46a2f1?style=flat-square&logo=go&logoColor=white">&nbsp;<img alt="Heroku" src="https://img.shields.io/badge/-Heroku-430098?style=flat-square&logo=heroku&logoColor=white">&nbsp;<img alt="git" src="https://img.shields.io/badge/-Github Actions-000000?style=flat-square&logo=GitHub&logoColor=white">
 
-```sh 
+```sh
 $ go install github.com/Iridaceae/iridaceae/cmd/iridaceae-server
 ```
 
@@ -23,13 +23,13 @@ $ go install github.com/Iridaceae/iridaceae/cmd/iridaceae-server
 .
 ├── bin
 ├── cmd           # bot cli, including both iridaceae and concertina        # lg: Go
-├── internal      # internal deprecatedrunner of iridaceae, stlog, config handling    # lg: Go
-│   └── jog       # iridaceae' internal command parser                      # lg: Go
-├── pkg                                                                     
-│   └── deprecatedrunner      # bot logics, including message queries with configstore  # lg: Go
+├── internal      # internal schenanigans                                   # lg: Go
+├── pkg           # bot logics, including message queries with configstore  # lg: Go
 ├── web           # bots front-facing api,                                  # lg: Rust
 └── scripts
 ```
+
+_check each folder readme for more information_
 
 ## inspirations.
 > <div align="left"><i>why <strong>Go</strong> not <strong>TS/JS</strong>?</i></div>

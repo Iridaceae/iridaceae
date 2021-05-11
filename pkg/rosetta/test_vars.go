@@ -2,25 +2,27 @@ package rosetta
 
 import (
 	"errors"
-	"strconv"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
 
-	"github.com/Iridaceae/iridaceae/pkg/stlog"
+	"github.com/Iridaceae/iridaceae/pkg/log"
 )
 
-type TestMiddleware struct{}
+type TestMiddleware struct {
+	name string
+}
 
 func (t *TestMiddleware) Handle(ctx *Context) (bool, error) {
 	ctx.ObjectsMap.Set("myObject", 13)
+	t.name = ctx.Event.ID
 
 	// retrieve the object
 	obj, ok := ctx.ObjectsMap.GetValue("myObject").(int)
 	if !ok {
 		return false, errors.New("null object")
 	}
-	stlog.Defaults.Info("rosetta_objTest", obj)
+	log.Info().Msgf("rosetta_objTest: %+v", obj)
 	return true, nil
 }
 
@@ -30,8 +32,6 @@ func (t *TestMiddleware) GetLayer() MiddlewareLayer {
 
 var (
 	TestObjectsMap *ObjectsMap
-
-	TestLogger = stlog.NewLogger(stlog.Info, "rosetta_testLogger")
 
 	TestArgument = &Arguments{
 		raw: "test string",
@@ -64,19 +64,10 @@ var (
 		Prefixes:         []string{"!"},
 		IgnorePrefixCase: true,
 		BotsAllowed:      false,
-		Logger:           TestLogger,
 		Commands:         []*Command{},
 		Middlewares:      []Middleware{},
-		PingHandler: func(ctx *Context, _ ...interface{}) {
-			if err := ctx.RespondText("pong!"); err != nil {
-				panic(err)
-			}
-		},
+		PingHandler:      func(ctx *Context, _ ...interface{}) { log.Info().Msgf("context arguments : %+v", ctx.Arguments) },
 	})
 )
 
-func onTestCmd(ctx *Context, _ ...interface{}) {
-	if err := ctx.RespondText(strconv.Itoa(ctx.ObjectsMap.GetValue("myObject").(int))); err != nil {
-		return
-	}
-}
+func onTestCmd(ctx *Context, _ ...interface{}) {}

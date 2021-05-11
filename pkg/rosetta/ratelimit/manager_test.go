@@ -4,12 +4,9 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/joho/godotenv"
 
 	"github.com/Iridaceae/iridaceae/pkg"
 
@@ -93,11 +90,7 @@ var (
 )
 
 func init() {
-	// make sure to load env first
-	err := godotenv.Load(strings.Join([]string{pkg.GetRootDir(), "defaults.env"}, "/"))
-	if err != nil {
-		return
-	}
+	_ = pkg.LoadGlobalEnv()
 }
 
 func TestManager_GetBucket(t *testing.T) {

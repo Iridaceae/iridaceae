@@ -10,7 +10,7 @@ GOMOD=$(GOCMD) mod
 BINARY_NAME=iridaceae-server
 TEST_BINARY_NAME=concertina-test
 PKGDIR=cmd/iridaceae-server/main.go
-TEST_PKGDIR=cmd/concertina-test/main.go
+TEST_PKGDIR=cmd/concertina-test/main.go 
 PACKAGE_NAME=$(shell basename -s .git `git config --get remote.origin.url`)
 
 # others
@@ -26,6 +26,10 @@ BIN_FOLDER=$(shell pwd)/bin
 .PHONY: help
 help: ## display this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[33m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: run
+run: build ## run iridaceae in local context
+	./bin/iridaceae-server
 
 .PHONY: test
 test:
@@ -61,7 +65,7 @@ build-all: clean build docker-build ## build for all system and arch
 	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_darwin -v $(PKGDIR)
 	# [linux/amd64]
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_linux -v $(PKGDIR)
-	# [windows/amd64]
+	# [windows/amd64 spelling]
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o $(DIST_FOLDER)/$(BINARY_NAME)_windows.exe -v $(PKGDIR)
 
 .PHONY: heroku-local
@@ -111,7 +115,7 @@ generate-env: ## generate env file from defaults.example.env
 	@./scripts/generate_env_file.sh
 
 .PHONY: ensure-tools
-ensure-tools: install-gofumports install-lint install-reflex ## ensure all dev tools
+ensure-tools: install-gofumports install-lint install-reflex install-misspell ## ensure all dev tools
 
 .PHONY: install-lint
 install-lint:
@@ -133,8 +137,14 @@ install-reflex:
 		GOBIN=$(BIN_FOLDER) $(GOGET) github.com/cespare/reflex; \
 	fi
 
-.PHONY: ensure-format-lint
-ensure-format-lint: format lint ## ensures you run format and lint
+.PHONY: install-misspell
+install-misspell:
+	if [[ ! -x bin/misspell ]]; then \
+		GOBIN=$(BIN_FOLDER) $(GOGET) -d github.com/client9/misspell/cmd/misspell; \
+	fi
+
+.PHONY: ensure-format
+ensure-format: format lint ## ensures you run format, lint, and spelling
 
 .PHONY: lint
 lint: install-lint
@@ -144,3 +154,8 @@ lint: install-lint
 format: install-gofumports
 	find . -name \*.go | xargs ./bin/gofumports -local github.com/Iridaceae/iridaceae -w
 	gofmt -w -s **/*.go
+
+locale=$(shell cat .golangci.yml | grep locale | sed 's/ //g' | sed 's/locale://g')
+.PHONY: spelling
+spelling: install-misspell
+	./bin/misspell -w -locale $(locale)  ./...

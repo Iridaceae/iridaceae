@@ -1,53 +1,38 @@
 package main
 
 import (
-	"flag"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/Iridaceae/iridaceae/pkg/stlog"
+	"github.com/Iridaceae/iridaceae/pkg/log"
 
 	"github.com/Iridaceae/iridaceae/pkg"
 
 	"github.com/bwmarrin/discordgo"
-
-	"github.com/joho/godotenv"
 )
 
-const defaultConfigPath = "./defaults.env"
-
 func main() {
-	logger := stlog.NewLogger(stlog.Debug, "concertina")
-	defer logger.Info("--shutdown--")
+	// Remember to setup our logs first.
+	log.Mapper().SetAbsent("name", "concertina")
+	defer log.Info().Msg("--shutdown--")
 
-	// parse configparser and secrets parent directory since viper will handle configparser.
-	configPath := flag.String("configPath", defaultConfigPath, fmt.Sprintf("LogConfig path for storing default configparser and secrets, default: %s", defaultConfigPath))
-	// NOTE: this is when parsing options to get metrics from prom.
-	// var opts metricsOptions
+	// we will handle all flags here
 
-	flag.Parse()
+	_ = pkg.LoadGlobalEnv()
+	// TODO: should check if it is running inside docker or a CI pipe
+	log.Warn().Msg("Make sure that envars are set correctly in docker and CI.")
 
-	err := godotenv.Load(*configPath)
-	if err != nil {
-		logger.Warn(fmt.Sprintf("Error loading env file: %s, loading from ENVARS instead.", err.Error()))
-	}
-
-	err = pkg.LoadConfig(pkg.ConcertinaClientID, pkg.ConcertinaClientSecrets, pkg.ConcertinaBotToken)
-	if err != nil {
-		return
+	if err := pkg.LoadConfig(pkg.ConcertinaClientID, pkg.ConcertinaClientSecrets, pkg.ConcertinaBotToken); err != nil {
+		log.Error(err).Msg("couldn't load required envars.")
 	}
 	dg, err := discordgo.New(pkg.GetBotToken(pkg.ConcertinaBotToken))
 	if err != nil {
 		panic(err)
 	}
-	err = dg.Open()
-	if err != nil {
-		panic(err)
-	}
+	_ = dg.Open()
 
-	logger.Info("Concertina is now running. Press CTRL-C to exit.")
+	log.Info().Msg("Running. Press CTRL-C to exit.")
 	// Wait for the user to cancel the process.
 	defer func() {
 		sc := make(chan os.Signal, 1)

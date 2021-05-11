@@ -1,4 +1,4 @@
-name: Test and Cover
+name: test and cover
 
 # Controls when the action will run. 
 on:
@@ -58,7 +58,7 @@ jobs:
       - name: Calculate coverage
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
-          go test -v -race -covermode=atomic -coverprofile=coverage.txt ./...
+          go test -v -race -covermode=atomic -coverprofile=coverage.txt github.com/Iridaceae/iridaceae/pkg/...
         env:
           CONCERTINA_AUTHTOKEN: ${{ secrets.CONCERTINA_AUTHTOKEN }}
           CONCERTINA_CLIENTID: ${{ secrets.CONCERTINA_CLIENTID }}

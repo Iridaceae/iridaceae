@@ -86,20 +86,11 @@ func (a *AcceptMessage) Send(channelID string) (*AcceptMessage, error) {
 		return nil, components.ErrEmbedNotDefined
 	}
 
-	msg, err := a.Session.ChannelMessageSendEmbed(channelID, a.Embed)
-	if err != nil {
-		return nil, err
-	}
+	msg, _ := a.Session.ChannelMessageSendEmbed(channelID, a.Embed)
 
 	a.Message = msg
-	err = a.Session.MessageReactionAdd(channelID, msg.ID, acceptMessageEmoteAccept)
-	if err != nil {
-		return nil, err
-	}
-	err = a.Session.MessageReactionAdd(channelID, msg.ID, acceptMessageEmoteDecline)
-	if err != nil {
-		return nil, err
-	}
+	_ = a.Session.MessageReactionAdd(channelID, msg.ID, acceptMessageEmoteAccept)
+	_ = a.Session.MessageReactionAdd(channelID, msg.ID, acceptMessageEmoteDecline)
 
 	a.eventListener = a.Session.AddHandler(func(s *discordgo.Session, e *discordgo.MessageReactionAdd) {
 		if e.MessageID != msg.ID {
@@ -107,9 +98,7 @@ func (a *AcceptMessage) Send(channelID string) (*AcceptMessage, error) {
 		}
 
 		if e.UserID != a.Session.State.User.ID {
-			if err = a.Session.MessageReactionRemove(a.ChannelID, a.ID, e.Emoji.Name, e.UserID); err != nil {
-				return
-			}
+			_ = a.Session.MessageReactionRemove(a.ChannelID, a.ID, e.Emoji.Name, e.UserID)
 		}
 		if e.UserID == s.State.User.ID || (a.UserID != "" && a.UserID != e.UserID) {
 			return
@@ -132,13 +121,9 @@ func (a *AcceptMessage) Send(channelID string) (*AcceptMessage, error) {
 
 		a.eventListener()
 		if a.DeleteMsgAfter {
-			if err = a.Session.ChannelMessageDelete(channelID, msg.ID); err != nil {
-				return
-			}
+			_ = a.Session.ChannelMessageDelete(channelID, msg.ID)
 		} else {
-			if err = a.Session.MessageReactionsRemoveAll(channelID, msg.ID); err != nil {
-				return
-			}
+			_ = a.Session.MessageReactionsRemoveAll(channelID, msg.ID)
 		}
 	})
 	return a, nil

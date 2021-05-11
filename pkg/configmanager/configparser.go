@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const optionsFmtRegex string = "^(([\\w\\.])+(\\.)([\\w]){2,4}([\\w]*))*$"
+const OptionsRegex string = "^(([\\w\\.])+(\\.)([\\w]){2,4}([\\w]*))*$"
 
 var (
 	ErrEmptyValue          = fmt.Errorf("empty strings")
@@ -29,32 +29,30 @@ type Options struct {
 	Description  string
 	DefaultValue interface{}
 	LoadedValue  interface{}
-	Manager      *Manager
-
+	Manager      *ConfigManager
 	ConfigSource Source
 }
 
-// Manager holds types for generic managers to generate configs.
-type Manager struct {
+// ConfigManager holds types for generic managers to generate configs.
+type ConfigManager struct {
 	sources []Source
 	Options map[string]*Options
 }
 
-// NewManager makes a configs manager.
-func NewManager() *Manager {
-	return &Manager{Options: make(map[string]*Options)}
+// NewConfigManager makes a configs manager.
+func NewConfigManager() *ConfigManager {
+	return &ConfigManager{Options: make(map[string]*Options)}
 }
 
 // AddSource allows users to append given configparser source to the manager.
-func (c *Manager) AddSource(source Source) {
+func (c *ConfigManager) AddSource(source Source) {
 	c.sources = append(c.sources, source)
 }
 
 // Register will add given configs to the general manager.
-func (c *Manager) Register(name, desc string, defaultValue interface{}) (*Options, error) {
-	_, err := matchOptionsRegex(name)
-	if err != nil {
-		return &Options{}, err
+func (c *ConfigManager) Register(name, desc string, defaultValue interface{}) (*Options, error) {
+	if _, err := matchOptionsRegex(name); err != nil {
+		return nil, ErrInvalidFormat
 	}
 	opt := &Options{
 		Name:         name,
@@ -67,7 +65,7 @@ func (c *Manager) Register(name, desc string, defaultValue interface{}) (*Option
 }
 
 // Load handles configs func LoadValue directly.
-func (c *Manager) Load() {
+func (c *ConfigManager) Load() {
 	for _, v := range c.Options {
 		v.LoadValue()
 	}
@@ -190,7 +188,7 @@ func toBoolVal(i interface{}) bool {
 }
 
 func matchOptionsRegex(key string) (bool, error) {
-	b, _ := regexp.MatchString(optionsFmtRegex, key)
+	b, _ := regexp.MatchString(OptionsRegex, key)
 	if b {
 		return b, nil
 	}
