@@ -10,7 +10,8 @@ GOMOD=$(GOCMD) mod
 BINARY_NAME=iridaceae-server
 TEST_BINARY_NAME=concertina-test
 PKGDIR=cmd/iridaceae-server/main.go
-TEST_PKGDIR=cmd/concertina-test/main.go PACKAGE_NAME=$(shell basename -s .git `git config --get remote.origin.url`)
+TEST_PKGDIR=cmd/concertina-test/main.go 
+PACKAGE_NAME=$(shell basename -s .git `git config --get remote.origin.url`)
 
 # others
 GOLANGCI_LINT_VERSION=1.39.0
@@ -25,6 +26,10 @@ BIN_FOLDER=$(shell pwd)/bin
 .PHONY: help
 help: ## display this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[33m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: run
+run: build ## run iridaceae in local context
+	./bin/iridaceae-server
 
 .PHONY: test
 test:

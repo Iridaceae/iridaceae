@@ -6,7 +6,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
-	"github.com/Iridaceae/iridaceae/pkg/sclog/log"
+	"github.com/Iridaceae/iridaceae/pkg/log"
 )
 
 type TestMiddleware struct {
@@ -22,7 +22,7 @@ func (t *TestMiddleware) Handle(ctx *Context) (bool, error) {
 	if !ok {
 		return false, errors.New("null object")
 	}
-	log.Info("rosetta_objTest", obj)
+	log.Info().Msgf("rosetta_objTest: %+v", obj)
 	return true, nil
 }
 
@@ -66,11 +66,8 @@ var (
 		BotsAllowed:      false,
 		Commands:         []*Command{},
 		Middlewares:      []Middleware{},
-		PingHandler: func(ctx *Context, _ ...interface{}) {
-			log.Info("context", ctx.Arguments)
-		},
+		PingHandler:      func(ctx *Context, _ ...interface{}) { log.Info().Msgf("context arguments : %+v", ctx.Arguments) },
 	})
 )
 
-func onTestCmd(ctx *Context, _ ...interface{}) {
-}
+func onTestCmd(ctx *Context, _ ...interface{}) {}

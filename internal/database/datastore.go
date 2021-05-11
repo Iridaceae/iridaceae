@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Iridaceae/iridaceae/pkg/sclog/log"
+	"github.com/Iridaceae/iridaceae/pkg/log"
 
 	"github.com/Iridaceae/iridaceae/pkg"
 
@@ -19,7 +19,7 @@ import (
 func init() {
 	err := godotenv.Load(strings.Join([]string{pkg.GetRootDir(), "defaults.env"}, "/"))
 	if err != nil {
-		log.Warn(fmt.Sprintf("Error loading env file: %s", err.Error()))
+		log.Error(err).Msg("Error loading env file")
 	}
 
 	mUser := os.Getenv("IRIS_MONGO_USER")
@@ -61,7 +61,7 @@ func UpdateUser(did, guildid, channelid string, minutes int) error {
 func FetchNumHours(did string) string {
 	u, err := fetch(did)
 	if err != nil {
-		log.Warn("err", fmt.Sprintf("error while fetching users %s: %s", did, err.Error()))
+		log.Error(err).Msgf("error while fetching users %s", did)
 	}
 	return toHumanTime(u.MinutesStudied)
 }

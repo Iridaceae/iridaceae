@@ -17,7 +17,7 @@
 ## Types of changes
 <!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
 - [ ] Breaking change (fix or feature that would cause existing functionality to change)
-- [ ] SetZ feature and improvements (non-breaking change which adds/improves functionality)
+- [ ] NewZ feature and improvements (non-breaking change which adds/improves functionality)
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] Code Refactoring (internal change which is not user facing)
 - [ ] Documentation

@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Iridaceae/iridaceae/pkg/sclog/log"
+	"github.com/Iridaceae/iridaceae/pkg/log"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -37,7 +37,7 @@ func init() {
 			_ = ctx.RespondText("Pong")
 		},
 		ErrHandler: func(ctx *Context, errType ErrorType, err error) {
-			log.Warn("context", ctx.Command, "ErrorType", errType, "error", err.Error())
+			log.Error(err).Msgf("context %+v errortype %+v", ctx.Command, errType)
 		},
 		Storage: nil,
 	})

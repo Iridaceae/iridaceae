@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: SetZ a report to help us improve
+about: NewZ a report to help us improve
 title: ''
 labels: ''
 assignees: ''
