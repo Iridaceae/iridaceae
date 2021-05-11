@@ -2,10 +2,10 @@
     <h1 align="center">~ 虹彩 ~</h1>
     <hr>
     <p align="center">
-        <a href="https://pkg.go.dev/github.com/Iridaceae/iridaceae"><img alt="golang" src="https://pkg.go.dev/badge/github.com/Iridaceae/iridaceae.svg"></a>
-        <a href="https://goreportcard.com/report/github.com/Iridaceae/iridaceae"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/Iridaceae/iridaceae"></a>
-        <a href="https://codecov.io/gh/Iridaceae/iridaceae"><img alt="codecov" src="https://codecov.io/gh/Iridaceae/iridaceae/branch/main/graph/badge.svg?token=qGdkowt7ki"/></a>
-        <a href="https://github.com/Iridaceae/iridaceae/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Iridaceae/iridaceae?style=flat-square"></a>
+        <a href="https://pkg.go.dev/github.com/Iridaceae/iridaceae"><img alt="golang" src="https://img.shields.io/badge/docs-pkg.go.dev-blue?logo=go&logoColor=white&style=flat-square"></a>
+        <a href="https://goreportcard.com/report/github.com/Iridaceae/iridaceae"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/Iridaceae/iridaceae?style=flat-square"></a>
+        <a href="https://codecov.io/gh/Iridaceae/iridaceae"><img alt="Codecov" src="https://img.shields.io/codecov/c/gh/Iridaceae/iridaceae?style=flat-square&token=qGdkowt7ki"></a>
+        <a href="https://github.com/Iridaceae/iridaceae/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Iridaceae/iridaceae?style=flat-square&color=important"></a>
         <img alt="GitHub commit checks state" src="https://img.shields.io/github/checks-status/Iridaceae/iridaceae/a29703a1367977d2867167fda8c4146aea6cd58e?style=flat-square">
     </p>
     <br>
