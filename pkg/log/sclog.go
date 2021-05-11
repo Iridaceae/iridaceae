@@ -5,8 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/Iridaceae/iridaceae/pkg/util"
-
 	"github.com/rs/zerolog"
 
 	"github.com/rs/zerolog/log"
@@ -16,10 +14,6 @@ var L *Logger
 
 func init() {
 	L = New()
-	Mapper().Set("name", "log")
-	Mapper().Set("rev", util.GetRevision())
-	Mapper().Set("ver", util.GetVersion())
-	SetGlobalFields([]string{"rev", "ver", "name"})
 }
 
 // Logger defines a default logger for that wraps around rs/zerolog.

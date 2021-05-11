@@ -1,4 +1,3 @@
-// Deprecated: Package deprecatedrunner contains bot functionality.
 package deprecatedrunner
 
 import (
@@ -100,6 +99,8 @@ func (ir *Iris) Start() error {
 		return err
 	}
 
+	// onReady will prepare our metrics, which will get from prometheus
+	ir.discord.AddHandler(ir.onReady)
 	ir.discord.AddHandler(ir.onMessageReceived)
 
 	_ = ir.discord.Open()
@@ -111,6 +112,13 @@ func (ir *Iris) Start() error {
 	}()
 
 	return ir.discord.Close()
+}
+
+// onReady should prepare metrics collector and setup web interface for configuration (features).
+func (ir *Iris) onReady(s *discordgo.Session, event *discordgo.Ready) {
+	numGuilds := int64(len(s.State.Guilds))
+	log.Info().Msgf("connected. userName: %s#%s numGuilds: %d", event.User.Username, event.User.Discriminator, numGuilds)
+	// should include metrics collection down here
 }
 
 // onMessageReceived will be called everytime a new message is created on any channel that the bot is listening to.
