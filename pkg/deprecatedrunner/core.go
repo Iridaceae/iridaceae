@@ -12,6 +12,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Iridaceae/iridaceae/pkg/pomodoro"
+
 	"github.com/Iridaceae/iridaceae/pkg/log"
 
 	"github.com/Iridaceae/iridaceae/pkg/rosetta"
@@ -42,7 +44,7 @@ type Iris struct {
 	inviteMessage string
 	discord       *discordgo.Session
 	cmdHandlers   map[string]botCommand
-	poms          UserPomodoroMap
+	poms          pomodoro.UserPomodoroMap
 	// record metrics here
 	// metrics metrics.Recorder
 }
@@ -57,7 +59,7 @@ func New() *Iris {
 	}
 
 	ir := &Iris{
-		poms: NewUserPomodoroMap(),
+		poms: pomodoro.NewUserPomodoroMap(),
 	}
 
 	ir.registerCmdHandlers()
@@ -161,7 +163,7 @@ func (ir *Iris) onMessageReceived(s *discordgo.Session, m *discordgo.MessageCrea
 
 // onPomEnded handles when Pom ends. It should add new users to current mongoDB if users hasn't existed in the database, else updates the minutes studied.
 // NOTE: this should be refactored into multiple functions.
-func (ir *Iris) onPomEnded(notify NotifyInfo, completed bool) {
+func (ir *Iris) onPomEnded(notify pomodoro.NotifyInfo, completed bool) {
 	var (
 		err         error
 		hash        string
@@ -246,7 +248,7 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 		pomDuration = defaultPomDuration
 	}
 
-	notif := NotifyInfo{
+	notif := pomodoro.NotifyInfo{
 		TitleID: ex,
 		User: &datastore.User{
 			DiscordID:  m.Author.ID,
