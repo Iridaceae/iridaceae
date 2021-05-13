@@ -71,6 +71,13 @@ func TestArgument_Raw(t *testing.T) {
 	})
 }
 
+func TestFromArguments(t *testing.T) {
+	arg := &Arguments{"", []Argument{Argument("a"), Argument("b")}}
+	assert.Equal(t, arg, FromArguments([]Argument{"a", "b"}))
+	rarg := arg.Args()
+	assert.Equal(t, rarg, []Argument{"a", "b"})
+}
+
 func TestArgument_AsChannelMentionID(t *testing.T) {
 	t.Run("invalid channel mention id", func(t *testing.T) {
 		cid := Argument("#asdf")

@@ -20,7 +20,7 @@ var tm *manager
 
 func init() {
 	_ = pkg.LoadGlobalEnv()
-	tm = newManager(10 * time.Minute)
+	tm = newInternalManager(10 * time.Minute)
 }
 
 func loop(cmd TestCmd, f func(i int, key string, b *Bucket)) {
@@ -44,9 +44,14 @@ func setupBucket() {
 	})
 }
 
+func TestManager_GetExecutions(t *testing.T) {
+	M := newInternalManager(10 * time.Minute)
+	assert.Equal(t, M.executions, M.GetExecutions())
+}
+
 func TestManager_GetBucket(t *testing.T) {
 	t.Run("test for dups", func(t *testing.T) {
-		m := newManager(10 * time.Minute)
+		m := newInternalManager(10 * time.Minute)
 
 		test := &TestCmd{false, false, false}
 		l1 := m.GetBucket(test, "u1", "guild")

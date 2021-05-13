@@ -10,11 +10,23 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Iridaceae/iridaceae/pkg/helpers"
-
 	"github.com/sarulabs/di/v2"
 
 	"github.com/bwmarrin/discordgo"
 )
+
+type TestMiddleware struct {
+	name string
+}
+
+func (t *TestMiddleware) Handle(cmd Command, ctx Context, layer MiddlewareLayer) (bool, error) {
+	ctx.SetObject("rosetta_testObject", 69420)
+	return true, nil
+}
+
+func (t *TestMiddleware) GetLayer() MiddlewareLayer {
+	return LayerBeforeCommand
+}
 
 var (
 	ctxAssert    = assert.New(&testing.T{})

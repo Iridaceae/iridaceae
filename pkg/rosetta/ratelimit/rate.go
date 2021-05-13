@@ -23,7 +23,7 @@ func New(m ...Manager) *RateLimiter {
 	if len(m) > 0 && m[0] != nil {
 		man = m[0]
 	} else {
-		man = newManager(10 * time.Minute)
+		man = newInternalManager(10 * time.Minute)
 	}
 	return &RateLimiter{man}
 }

@@ -15,6 +15,9 @@ type Manager interface {
 
 	// GetBucket returns a token-bucket rate limiter from given context.
 	GetBucket(cmd rosetta.Command, uid, gid string) *Bucket
+
+	// GetExecutions returns our internal execution mapping.
+	GetExecutions() *timedmap.TimedMap
 }
 
 type manager struct {
@@ -22,7 +25,11 @@ type manager struct {
 	pool       *sync.Pool
 }
 
-func newManager(cleanupInterval time.Duration) *manager {
+func (m *manager) GetExecutions() *timedmap.TimedMap {
+	return m.executions
+}
+
+func newInternalManager(cleanupInterval time.Duration) *manager {
 	return &manager{
 		executions: timedmap.New(cleanupInterval),
 		pool:       &sync.Pool{New: func() interface{} { return new(Bucket) }},

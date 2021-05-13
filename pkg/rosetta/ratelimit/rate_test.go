@@ -1,7 +1,9 @@
 package ratelimit
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -13,7 +15,7 @@ import (
 func testLoop(t *testing.T, m ...Manager) *RateLimiter {
 	t.Helper()
 
-	tm := New(m...)
+	rl := New(m...)
 	cmd := &TestCmd{false, false, false}
 	ctx := &TestContext{
 		chanType: discordgo.ChannelTypeGuildText,
@@ -22,12 +24,12 @@ func testLoop(t *testing.T, m ...Manager) *RateLimiter {
 	}
 
 	pass := func() {
-		ok, err := tm.Handle(cmd, ctx, tm.GetLayer())
+		ok, err := rl.Handle(cmd, ctx, rl.GetLayer())
 		assert.Nil(t, err)
 		assert.True(t, ok, "rate limiter stopped unexpectedly")
 	}
 	fail := func() {
-		ok, err := tm.Handle(cmd, ctx, tm.GetLayer())
+		ok, err := rl.Handle(cmd, ctx, rl.GetLayer())
 		assert.Nil(t, err)
 		assert.False(t, ok, "rate limiter passed unexpectedly")
 	}
@@ -37,18 +39,63 @@ func testLoop(t *testing.T, m ...Manager) *RateLimiter {
 	}
 	fail()
 
-	return tm
+	return rl
 }
 
 func TestRateLimiter_GetLayer(t *testing.T) {
-	tm := testLoop(t)
-	assert.Equal(t, rosetta.LayerBeforeCommand, tm.GetLayer())
+	rl := testLoop(t)
+	assert.Equal(t, rosetta.LayerBeforeCommand, rl.GetLayer())
 }
 
 // TODO: custom manager test.
 func TestRateLimiter_Handle(t *testing.T) {
 	t.Run("test rate limiter with default manager", func(t *testing.T) {
 		testLoop(t)
+	})
+	t.Run("test rate limiter with multiple custom managers", func(t *testing.T) {
+		cm := newInternalManager(20 * time.Minute)
+		rl := testLoop(t, cm, newInternalManager(30*time.Minute))
+		assert.Equal(t, rl.m, cm)
+	})
+	t.Run("handled a non-implemented commands", func(t *testing.T) {
+		rl := New()
+		cmd := &TestCmdNotImplemented{}
+		ctx := &TestContext{
+			chanType: discordgo.ChannelTypeGuildText,
+			gid:      "gid",
+			uid:      "uid",
+		}
+		ok, err := rl.Handle(cmd, ctx, rl.GetLayer())
+		assert.True(t, ok)
+		assert.Nil(t, err)
+	})
+	t.Run("global dms", func(t *testing.T) {
+		rl := New()
+		cmd := &TestCmd{false, false, true}
+		ctx := &TestContext{
+			chanType: discordgo.ChannelTypeDM,
+			gid:      "gid",
+			uid:      "uid",
+		}
+
+		expected := fmt.Sprintf("%s:%s:%s", cmd.GetDomain(), ctx.GetUser().ID, "__global__")
+		_, _ = rl.Handle(cmd, ctx, rl.GetLayer())
+		_, ok := rl.m.GetExecutions().GetValue(expected).(*Bucket)
+		assert.True(t, ok)
+	})
+	t.Run("in the dms", func(t *testing.T) {
+		rl := New()
+		cmd := &TestCmd{false, false, false}
+		ctx := &TestContext{
+			chanType: discordgo.ChannelTypeDM,
+			gid:      "gid",
+			uid:      "uid",
+		}
+
+		expected := fmt.Sprintf("%s:%s:%s", cmd.GetDomain(), ctx.GetUser().ID, "__dm__")
+		_, _ = rl.Handle(cmd, ctx, rl.GetLayer())
+		_, ok := rl.m.GetExecutions().GetValue(expected).(*Bucket)
+		assert.True(t, ok)
 	})
 }
 
@@ -118,4 +165,38 @@ func (tc *TestContext) RespondTextEmbed(content string, embed *discordgo.Message
 
 func (tc *TestContext) RespondTextEmbedError(title, content string, err error) (*discordgo.Message, error) {
 	return nil, nil
+}
+
+type TestCmdNotImplemented struct{}
+
+func (t *TestCmdNotImplemented) GetInvokers() []string {
+	return nil
+}
+
+func (t *TestCmdNotImplemented) GetDescription() string {
+	return ""
+}
+
+func (t *TestCmdNotImplemented) GetUsage() string {
+	return ""
+}
+
+func (t *TestCmdNotImplemented) GetGroup() string {
+	return ""
+}
+
+func (t *TestCmdNotImplemented) GetDomain() string {
+	return ""
+}
+
+func (t *TestCmdNotImplemented) GetSubPermissionRules() []rosetta.SubPermission {
+	return nil
+}
+
+func (t *TestCmdNotImplemented) IsExecutableInDM() bool {
+	return false
+}
+
+func (t *TestCmdNotImplemented) Exec(ctx rosetta.Context) error {
+	return rosetta.ErrCommandExec
 }
