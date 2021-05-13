@@ -1,5 +1,5 @@
 // Package pomodoro defines our pomodoro logics.
-package pomodoro
+package deprecatedrunner
 
 import (
 	"sync"

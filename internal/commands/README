@@ -1,0 +1,40 @@
+commands features.
+- pomodoro &rarr;
+    - get state
+    - status
+    - break
+    - current leaderboard
+
+- autorole
+
+- ban
+
+- channelstats
+
+- karma
+
+- exec code
+
+- guild
+
+- help (implements rosetta/defaultcmdhelp.go with RegisterDefaultHelpCmd())
+
+- info
+
+- invite (properly this time, not discord api link lol)
+
+- mention
+
+- mute
+
+- permission
+
+- prefix
+
+- report
+
+- snowflake
+
+- stats
+
+- vote

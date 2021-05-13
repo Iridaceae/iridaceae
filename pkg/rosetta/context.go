@@ -1,65 +1,148 @@
 package rosetta
 
 import (
+	"sync"
+
 	"github.com/bwmarrin/discordgo"
 )
 
-// ExecutionHandler represents a handler for a context execution.
-type ExecutionHandler func(ctx *Context, meta ...interface{})
+// Context is an interface representing information about a message and environment
+// where this message was created and passed to middleware and command router.
+type Context interface {
+	ObjectMap
 
-// ResponseModal represents response from rosetta to given handler.
-type ResponseModal interface {
+	// GetSession returns our instance of discordgo.Session.
+	GetSession() *discordgo.Session
+
+	// GetArguments returns our Arguments list and parsed Command Arguments.
+	GetArguments() *Arguments
+
+	// GetChannel returns the channel where message is sent.
+	GetChannel() *discordgo.Channel
+
+	// GetMessage returns the content of sent message.
+	GetMessage() *discordgo.Message
+
+	// GetGuild returns guild objects where command was sent.
+	// We can use this later for logging purposes, update databases, etc.
+	GetGuild() *discordgo.Guild
+
+	// GetUser returns said user who invokes the command.
+	GetUser() *discordgo.User
+
+	// GetMember returns the member object of the author of the message.
+	GetMember() *discordgo.Member
+
+	// IsDM returns true if context is sent in a dms or group dms, false otherwise
+	IsDM() bool
+
+	// IsEdit returns true if event is a *discordgo.MessageUpdate event.
+	IsEdit() bool
 
 	// RespondText wraps around responses of given text message.
-	RespondText(text string) error
+	RespondText(content string) (*discordgo.Message, error)
 
 	// RespondEmbed responds with the given embed message.
-	RespondEmbed(embed *discordgo.MessageEmbed) error
+	RespondEmbed(embed *discordgo.MessageEmbed) (*discordgo.Message, error)
 
 	// RespondEmbedError responds with the given error in a embed message.
-	RespondEmbedError(err error) error
+	RespondEmbedError(title string, err error) (*discordgo.Message, error)
 
 	// RespondTextEmbed responds with given text and embed message.
-	RespondTextEmbed(text string, embed *discordgo.MessageEmbed) error
+	RespondTextEmbed(content string, embed *discordgo.MessageEmbed) (*discordgo.Message, error)
 
 	// RespondTextEmbedError responds given error to users with embed message.
-	RespondTextEmbedError(text, title string, err error) error
+	RespondTextEmbedError(title, content string, err error) (*discordgo.Message, error)
 }
 
-// Context represents the context for a command event.
-type Context struct {
-	Session    *discordgo.Session
-	Event      *discordgo.MessageCreate
-	Channel    *discordgo.Channel
-	Arguments  *Arguments
-	Router     *Router
-	Command    *Command
-	ObjectsMap *ObjectsMap
+// context is our default implementation of Context.
+type context struct {
+	isDM      bool
+	isEdit    bool
+	router    Router
+	args      *Arguments
+	objectMap *sync.Map
+	session   *discordgo.Session
+	message   *discordgo.Message
+	guild     *discordgo.Guild
+	channel   *discordgo.Channel
+	member    *discordgo.Member
 }
 
-func (c *Context) RespondText(text string) error {
-	_, err := c.Session.ChannelMessageSend(c.Event.ChannelID, text)
-	return err
+func (c *context) GetObject(key string) (value interface{}) {
+	var ok bool
+	if c.objectMap != nil {
+		value, ok = c.objectMap.Load(key)
+	}
+	if !ok {
+		value = c.router.GetObject(key)
+	}
+	return
 }
 
-func (c *Context) RespondEmbed(embed *discordgo.MessageEmbed) error {
-	_, err := c.Session.ChannelMessageSendEmbed(c.Event.ChannelID, embed)
-	return err
+func (c *context) SetObject(key string, value interface{}) {
+	c.objectMap.Store(key, value)
 }
 
-func (c *Context) RespondEmbedError(e error) error {
-	_, err := c.Session.ChannelMessageSendEmbed(c.Event.ChannelID, &discordgo.MessageEmbed{Title: "Error", Description: e.Error(), Color: EmbedColorError})
-	return err
+func (c *context) GetSession() *discordgo.Session {
+	return c.session
 }
 
-func (c *Context) RespondTextEmbed(text string, embed *discordgo.MessageEmbed) error {
-	_, err := c.Session.ChannelMessageSendComplex(c.Event.ChannelID, &discordgo.MessageSend{
-		Content: text,
+func (c *context) GetArguments() *Arguments {
+	return c.args
+}
+
+func (c *context) GetChannel() *discordgo.Channel {
+	return c.channel
+}
+
+func (c *context) GetMessage() *discordgo.Message {
+	return c.message
+}
+
+func (c *context) GetGuild() *discordgo.Guild {
+	return c.guild
+}
+
+func (c *context) GetUser() *discordgo.User {
+	return c.message.Author
+}
+
+func (c *context) GetMember() *discordgo.Member {
+	return c.member
+}
+
+func (c *context) IsDM() bool {
+	return c.isDM
+}
+
+func (c *context) IsEdit() bool {
+	return c.isEdit
+}
+
+func (c *context) RespondText(content string) (*discordgo.Message, error) {
+	return c.session.ChannelMessageSend(c.channel.ID, content)
+}
+
+func (c *context) RespondEmbed(embed *discordgo.MessageEmbed) (*discordgo.Message, error) {
+	return c.session.ChannelMessageSendEmbed(c.channel.ID, embed)
+}
+
+func (c *context) RespondTextEmbed(content string, embed *discordgo.MessageEmbed) (*discordgo.Message, error) {
+	return c.session.ChannelMessageSendComplex(c.channel.ID, &discordgo.MessageSend{
+		Content: content,
 		Embed:   embed,
+		AllowedMentions: &discordgo.MessageAllowedMentions{
+			Parse: []discordgo.AllowedMentionType{discordgo.AllowedMentionTypeRoles, discordgo.AllowedMentionTypeEveryone},
+			Users: []string{c.message.Author.ID},
+		},
 	})
-	return err
 }
 
-func (c *Context) RespondTextEmbedError(text, title string, err error) error {
-	return c.RespondTextEmbed(text, &discordgo.MessageEmbed{Title: title, Description: err.Error(), Color: EmbedColorError})
+func (c *context) RespondEmbedError(title string, err error) (*discordgo.Message, error) {
+	return c.session.ChannelMessageSendEmbed(c.channel.ID, &discordgo.MessageEmbed{Title: title, Description: err.Error(), Color: EmbedColorError})
+}
+
+func (c *context) RespondTextEmbedError(title, content string, err error) (*discordgo.Message, error) {
+	return c.RespondTextEmbed(content, &discordgo.MessageEmbed{Title: title, Description: err.Error(), Color: EmbedColorError})
 }

@@ -1,29 +1,37 @@
 package rosetta
 
 import (
-	"sync"
 	"testing"
 
-	"github.com/Iridaceae/iridaceae/pkg/util"
-
 	"github.com/bwmarrin/discordgo"
+
 	"github.com/stretchr/testify/assert"
 )
 
+var TestSession = &discordgo.Session{State: &discordgo.State{Ready: discordgo.Ready{User: &discordgo.User{ID: "123465879"}}}}
+
 func TestHasPrefix(t *testing.T) {
-	t.Run("doesn't have prefix contain in given string", func(t *testing.T) {
-		s := "hello world"
-		prefs := []string{"!", "-"}
-		ok, _ := hasPrefix(s, prefs, true)
-		assert.False(t, ok)
-	})
-	t.Run("does have prefix in given string", func(t *testing.T) {
-		s := "!hello world"
-		prefs := []string{"!", "-"}
-		ok, so := hasPrefix(s, prefs, true)
-		assert.True(t, ok)
-		assert.Equal(t, "hello world", so)
-	})
+	testPrefixFunc := func(msg string, prefix string, ignoreCase bool, ok bool) {
+		_, k := hasPrefix(msg, prefix, ignoreCase)
+		assert.Equal(t, k, ok)
+	}
+
+	tests := []struct {
+		name       string
+		expected   bool
+		msg        string
+		prefix     string
+		prefixFunc func(s string, prefix string, ignoreCase bool, ok bool)
+	}{
+		{"doesn't have prefix contain in given string", false, "hello world", "!", testPrefixFunc},
+		{"has prefix", true, "!hello world", "!", testPrefixFunc},
+		{"has complex prefix", true, "!ir hello world", "!ir", testPrefixFunc},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.prefixFunc(tt.msg, tt.prefix, true, tt.expected)
+		})
+	}
 }
 
 func TestTrimPreSuffix(t *testing.T) {
@@ -38,30 +46,4 @@ func TestArrayContains(t *testing.T) {
 	contained := "test"
 	ok := arrayContains(tarr, contained, false)
 	assert.False(t, ok)
-}
-
-func makeTestCtx() *Context {
-	testCtx := &Context{
-		Session: &discordgo.Session{
-			RWMutex: sync.RWMutex{},
-			Token:   "test_token",
-		},
-		Arguments: &Arguments{
-			raw: "test t1 t2",
-		},
-		Event: &discordgo.MessageCreate{Message: &discordgo.Message{
-			ID:        "test_msg",
-			ChannelID: util.GetEnvOrDefault("CONCERTINA_CHANNELID", ""),
-			GuildID:   util.GetEnvOrDefault("CONCERTINA_GUILDID", ""),
-			Content:   "this is a test msg",
-			Author: &discordgo.User{
-				ID:       "12341234",
-				Username: "test_nick",
-			},
-			Embeds: []*discordgo.MessageEmbed{TestEmbedMsg},
-		}},
-		Router:  TestRouter,
-		Command: TestCommand,
-	}
-	return testCtx
 }

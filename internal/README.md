@@ -6,7 +6,7 @@ this directory includes core functionality of `iris`. This shouldn't be exposed 
 
 | folder | description |
 | ------ | ----------- |
-|[`/internal/configparser`](./configparser) | handles configuration for `iris`. Included a master parser|
+|[`/internal/components`](./components) | includes general components for iridaceae |
 |[`/internal/database`](./database) | handles database services and logics (_current_ `mongodb`, maybe `sql` _in the future_)|
 |[`/internal/testutils`](./testutils) | handles all core test dependencies (separated from core dependencies)|
 
