@@ -3,6 +3,7 @@ package ratelimit
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -13,21 +14,56 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const count = 1000
+
+var tm *manager
+
 func init() {
 	_ = pkg.LoadGlobalEnv()
+	tm = newManager(10 * time.Minute)
+}
+
+func loop(cmd TestCmd, f func(i int, key string, b *Bucket)) {
+	wg := new(sync.WaitGroup)
+	wg.Add(count)
+	for i := 0; i < count; i++ {
+		key := fmt.Sprintf("%s:user%d:gid%d", cmd.GetDomain(), i, i)
+		b := tm.pool.Get().(*Bucket).setParams(cmd.GetLimiterBurst(), cmd.GetLimiterRestoration())
+		go func(i int, key string, b *Bucket) {
+			defer wg.Done()
+			f(i, key, b)
+		}(i, key, b)
+	}
+	wg.Wait()
+}
+
+func setupBucket() {
+	cmd := TestCmd{false, false, false}
+	loop(cmd, func(i int, key string, b *Bucket) {
+		tm.executions.Set(key, b, time.Duration(cmd.GetLimiterBurst())*cmd.GetLimiterRestoration(), func(val interface{}) { tm.pool.Put(val) })
+	})
 }
 
 func TestManager_GetBucket(t *testing.T) {
-	m := newManager(10 * time.Minute)
+	t.Run("test for dups", func(t *testing.T) {
+		m := newManager(10 * time.Minute)
 
-	test := &TestCmd{false, false, false}
-	l1 := m.GetBucket(test, "u1", "guild")
-	l2 := m.GetBucket(test, "u1", "guild")
-	l3 := m.GetBucket(test, "u2", "guild")
-	assert.Equal(t, l1, l2)
-	if l3 == l1 || l3 == l2 {
-		t.Error(errDupsBucket(l3))
-	}
+		test := &TestCmd{false, false, false}
+		l1 := m.GetBucket(test, "u1", "guild")
+		l2 := m.GetBucket(test, "u1", "guild")
+		l3 := m.GetBucket(test, "u2", "guild")
+		assert.Equal(t, l1, l2)
+		if l3 == l1 || l3 == l2 {
+			t.Error(errDupsBucket(l3))
+		}
+	})
+	t.Run("add unknown bucket", func(t *testing.T) {
+		setupBucket()
+		cmd := &TestCmd{false, false, false}
+		key := fmt.Sprintf("%s:user1:gid1", cmd.GetDomain())
+		assert.Equal(t, tm.executions.GetValue(key).(*Bucket), tm.GetBucket(cmd, "user1", "gid1"))
+		assert.Equal(t, count, tm.executions.Size())
+	})
 }
 
 func errDupsBucket(i1 interface{}) string {

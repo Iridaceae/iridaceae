@@ -47,12 +47,6 @@ type Context interface {
 
 	// RespondEmbedError responds with the given error in a embed message.
 	RespondEmbedError(title string, err error) (*discordgo.Message, error)
-
-	// RespondTextEmbed responds with given text and embed message.
-	RespondTextEmbed(content string, embed *discordgo.MessageEmbed) (*discordgo.Message, error)
-
-	// RespondTextEmbedError responds given error to users with embed message.
-	RespondTextEmbedError(title, content string, err error) (*discordgo.Message, error)
 }
 
 // context is our default implementation of Context.
@@ -74,6 +68,7 @@ func (c *context) GetObject(key string) (value interface{}) {
 	if c.objectMap != nil {
 		value, ok = c.objectMap.Load(key)
 	}
+	// if our internal object map doesn't contain the key, then get from di.Container.
 	if !ok {
 		value = c.router.GetObject(key)
 	}
@@ -128,21 +123,6 @@ func (c *context) RespondEmbed(embed *discordgo.MessageEmbed) (*discordgo.Messag
 	return c.session.ChannelMessageSendEmbed(c.channel.ID, embed)
 }
 
-func (c *context) RespondTextEmbed(content string, embed *discordgo.MessageEmbed) (*discordgo.Message, error) {
-	return c.session.ChannelMessageSendComplex(c.channel.ID, &discordgo.MessageSend{
-		Content: content,
-		Embed:   embed,
-		AllowedMentions: &discordgo.MessageAllowedMentions{
-			Parse: []discordgo.AllowedMentionType{discordgo.AllowedMentionTypeRoles, discordgo.AllowedMentionTypeEveryone},
-			Users: []string{c.message.Author.ID},
-		},
-	})
-}
-
 func (c *context) RespondEmbedError(title string, err error) (*discordgo.Message, error) {
 	return c.session.ChannelMessageSendEmbed(c.channel.ID, &discordgo.MessageEmbed{Title: title, Description: err.Error(), Color: EmbedColorError})
-}
-
-func (c *context) RespondTextEmbedError(title, content string, err error) (*discordgo.Message, error) {
-	return c.RespondTextEmbed(content, &discordgo.MessageEmbed{Title: title, Description: err.Error(), Color: EmbedColorError})
 }

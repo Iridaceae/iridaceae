@@ -5,6 +5,9 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
+
+	"github.com/Iridaceae/iridaceae/pkg/helpers"
 
 	"github.com/Iridaceae/iridaceae/pkg/log"
 
@@ -20,7 +23,7 @@ var SpliceRegex = regexp.MustCompile(`\\s+`)
 var StdRouter Router
 
 func init() {
-	StdRouter = NewDefaultRouter(NewDefaultConfig())
+	StdRouter = NewRouter(NewDefaultConfig())
 }
 
 // Config setup configs value for our router.
@@ -104,13 +107,14 @@ func NewDefaultConfig() *Config {
 		UseDefaultHelpCommand: false,
 		DeleteMessageAfter:    true,
 		OnError: func(ctx Context, errType ErrorType, err error) {
-			_, _ = ctx.RespondEmbedError(getErrorTypeName(errType), err)
+			msg, _ := ctx.RespondEmbedError(getErrorTypeName(errType), err)
 			log.Error(err).Msgf("username: %s#%s sent:%s error: %+v", ctx.GetUser().Username, ctx.GetUser().Discriminator, ctx.GetMessage().Content, err)
+			helpers.DeleteMessageAfter(ctx.GetSession(), msg, 60*time.Second)
 		},
 	}
 }
 
-func NewDefaultRouter(c *Config) Router {
+func NewRouter(c *Config) Router {
 	if c.OnError == nil {
 		// setup a default onerror func.
 		c.OnError = func(ctx Context, errType ErrorType, err error) {}
@@ -138,13 +142,12 @@ func NewDefaultRouter(c *Config) Router {
 	return r
 }
 
-func (r *router) GetObject(key string) (value interface{}) {
-	var err error
-	value, err = r.config.ObjectContainer.SafeGet(key)
+func (r *router) GetObject(key string) interface{} {
+	value, err := r.objectContainer.SafeGet(key)
 	if err != nil {
 		value, _ = r.objectMap.Load(key)
 	}
-	return
+	return value
 }
 
 func (r *router) SetObject(key string, value interface{}) {

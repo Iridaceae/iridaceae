@@ -47,24 +47,25 @@ func clearMap(m *sync.Map) {
 	})
 }
 
+// TODO: better way to handle error.
 func getErrorTypeName(e ErrorType) string {
 	switch e {
 	case ErrTypeCommandExec:
-		return "ErrCommandExec"
+		return ErrCommandExec.Error()
 	case ErrTypeMiddleware:
-		return "ErrMiddleware"
+		return ErrMiddleware.Error()
 	case ErrTypeCommandNotFound:
-		return "ErrCommandNotFound"
+		return ErrCommandNotFound.Error()
 	case ErrTypeGetChannel:
-		return "ErrGetChannel"
+		return ErrGetChannel.Error()
 	case ErrTypeDeleteCommandMessage:
-		return "ErrDeleteCommandMessage"
+		return ErrDeleteCommandMessage.Error()
 	case ErrTypeGetGuild:
-		return "ErrGetGuild"
+		return ErrGetGuild.Error()
 	case ErrTypeGuildPrefixGetter:
-		return "ErrGuildPrefixGetter"
+		return ErrGuildPrefixGetter.Error()
 	case ErrTypeNotExecutableInDM:
-		return "ErrNotExecutableInDM"
+		return ErrNotExecutableInDMs.Error()
 	}
 	return ""
 }

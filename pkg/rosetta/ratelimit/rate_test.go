@@ -2,9 +2,6 @@ package ratelimit
 
 import (
 	"testing"
-	"time"
-
-	"github.com/Iridaceae/iridaceae/pkg/log"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -40,10 +37,6 @@ func testLoop(t *testing.T, m ...Manager) *RateLimiter {
 	}
 	fail()
 
-	log.Debug().Msgf("sleep for %+v", cmd.GetLimiterRestoration().Seconds())
-	time.Sleep(cmd.GetLimiterRestoration())
-	pass()
-	fail()
 	return tm
 }
 

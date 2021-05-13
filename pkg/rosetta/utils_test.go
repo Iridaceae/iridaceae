@@ -1,6 +1,9 @@
 package rosetta
 
 import (
+	"errors"
+	"fmt"
+	"sync"
 	"testing"
 
 	"github.com/bwmarrin/discordgo"
@@ -42,8 +45,37 @@ func TestTrimPreSuffix(t *testing.T) {
 }
 
 func TestArrayContains(t *testing.T) {
-	tarr := []string{"1", "2", "3"}
-	contained := "test"
-	ok := arrayContains(tarr, contained, false)
+	t.Run("ignore case", func(t *testing.T) {
+		tarr := []string{"1", "2", "3"}
+		contained := "test"
+		ok := arrayContains(tarr, contained, false)
+		assert.False(t, ok)
+	})
+	t.Run("case sensitive", func(t *testing.T) {
+		assert.True(t, arrayContains([]string{"TEST", "2", "3"}, "test", true))
+	})
+}
+
+func TestClearMap(t *testing.T) {
+	m := sync.Map{}
+	m.Store("test", 1)
+	clearMap(&m)
+	_, ok := m.Load("test")
 	assert.False(t, ok)
+}
+
+func TestGetErrorType(t *testing.T) {
+	tests := []struct {
+		name   string
+		e      error
+		output string
+	}{
+		{"invalid error return empty", errors.New(""), getErrorTypeName(0)},
+		{"valid error", ErrGuildPrefixGetter, getErrorTypeName(1)},
+	}
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf("%s-%d", tt.name, i), func(t *testing.T) {
+			assert.Equal(t, tt.e.Error(), tt.output)
+		})
+	}
 }
