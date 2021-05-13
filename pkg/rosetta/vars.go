@@ -12,7 +12,7 @@ const (
 type ErrorType int
 
 const (
-	ErrTypeGuildPrefixGetter ErrorType = 1 << iota
+	ErrTypeGuildPrefixGetter ErrorType = iota + 1
 	ErrTypeGetChannel
 	ErrTypeGetGuild
 	ErrTypeCommandNotFound

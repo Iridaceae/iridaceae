@@ -72,6 +72,13 @@ func TestGetErrorType(t *testing.T) {
 	}{
 		{"invalid error return empty", errors.New(""), getErrorTypeName(0)},
 		{"valid error", ErrGuildPrefixGetter, getErrorTypeName(1)},
+		{"error while get channel", ErrGetChannel, getErrorTypeName(2)},
+		{"error while get guild", ErrGetGuild, getErrorTypeName(3)},
+		{"error cannot find command", ErrCommandNotFound, getErrorTypeName(4)},
+		{"error command not executable in dm", ErrNotExecutableInDMs, getErrorTypeName(5)},
+		{"error middleware", ErrMiddleware, getErrorTypeName(6)},
+		{"error command exec", ErrCommandExec, getErrorTypeName(7)},
+		{"error delete command message", ErrDeleteCommandMessage, getErrorTypeName(8)},
 	}
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("%s-%d", tt.name, i), func(t *testing.T) {

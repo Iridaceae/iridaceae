@@ -10,14 +10,13 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Iridaceae/iridaceae/pkg/helpers"
+
 	"github.com/sarulabs/di/v2"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-type TestMiddleware struct {
-	name string
-}
+type TestMiddleware struct{}
 
 func (t *TestMiddleware) Handle(cmd Command, ctx Context, layer MiddlewareLayer) (bool, error) {
 	ctx.SetObject("rosetta_testObject", 69420)
