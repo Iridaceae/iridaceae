@@ -19,11 +19,15 @@ import (
 // SpliceRegex represents the regex to split arguments.
 var SpliceRegex = regexp.MustCompile(`\\s+`)
 
-// StdRouter can be used out of the box, acts as a master router for iris.
-var StdRouter Router
+// R can be used out of the box, acts as a master router for iris.
+var R Router
+
+// C can also be used out of a box, as a master config for iris.
+var C *Config
 
 func init() {
-	StdRouter = NewRouter(NewDefaultConfig())
+	C = NewDefaultConfig()
+	R, _ = NewRouter(C).(*router)
 }
 
 // Config setup configs value for our router.
@@ -69,7 +73,7 @@ type Router interface {
 
 	// Setup registers given handlers to the passed discordgo.Session which are
 	// used to handle and parse command.
-	Setup(s *discordgo.Session)
+	Setup(session *discordgo.Session)
 
 	// GetConfig returns the specified config object which was specified on initialization.
 	GetConfig() *Config
@@ -104,10 +108,10 @@ func NewDefaultConfig() *Config {
 		AllowDM:               true,
 		AllowBots:             false,
 		ExecuteOnEdit:         true,
-		UseDefaultHelpCommand: false,
-		DeleteMessageAfter:    true,
+		UseDefaultHelpCommand: true,
+		DeleteMessageAfter:    false,
 		OnError: func(ctx Context, errType ErrorType, err error) {
-			msg, _ := ctx.RespondEmbedError(getErrorTypeName(errType), err)
+			msg, _ := ctx.RespondEmbedError("", err)
 			log.Error(err).Msgf("username: %s#%s sent:%s error: %+v", ctx.GetUser().Username, ctx.GetUser().Discriminator, ctx.GetMessage().Content, err)
 			helpers.DeleteMessageAfter(ctx.GetSession(), msg, 60*time.Second)
 		},
@@ -182,23 +186,26 @@ func (r *router) RegisterMiddleware(m Middleware) {
 	r.middleware = append(r.middleware, m)
 }
 
-func (r *router) Setup(s *discordgo.Session) {
-	s.AddHandler(func(s *discordgo.Session, e *discordgo.MessageCreate) {
-		r.trigger(s, e.Message, false)
+func (r *router) Setup(session *discordgo.Session) {
+	session.AddHandler(func(s *discordgo.Session, e *discordgo.MessageCreate) {
+		r.trigger(s, e.Message)
 	})
 	if r.config.ExecuteOnEdit {
-		s.AddHandler(func(s *discordgo.Session, e *discordgo.MessageUpdate) {
-			r.trigger(s, e.Message, false)
+		session.AddHandler(func(s *discordgo.Session, e *discordgo.MessageUpdate) {
+			r.trigger(s, e.Message)
 		})
 	}
 }
 
-func (r *router) trigger(s *discordgo.Session, msg *discordgo.Message, edit bool) {
-	var err error
-	prefix := ""
+func (r *router) trigger(s *discordgo.Session, msg *discordgo.Message) {
+	var (
+		err    error
+		prefix = ""
+	)
 
 	// check if given message author is a bot.
 	if !r.config.AllowBots || msg.Author == nil || msg.Author.Bot || msg.Author.ID == s.State.User.ID {
+		log.Debug().Msg("message or author is a bot, ignoring...")
 		return
 	}
 
@@ -207,34 +214,27 @@ func (r *router) trigger(s *discordgo.Session, msg *discordgo.Message, edit bool
 	ctx.session = s
 	ctx.message = msg
 	ctx.member = msg.Member
-	ctx.isEdit = edit
-
+	ctx.isEdit = false
 	defer func() {
 		clearMap(ctx.objectMap)
 		r.ctxPool.Put(ctx)
 	}()
 
-	content, containsPrefix := hasPrefix(msg.Content, r.config.GeneralPrefix, r.config.IgnoreCase)
-	if containsPrefix {
+	var trimmed string
+	var contains bool
+	// We will first check if users setup guild prefix, otherwise we will use default prefix.
+	guildPrefix, _ := r.config.GuildPrefixGetter(msg.GuildID)
+	if trimmed, contains = hasPrefix(msg.Content, guildPrefix, r.config.IgnoreCase); contains {
+		prefix = guildPrefix
+	} else if trimmed, contains = hasPrefix(msg.Content, r.config.GeneralPrefix, r.config.IgnoreCase); contains {
 		prefix = r.config.GeneralPrefix
-	} else {
-		var guildPrefix string
-		guildPrefix, err = r.config.GuildPrefixGetter(msg.GuildID)
-		if err != nil {
-			r.config.OnError(ctx, ErrTypeGuildPrefixGetter, err)
-			return
-		}
-		_, ok := hasPrefix(msg.Content, guildPrefix, r.config.IgnoreCase)
-		if guildPrefix != "" && ok {
-			prefix = guildPrefix
-		}
 	}
 
-	content = strings.TrimSpace(content)
-	// if message is empty after prefix processing then we don't do anything.
-	if content == "" || prefix == "" && ctx.channel.Type != discordgo.ChannelTypeDM {
+	// if no prefix is received then we don't don anything.
+	if prefix == "" {
 		return
 	}
+	msg.Content = trimmed
 
 	if ctx.channel, err = s.State.Channel(msg.ChannelID); err != nil {
 		if ctx.channel, err = s.Channel(msg.ChannelID); err != nil {
@@ -264,10 +264,12 @@ func (r *router) trigger(s *discordgo.Session, msg *discordgo.Message, edit bool
 	cmd, ok := r.GetCommand(invoke)
 	if !ok {
 		r.config.OnError(ctx, ErrTypeCommandNotFound, ErrCommandNotFound)
+		return
 	}
 
 	if ctx.isDM && !cmd.IsExecutableInDM() {
 		r.config.OnError(ctx, ErrTypeNotExecutableInDM, ErrNotExecutableInDMs)
+		return
 	}
 
 	ctx.SetObject(ObjectMapKeyRouter, r)

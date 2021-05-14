@@ -20,3 +20,5 @@ TODO:
 `runner` should be our entry for running the bot
 
 setup templates for generate readme accordingly
+
+setup a testRunner to mimic all Getter testing to reduce boiler code

@@ -16,19 +16,23 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-type TestMiddleware struct{}
+type TestMiddleware struct {
+	executed bool
+	layer    MiddlewareLayer
+}
 
 func (t *TestMiddleware) Handle(cmd Command, ctx Context, layer MiddlewareLayer) (bool, error) {
 	ctx.SetObject("rosetta_testObject", 69420)
+	t.executed = true
 	return true, nil
 }
 
 func (t *TestMiddleware) GetLayer() MiddlewareLayer {
-	return LayerBeforeCommand
+	return t.layer
 }
 
 var (
-	ctxAssert    = assert.New(&testing.T{})
+	rtAssert     = assert.New(&testing.T{})
 	TestEmbedMsg = &discordgo.MessageEmbed{
 		Type:        "rich",
 		Title:       "This is a test message",
@@ -107,7 +111,7 @@ func TestContextGetter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctxAssert.Equal(tt.expected, tt.testFunc())
+			rtAssert.Equal(tt.expected, tt.testFunc())
 		})
 	}
 }
@@ -117,12 +121,12 @@ func TestContext_SetGetInitObjectMap(t *testing.T) {
 		cc := makeTestCtx(true)
 		cc.SetObject("key", 123)
 		v, ok := cc.GetObject("key").(int)
-		ctxAssert.True(ok)
-		ctxAssert.Equal(123, v)
+		rtAssert.True(ok)
+		rtAssert.Equal(123, v)
 
 		v, ok = cc.GetObject("unexisted key").(int)
-		ctxAssert.False(ok)
-		ctxAssert.Equal(0, v)
+		rtAssert.False(ok)
+		rtAssert.Equal(0, v)
 	})
 	t.Run("get om global", func(t *testing.T) {
 		ctx := makeTestCtx(true)
@@ -135,6 +139,5 @@ func TestContext_SetGetInitObjectMap(t *testing.T) {
 		}
 	})
 	t.Run("init om", func(t *testing.T) {
-
 	})
 }

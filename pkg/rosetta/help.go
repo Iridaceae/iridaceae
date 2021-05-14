@@ -12,7 +12,7 @@ import (
 type DefaultHelpCommand struct{}
 
 func (d *DefaultHelpCommand) GetInvokers() []string {
-	return []string{"help", "h", "?", "man", "tr"}
+	return []string{"help", "h", "?", "man"}
 }
 
 func (d *DefaultHelpCommand) GetDescription() string {

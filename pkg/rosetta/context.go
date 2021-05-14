@@ -1,6 +1,7 @@
 package rosetta
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
@@ -124,5 +125,5 @@ func (c *context) RespondEmbed(embed *discordgo.MessageEmbed) (*discordgo.Messag
 }
 
 func (c *context) RespondEmbedError(title string, err error) (*discordgo.Message, error) {
-	return c.session.ChannelMessageSendEmbed(c.channel.ID, &discordgo.MessageEmbed{Title: title, Description: err.Error(), Color: EmbedColorError})
+	return c.session.ChannelMessageSendEmbed(c.channel.ID, &discordgo.MessageEmbed{Title: title, Description: fmt.Sprintf("*%s*", err.Error()), Color: EmbedColorError})
 }

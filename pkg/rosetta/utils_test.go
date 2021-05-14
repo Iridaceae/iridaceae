@@ -6,12 +6,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/bwmarrin/discordgo"
-
 	"github.com/stretchr/testify/assert"
 )
-
-var TestSession = &discordgo.Session{State: &discordgo.State{Ready: discordgo.Ready{User: &discordgo.User{ID: "123465879"}}}}
 
 func TestHasPrefix(t *testing.T) {
 	testPrefixFunc := func(msg string, prefix string, ignoreCase bool, ok bool) {
@@ -70,15 +66,15 @@ func TestGetErrorType(t *testing.T) {
 		e      error
 		output string
 	}{
-		{"invalid error return empty", errors.New(""), getErrorTypeName(0)},
-		{"valid error", ErrGuildPrefixGetter, getErrorTypeName(1)},
-		{"error while get channel", ErrGetChannel, getErrorTypeName(2)},
-		{"error while get guild", ErrGetGuild, getErrorTypeName(3)},
-		{"error cannot find command", ErrCommandNotFound, getErrorTypeName(4)},
-		{"error command not executable in dm", ErrNotExecutableInDMs, getErrorTypeName(5)},
-		{"error middleware", ErrMiddleware, getErrorTypeName(6)},
-		{"error command exec", ErrCommandExec, getErrorTypeName(7)},
-		{"error delete command message", ErrDeleteCommandMessage, getErrorTypeName(8)},
+		{"invalid error return empty", errors.New(""), getErrorTypeName(-1)},
+		{"valid error", ErrGuildPrefixGetter, getErrorTypeName(0)},
+		{"error while get channel", ErrGetChannel, getErrorTypeName(1)},
+		{"error while get guild", ErrGetGuild, getErrorTypeName(2)},
+		{"error cannot find command", ErrCommandNotFound, getErrorTypeName(3)},
+		{"error command not executable in dm", ErrNotExecutableInDMs, getErrorTypeName(4)},
+		{"error middleware", ErrMiddleware, getErrorTypeName(5)},
+		{"error command exec", ErrCommandExec, getErrorTypeName(6)},
+		{"error delete command message", ErrDeleteCommandMessage, getErrorTypeName(7)},
 	}
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("%s-%d", tt.name, i), func(t *testing.T) {
