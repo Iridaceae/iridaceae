@@ -148,8 +148,8 @@ func toStrVal(i interface{}) string {
 func toIntVal(i interface{}) int {
 	switch t := i.(type) {
 	case string:
-		n, _ := strconv.ParseInt(t, 10, 64)
-		return int(n)
+		n, _ := strconv.Atoi(t)
+		return n
 	case int:
 		return t
 	}
