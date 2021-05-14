@@ -46,7 +46,7 @@ func init() {
 	_ = pkg.LoadGlobalEnv()
 }
 
-func makeTestCtx(initOM bool) *context {
+func makeTestCtx(initOM bool, mockSess bool) *context {
 	ctx := &context{
 		isDM:      true,
 		isEdit:    true,
@@ -57,6 +57,9 @@ func makeTestCtx(initOM bool) *context {
 		guild:     &discordgo.Guild{ID: "rosetta_testGuild"},
 		channel:   &discordgo.Channel{ID: helpers.GetEnvOrDefault("CONCERTINA_CHANNELID", "")},
 		member:    &discordgo.Member{Nick: "rosetta_testNick"},
+	}
+	if mockSess {
+		ctx.session = &discordgo.Session{State: &discordgo.State{Ready: discordgo.Ready{User: ctx.member.User}}}
 	}
 	if initOM {
 		b, _ := di.NewBuilder()
@@ -76,8 +79,8 @@ func makeTestCtx(initOM bool) *context {
 }
 
 func TestContextGetter(t *testing.T) {
-	ctx := makeTestCtx(false)
-	ctx.session = helpers.MakeTestSession()
+	ctx := makeTestCtx(false, false)
+	ctx.session = TestSession
 
 	tests := []struct {
 		name     string
@@ -118,7 +121,7 @@ func TestContextGetter(t *testing.T) {
 
 func TestContext_SetGetInitObjectMap(t *testing.T) {
 	t.Run("get set test local", func(t *testing.T) {
-		cc := makeTestCtx(true)
+		cc := makeTestCtx(true, false)
 		cc.SetObject("key", 123)
 		v, ok := cc.GetObject("key").(int)
 		rtAssert.True(ok)
@@ -129,7 +132,7 @@ func TestContext_SetGetInitObjectMap(t *testing.T) {
 		rtAssert.Equal(0, v)
 	})
 	t.Run("get om global", func(t *testing.T) {
-		ctx := makeTestCtx(true)
+		ctx := makeTestCtx(true, false)
 		v, ok := ctx.GetObject("rosetta_testRouter").(string)
 		if !ok {
 			t.Error("recovered global value should have type string")

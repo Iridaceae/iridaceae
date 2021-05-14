@@ -1,3 +1,5 @@
+// Package rosetta is iridaceae internal command parser. Greatly inspired by
+// luis/dgc and zekroTJA/sireikan with some modification.
 package rosetta
 
 import (

@@ -1,4 +1,3 @@
-// Package rosetta is iridaceae's internal structured command handler, including a token-bucket rate limiter and middleware handlers.
 package rosetta
 
 import (

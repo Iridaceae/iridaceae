@@ -16,27 +16,26 @@ import (
 	"github.com/Iridaceae/iridaceae/pkg/helpers"
 )
 
+var TestSession *discordgo.Session
+
 func init() {
 	_ = pkg.LoadGlobalEnv()
+	TestSession = helpers.MakeTestSession()
 }
 
 func TestRouter_Setup(t *testing.T) {
 	r := NewRouter(makeTestConfig())
-	s := helpers.MakeTestSession()
-	r.Setup(s)
+	r.Setup(TestSession)
 }
 
 func TestNewDefaultConfig(t *testing.T) {
-	ctx := makeTestCtx(false)
-	ctx.session = helpers.MakeTestSession()
-
+	ctx := makeTestCtx(false, true)
 	c := NewDefaultConfig()
 	c.OnError(ctx, ErrTypeMiddleware, ErrMiddleware)
 }
 
 func TestNewRouter(t *testing.T) {
-	ctx := makeTestCtx(true)
-	ctx.session = helpers.MakeTestSession()
+	ctx := makeTestCtx(false, true)
 	tests := []struct {
 		cfg                *Config
 		cOnError           bool
@@ -112,14 +111,13 @@ func TestRouter_Register(t *testing.T) {
 
 func TestRouterExecuteMiddleware(t *testing.T) {
 	// this will determine how many times we want to run our test channel.
-	const count = 3
-	session := helpers.MakeTestSession()
+	const count = 2
 	exit := make(chan bool, count)
+	session := helpers.MakeTestSession()
 
 	cmd := &TestCmd{}
 	cfg := makeTestConfig()
 	cfg.AllowBots = true
-	cfg.DeleteMessageAfter = false
 
 	r := NewRouter(cfg)
 	r.Register(cmd)
@@ -133,10 +131,10 @@ func TestRouterExecuteMiddleware(t *testing.T) {
 
 	msg := makeTestMsg(t, "!ping")
 
-	session.AddHandler(func(_ *discordgo.Session, e *discordgo.Ready) {
-		failFunc := func(fail bool, msg *discordgo.Message) {
+	session.AddHandler(func(s *discordgo.Session, e *discordgo.Ready) {
+		failFunc := func(s *discordgo.Session, fail bool, msg *discordgo.Message) {
 			cmd.fail = fail
-			r.(*router).trigger(session, msg)
+			r.(*router).trigger(s, msg)
 			switch cmd.fail {
 			case true:
 				assert.True(t, m1.executed)
@@ -150,18 +148,16 @@ func TestRouterExecuteMiddleware(t *testing.T) {
 			}
 			exit <- true
 		}
-
-		failFunc(true, msg)
-		failFunc(false, msg)
-		msg.Content = ""
-		failFunc(false, msg)
+		failFunc(s, true, msg)
+		failFunc(s, false, msg)
 	})
-	_ = session.Open()
+	if err := session.Open(); err != nil {
+		log.Err(err).Msg("")
+	}
 	<-exit
 }
 
 func TestRouterExecuteCommand(t *testing.T) {
-	session := helpers.MakeTestSession()
 	exit := make(chan bool, 4)
 
 	tests := []struct {
@@ -169,22 +165,21 @@ func TestRouterExecuteCommand(t *testing.T) {
 		shallExecuted bool
 		testHandler   func(m *discordgo.Message)
 	}{
-		{"fail to execute", true, func(m *discordgo.Message) { m.Content = "!ping" }},
-		{"will execute", true, func(m *discordgo.Message) { m.Content = "test!ping" }},
-		{"command does not exist", false, func(m *discordgo.Message) { m.Content = "!abc" }},
 		{"author is bot", false, func(m *discordgo.Message) {
 			m.Author.Bot = true
 			m.Content = "!ping"
 		}},
+		{"use default prefix to execute", true, func(m *discordgo.Message) { m.Content = "!ping" }},
+		{"will execute with custom prefix", true, func(m *discordgo.Message) { m.Content = "test!ping" }},
+		{"command does not exist", false, func(m *discordgo.Message) { m.Content = "!abc" }},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testTrigger(t, session, exit, tt.shallExecuted, tt.testHandler)
+			testTrigger(t, TestSession, exit, tt.shallExecuted, tt.testHandler)
 		})
 	}
 
-	err := session.Open()
-	if err != nil {
+	if err := TestSession.Open(); err != nil {
 		log.Err(err).Msg("")
 	}
 	<-exit
@@ -276,6 +271,20 @@ func makeTestMsg(t *testing.T, content ...string) *discordgo.Message {
 	return cmd
 }
 
+func makeTestConfig() *Config {
+	return &Config{
+		GeneralPrefix:         "!",
+		IgnoreCase:            true,
+		AllowDM:               false,
+		AllowBots:             false,
+		ExecuteOnEdit:         false,
+		UseDefaultHelpCommand: false,
+		DeleteMessageAfter:    false,
+		OnError:               func(_ Context, errType ErrorType, err error) { log.Err(err).Msgf("type [%d]", errType) },
+		GuildPrefixGetter:     func(string) (string, error) { return "test!", nil },
+	}
+}
+
 type TestCmd struct {
 	executed bool
 	fail     bool
@@ -309,25 +318,10 @@ func (t *TestCmd) IsExecutableInDM() bool {
 	return true
 }
 
-func (t *TestCmd) Exec(ctx Context) error {
+func (t *TestCmd) Exec(_ Context) error {
 	t.executed = true
 	if t.fail {
 		return errors.New("test error")
 	}
-	log.Debug().Msg(ctx.GetMessage().Content)
 	return nil
-}
-
-func makeTestConfig() *Config {
-	return &Config{
-		GeneralPrefix:         "!",
-		IgnoreCase:            true,
-		AllowDM:               false,
-		AllowBots:             false,
-		ExecuteOnEdit:         false,
-		UseDefaultHelpCommand: false,
-		DeleteMessageAfter:    true,
-		OnError:               func(_ Context, errType ErrorType, err error) { log.Err(err).Msgf("type [%d]", errType) },
-		GuildPrefixGetter:     func(string) (string, error) { return "test!", nil },
-	}
 }

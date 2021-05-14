@@ -5,9 +5,6 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-	"time"
-
-	"github.com/Iridaceae/iridaceae/pkg/helpers"
 
 	"github.com/Iridaceae/iridaceae/pkg/log"
 
@@ -111,9 +108,7 @@ func NewDefaultConfig() *Config {
 		UseDefaultHelpCommand: true,
 		DeleteMessageAfter:    false,
 		OnError: func(ctx Context, errType ErrorType, err error) {
-			msg, _ := ctx.RespondEmbedError("", err)
-			log.Error(err).Msgf("username: %s#%s sent:%s error: %+v", ctx.GetUser().Username, ctx.GetUser().Discriminator, ctx.GetMessage().Content, err)
-			helpers.DeleteMessageAfter(ctx.GetSession(), msg, 60*time.Second)
+			log.Error(err).Msgf("[%d] %+v", errType, ctx)
 		},
 	}
 }
@@ -187,13 +182,9 @@ func (r *router) RegisterMiddleware(m Middleware) {
 }
 
 func (r *router) Setup(session *discordgo.Session) {
-	session.AddHandler(func(s *discordgo.Session, e *discordgo.MessageCreate) {
-		r.trigger(s, e.Message)
-	})
+	session.AddHandler(func(s *discordgo.Session, e *discordgo.MessageCreate) { r.trigger(s, e.Message) })
 	if r.config.ExecuteOnEdit {
-		session.AddHandler(func(s *discordgo.Session, e *discordgo.MessageUpdate) {
-			r.trigger(s, e.Message)
-		})
+		session.AddHandler(func(s *discordgo.Session, e *discordgo.MessageUpdate) { r.trigger(s, e.Message) })
 	}
 }
 
