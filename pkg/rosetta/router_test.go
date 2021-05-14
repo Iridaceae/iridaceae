@@ -81,6 +81,17 @@ func TestRouter_Register(t *testing.T) {
 			assert.Equal(t, cmd, instance)
 		}
 	})
+	t.Run("panic register command", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("register already invoked command didn't panic")
+			}
+		}()
+		r := NewRouter(makeTestConfig())
+		cmd := &TestCmd{}
+		r.Register(cmd)
+		r.Register(cmd)
+	})
 	t.Run("register middleware", func(t *testing.T) {
 		r := NewRouter(makeTestConfig())
 		mw := &TestMiddleware{}
@@ -120,7 +131,7 @@ func TestRouterExecuteMiddleware(t *testing.T) {
 	m2.layer = LayerAfterCommand
 	r.Register(m2)
 
-	var msg = makeTestMsg(t, "!ping")
+	msg := makeTestMsg(t, "!ping")
 
 	session.AddHandler(func(_ *discordgo.Session, e *discordgo.Ready) {
 		failFunc := func(fail bool, msg *discordgo.Message) {
@@ -150,6 +161,9 @@ func TestRouterExecuteMiddleware(t *testing.T) {
 }
 
 func TestRouterExecuteCommand(t *testing.T) {
+	session := helpers.MakeTestSession()
+	exit := make(chan bool, 4)
+
 	tests := []struct {
 		name          string
 		shallExecuted bool
@@ -165,18 +179,20 @@ func TestRouterExecuteCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			testTrigger(t, tt.shallExecuted, tt.testHandler)
+			testTrigger(t, session, exit, tt.shallExecuted, tt.testHandler)
 		})
 	}
+
+	err := session.Open()
+	if err != nil {
+		log.Err(err).Msg("")
+	}
+	<-exit
 }
 
 // NOTE: current tests is running very slow. Potential qol may be to have a general session?
-func testTrigger(t *testing.T, shallExecuted bool, configurator func(m *discordgo.Message)) {
+func testTrigger(t *testing.T, session *discordgo.Session, exit chan bool, shallExecuted bool, configurator func(m *discordgo.Message)) {
 	t.Helper()
-
-	session := helpers.MakeTestSession()
-	exit := make(chan bool, 1)
 
 	cmd := &TestCmd{}
 	cfg := makeTestConfig()
@@ -188,6 +204,7 @@ func testTrigger(t *testing.T, shallExecuted bool, configurator func(m *discordg
 
 	msg := makeTestMsg(t)
 	configurator(msg)
+	r.GetConfig().OnError = func(ctx Context, errType ErrorType, err error) {}
 
 	session.AddHandler(func(_ *discordgo.Session, e *discordgo.Ready) {
 		r.(*router).trigger(session, msg)
@@ -198,12 +215,6 @@ func testTrigger(t *testing.T, shallExecuted bool, configurator func(m *discordg
 		}
 		exit <- true
 	})
-
-	err := session.Open()
-	if err != nil {
-		log.Err(err).Msg("")
-	}
-	<-exit
 }
 
 func TestRouter_GetterSetter(t *testing.T) {

@@ -205,7 +205,6 @@ func (r *router) trigger(s *discordgo.Session, msg *discordgo.Message) {
 
 	// check if given message author is a bot.
 	if !r.config.AllowBots || msg.Author == nil || msg.Author.Bot || msg.Author.ID == s.State.User.ID {
-		log.Debug().Msg("message or author is a bot, ignoring...")
 		return
 	}
 
@@ -230,11 +229,10 @@ func (r *router) trigger(s *discordgo.Session, msg *discordgo.Message) {
 		prefix = r.config.GeneralPrefix
 	}
 
-	// if no prefix is received then we don't don anything.
-	if prefix == "" {
+	// if no prefix is received or message is empty after prefix then we don't do anything.
+	if prefix == "" || trimmed == "" {
 		return
 	}
-	msg.Content = trimmed
 
 	if ctx.channel, err = s.State.Channel(msg.ChannelID); err != nil {
 		if ctx.channel, err = s.Channel(msg.ChannelID); err != nil {
@@ -257,7 +255,7 @@ func (r *router) trigger(s *discordgo.Session, msg *discordgo.Message) {
 		}
 	}
 
-	args := ParseArguments(msg.Content)
+	args := ParseArguments(trimmed)
 	invoke, arg := args.Args()[0].String(), args.Args()[1:]
 	ctx.args = FromArguments(arg)
 
@@ -272,7 +270,9 @@ func (r *router) trigger(s *discordgo.Session, msg *discordgo.Message) {
 		return
 	}
 
-	ctx.SetObject(ObjectMapKeyRouter, r)
+	if ctx.GetObject(ObjectMapKeyRouter) != r {
+		ctx.SetObject(ObjectMapKeyRouter, r)
+	}
 
 	if !r.executeMiddlewares(cmd, ctx, LayerBeforeCommand) {
 		return
