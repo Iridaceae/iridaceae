@@ -1,18 +1,19 @@
+// Package pomodoro defines our pomodoro logics.
 package deprecatedrunner
 
 import (
 	"sync"
 	"time"
 
-	datastore "github.com/Iridaceae/iridaceae/internal/database"
+	"github.com/Iridaceae/iridaceae/internal/database"
 )
 
 // Pomodoro defines a single state of a pomodoro sessions.
 // Usage of channel to handle cancel signal.
 type Pomodoro struct {
 	workDuration time.Duration
-	onWorkEnd    TaskCallback
-	notifyInfo   NotifyInfo
+	onWorkEnd    TaskCallback // NOTE: uses callback as middleware for new command handler.
+	notifyInfo   NotifyInfo   // We can just pass straight from discordgo.Event
 	cancelChan   chan struct{}
 	cancel       sync.Once
 }
@@ -20,7 +21,7 @@ type Pomodoro struct {
 // NotifyInfo defines notification message for users.
 type NotifyInfo struct {
 	TitleID string
-	User    *datastore.User
+	User    *database.User
 }
 
 // TaskCallback receives NotifyInfo and a boolean to define whether the task is completed or not.
@@ -37,8 +38,8 @@ func NewUserPomodoroMap() UserPomodoroMap {
 	return UserPomodoroMap{userToPom: make(map[string]*Pomodoro)}
 }
 
-// NewPom create a new pomodoro and start it using time.NewTimer. onWorkEnd will be called after the goroutine.
-func NewPom(workDuration time.Duration, onWorkEnd TaskCallback, notify NotifyInfo) *Pomodoro {
+// NewPomodoro create a new pomodoro and start it using time.NewTimer. onWorkEnd will be called after the goroutine.
+func NewPomodoro(workDuration time.Duration, onWorkEnd TaskCallback, notify NotifyInfo) *Pomodoro {
 	pom := &Pomodoro{
 		workDuration: workDuration,
 		onWorkEnd:    onWorkEnd,
@@ -47,7 +48,7 @@ func NewPom(workDuration time.Duration, onWorkEnd TaskCallback, notify NotifyInf
 		cancel:       sync.Once{},
 	}
 
-	go pom.startPom()
+	go pom.start()
 	return pom
 }
 
@@ -58,7 +59,7 @@ func (pom *Pomodoro) Cancel() {
 	})
 }
 
-func (pom *Pomodoro) startPom() {
+func (pom *Pomodoro) start() {
 	workTimer := time.NewTimer(pom.workDuration)
 
 	select {
@@ -79,12 +80,12 @@ func (u *UserPomodoroMap) CreateIfEmpty(duration time.Duration, onWorkEnd TaskCa
 	if _, exists := u.userToPom[notify.User.DiscordID]; !exists {
 		doneInMap := func(notify NotifyInfo, completed bool) {
 			// only called when it is done then we can use the mutex
-			// cancellation won't trigger onWorkEnd since startPom is already done at this point
+			// cancellation won't trigger onWorkEnd since start is already done at this point
 			u.RemoveIfExists(notify.User.DiscordID)
 			onWorkEnd(notify, completed)
 		}
 
-		u.userToPom[notify.User.DiscordID] = NewPom(duration, doneInMap, notify)
+		u.userToPom[notify.User.DiscordID] = NewPomodoro(duration, doneInMap, notify)
 		wasCreated = true
 	}
 	return wasCreated

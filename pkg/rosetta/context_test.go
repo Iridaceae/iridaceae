@@ -1,85 +1,146 @@
 package rosetta
 
 import (
-	"errors"
+	"sync"
 	"testing"
 	"time"
-
-	"github.com/Iridaceae/iridaceae/pkg/util"
 
 	"github.com/Iridaceae/iridaceae/pkg"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Iridaceae/iridaceae/pkg/helpers"
+
+	"github.com/sarulabs/di/v2"
+
+	"github.com/bwmarrin/discordgo"
 )
 
+type TestMiddleware struct {
+	executed bool
+	layer    MiddlewareLayer
+}
+
+func (t *TestMiddleware) Handle(cmd Command, ctx Context, layer MiddlewareLayer) (bool, error) {
+	ctx.SetObject("rosetta_testObject", 69420)
+	t.executed = true
+	return true, nil
+}
+
+func (t *TestMiddleware) GetLayer() MiddlewareLayer {
+	return t.layer
+}
+
 var (
-	ErrNothingWrong = errors.New("test error")
-	ctx             *Context
+	rtAssert     = assert.New(&testing.T{})
+	TestEmbedMsg = &discordgo.MessageEmbed{
+		Type:        "rich",
+		Title:       "This is a test message",
+		Description: "Embed nice",
+		Timestamp:   time.Now().Format(time.RFC3339),
+		Color:       0xffff00,
+	}
 )
 
 func init() {
 	_ = pkg.LoadGlobalEnv()
-	ctx = makeTestCtx()
 }
 
-func setSubCmd(t *testing.T) {
-	t.Helper()
-	TestCommand.SubCommands = []*Command{{
-		Name:        "t1",
-		Aliases:     []string{"t1"},
-		Description: "subcmd 1",
-		Usage:       "t1 something_here",
-		Example:     "testcmd 1 t1",
-		IgnoreCase:  false,
-	}}
+func makeTestCtx(initOM bool, mockSess bool) *context {
+	ctx := &context{
+		isDM:      true,
+		isEdit:    true,
+		args:      ParseArguments("a b c"),
+		objectMap: &sync.Map{},
+		session:   &discordgo.Session{Token: "rosetta_testToken"},
+		message:   &discordgo.Message{ID: "rosetta_testMessage", Author: &discordgo.User{ID: "rosetta_testUser"}},
+		guild:     &discordgo.Guild{ID: "rosetta_testGuild"},
+		channel:   &discordgo.Channel{ID: helpers.GetEnvOrDefault("CONCERTINA_CHANNELID", "")},
+		member:    &discordgo.Member{Nick: "rosetta_testNick"},
+	}
+	if mockSess {
+		ctx.session = &discordgo.Session{State: &discordgo.State{Ready: discordgo.Ready{User: ctx.member.User}}}
+	}
+	if initOM {
+		b, _ := di.NewBuilder()
+		err := b.Set("rosetta_testRouter", "rosetta_testValue")
+		if err != nil {
+			return nil
+		}
+
+		rr := &router{
+			objectContainer: b.Build(),
+			ctxPool:         &sync.Pool{New: func() interface{} { return &context{objectMap: &sync.Map{}} }},
+			objectMap:       &sync.Map{},
+		}
+		ctx.router = rr
+	}
+	return ctx
 }
 
-func TestCommand_GetSubCmd(t *testing.T) {
-	t.Run("get nil subcmd", func(t *testing.T) {
-		tcmd := TestCommand.GetSubCmd("nothing")
-		assert.Nil(t, tcmd)
-		assert.Equal(t, 3*time.Second, tcmd.GetLimiterRestoration())
+func TestContextGetter(t *testing.T) {
+	ctx := makeTestCtx(false, false)
+	ctx.session = TestSession
+
+	tests := []struct {
+		name     string
+		testFunc func() interface{}
+		expected interface{}
+	}{
+		{"get session", func() interface{} { return ctx.GetSession() }, ctx.session},
+		{"get arguments", func() interface{} { return ctx.GetArguments() }, ctx.args},
+		{"get channel", func() interface{} { return ctx.GetChannel() }, ctx.channel},
+		{"get message", func() interface{} { return ctx.GetMessage() }, ctx.message},
+		{"get guild", func() interface{} { return ctx.GetGuild() }, ctx.guild},
+		{"get user", func() interface{} { return ctx.GetUser() }, ctx.message.Author},
+		{"get member", func() interface{} { return ctx.GetMember() }, ctx.member},
+		{"is dm", func() interface{} { return ctx.IsDM() }, ctx.isDM},
+		{"is edit", func() interface{} { return ctx.IsEdit() }, ctx.isEdit},
+		{"respond text", func() interface{} {
+			msg, err := ctx.RespondText("hello world")
+			helpers.DeleteMessageAfter(ctx.GetSession(), msg, 20*time.Second)
+			return err
+		}, nil},
+		{"respond embed", func() interface{} {
+			msg, err := ctx.RespondEmbed(TestEmbedMsg)
+			defer helpers.DeleteMessageAfter(ctx.GetSession(), msg, 20*time.Second)
+			return err
+		}, nil},
+		{"respond embed error", func() interface{} {
+			msg, err := ctx.RespondEmbedError("test with defined error", ErrCommandNotFound)
+			defer helpers.DeleteMessageAfter(ctx.GetSession(), msg, 20*time.Second)
+			return err
+		}, nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rtAssert.Equal(tt.expected, tt.testFunc())
+		})
+	}
+}
+
+func TestContext_SetGetInitObjectMap(t *testing.T) {
+	t.Run("get set test local", func(t *testing.T) {
+		cc := makeTestCtx(true, false)
+		cc.SetObject("key", 123)
+		v, ok := cc.GetObject("key").(int)
+		rtAssert.True(ok)
+		rtAssert.Equal(123, v)
+
+		v, ok = cc.GetObject("unexisted key").(int)
+		rtAssert.False(ok)
+		rtAssert.Equal(0, v)
 	})
-
-	t.Run("get a subcmd", func(t *testing.T) {
-		setSubCmd(t)
-		tcmd := TestCommand.GetSubCmd("t1")
-		assert.NotNil(t, tcmd)
-		assert.Equal(t, tcmd.Name, "t1")
-		assert.Equal(t, 3, tcmd.GetLimiterBurst())
+	t.Run("get om global", func(t *testing.T) {
+		ctx := makeTestCtx(true, false)
+		v, ok := ctx.GetObject("rosetta_testRouter").(string)
+		if !ok {
+			t.Error("recovered global value should have type string")
+		}
+		if v != "rosetta_testValue" {
+			t.Error("invalid global value")
+		}
 	})
-}
-
-func TestCommand_Trigger(t *testing.T) {
-	TestCommand.trigger(ctx)
-}
-
-func TestContext_RespondText(t *testing.T) {
-	ctx.Session = util.MakeTestSession()
-	err := ctx.RespondText("hello world")
-	assert.Nil(t, err)
-}
-
-func TestContext_RespondEmbed(t *testing.T) {
-	ctx.Session = util.MakeTestSession()
-	err := ctx.RespondEmbed(TestEmbedMsg)
-	assert.Nil(t, err)
-}
-
-func TestContext_RespondEmbedError(t *testing.T) {
-	ctx.Session = util.MakeTestSession()
-	err := ctx.RespondEmbedError(ErrRateLimited)
-	assert.Nil(t, err)
-}
-
-func TestContext_RespondTextEmbed(t *testing.T) {
-	ctx.Session = util.MakeTestSession()
-	err := ctx.RespondTextEmbed("Hello, this is a test with text and embed", TestEmbedMsg)
-	assert.Nil(t, err)
-}
-
-func TestContext_RespondTextEmbedError(t *testing.T) {
-	ctx.Session = util.MakeTestSession()
-	err := ctx.RespondTextEmbedError("Hello, this is a error text embed test", "error response", ErrNothingWrong)
-	assert.Nil(t, err)
+	t.Run("init om", func(t *testing.T) {
+	})
 }

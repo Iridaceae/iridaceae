@@ -3,7 +3,10 @@
 package ratelimit
 
 import (
+	"fmt"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
 
 	"github.com/Iridaceae/iridaceae/pkg/rosetta"
 )
@@ -11,26 +14,40 @@ import (
 // RateLimiter implements a managers of rate limiters.
 // This can also be parsed a custom Manager instance if you want to handle limiters differently.
 type RateLimiter struct {
-	m       Manager
-	handler rosetta.ExecutionHandler
+	m Manager
 }
 
 // New returns a new instance of Rate Limiter.
-func New(onRateLimited rosetta.ExecutionHandler, m ...Manager) *RateLimiter {
+func New(m ...Manager) *RateLimiter {
 	var man Manager
 	if len(m) > 0 && m[0] != nil {
 		man = m[0]
 	} else {
-		man = newManager(10 * time.Minute)
+		man = newInternalManager(10 * time.Minute)
 	}
-	return &RateLimiter{m: man, handler: onRateLimited}
+	return &RateLimiter{man}
 }
 
-func (r *RateLimiter) Handle(ctx *rosetta.Context) (bool, error) {
-	limiter := r.m.GetBucket(ctx)
-	if ok, next := limiter.Take(); !ok {
-		r.handler(ctx, next)
-		return false, rosetta.ErrRateLimited
+func (r *RateLimiter) Handle(cmd rosetta.Command, ctx rosetta.Context, layer rosetta.MiddlewareLayer) (bool, error) {
+	c, ok := cmd.(rosetta.LimitedConfig)
+	if !ok {
+		return true, nil
+	}
+
+	var gid string
+	switch {
+	case c.IsLimiterGlobal():
+		gid = "__global__"
+	case ctx.GetChannel().Type == discordgo.ChannelTypeDM || ctx.GetChannel().Type == discordgo.ChannelTypeGroupDM:
+		gid = "__dm__"
+	default:
+		gid = ctx.GetGuild().ID
+	}
+
+	limiter := r.m.GetBucket(cmd, ctx.GetUser().ID, gid)
+	if k, next := limiter.Take(); !k {
+		_, err := ctx.RespondEmbedError(fmt.Sprintf("You are being rate limited.\nWait %s before using this command again.", next.String()), rosetta.ErrRateLimited)
+		return false, err
 	}
 	return true, nil
 }

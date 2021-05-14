@@ -1,5 +1,5 @@
-// Package datastore handles all database configuration
-package datastore
+// Package database handles all database configuration
+package database
 
 import (
 	"fmt"

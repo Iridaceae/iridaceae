@@ -1,8 +1,5 @@
 package rosetta
 
-// Deprecated: implements Middleware instead.
-type MiddlewareHandler func(handler ExecutionHandler) ExecutionHandler
-
 // MiddlewareLayer defines layer in which middleware should live and executed during
 // command parsing and handling.
 type MiddlewareLayer int
@@ -20,7 +17,7 @@ type Middleware interface {
 	// if return bool is false then command handler shall not execute.
 	//
 	// An error should only be returned when middleware handler failed unexpectedly.
-	Handle(ctx *Context) (bool, error)
+	Handle(cmd Command, ctx Context, layer MiddlewareLayer) (bool, error)
 
 	// GetLayer returns the layer in which the middleware live.
 	//

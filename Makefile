@@ -42,6 +42,7 @@ test-cov:
 .PHONY: clean
 clean:
 	# creates /vendor
+	@rm -rf vendor/
 	$(GOMOD) tidy && $(GOMOD) vendor
 	# then we clean
 	$(GOCLEAN)

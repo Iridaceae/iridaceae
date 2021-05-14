@@ -1,3 +1,4 @@
+// Package deprecatedrunner contains v1 bot functionality, deprecated in next update.
 package deprecatedrunner
 
 import (
@@ -83,7 +84,7 @@ func (ir *Iris) buildHelpMessage() string {
 	// just use map iteration order
 	for cmdStr, cmd := range ir.cmdHandlers {
 		helpBuffer.WriteString(fmt.Sprintf("\n•  **%s**  -  %s\n", cmdStr, cmd.desc))
-		helpBuffer.WriteString(fmt.Sprintf("   Example: `%s%s %s`\n", pkg.CmdPrefix.GetString(), cmdStr, cmd.exampleParams))
+		helpBuffer.WriteString(fmt.Sprintf("   Example: `%s%s%s`\n", pkg.CmdPrefix.GetString(), cmdStr, cmd.exampleParams))
 	}
 
 	helpBuffer.WriteString("\n" + ir.inviteMessage)

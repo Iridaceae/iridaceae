@@ -3,21 +3,19 @@ package rosetta
 import (
 	"log"
 	"strings"
+	"sync"
 )
 
-func hasPrefix(s string, prefixes []string, ignoreCase bool) (bool, string) {
-	for _, prefix := range prefixes {
-		strToCheck := s
-		if ignoreCase {
-			strToCheck = strings.ToLower(strToCheck)
-			prefix = strings.ToLower(prefix)
-		}
-
-		if strings.HasPrefix(strToCheck, prefix) {
-			return true, s[len(prefix):]
-		}
+func hasPrefix(msg string, prefix string, ignoreCase bool) (string, bool) {
+	strToCheck := msg
+	if ignoreCase {
+		strToCheck = strings.ToLower(strToCheck)
+		prefix = strings.ToLower(prefix)
 	}
-	return false, s
+	if strings.HasPrefix(strToCheck, prefix) {
+		return msg[len(prefix):], true
+	}
+	return msg, false
 }
 
 func trimPreSuffix(s string, preSuffix string) string {
@@ -40,4 +38,34 @@ func arrayContains(arr []string, s string, ignoreCase bool) bool {
 		}
 	}
 	return false
+}
+
+func clearMap(m *sync.Map) {
+	m.Range(func(key, _ interface{}) bool {
+		m.Delete(key)
+		return true
+	})
+}
+
+// TODO: better way to handle error.
+func getErrorTypeName(e ErrorType) string {
+	switch e {
+	case ErrTypeCommandExec:
+		return ErrCommandExec.Error()
+	case ErrTypeMiddleware:
+		return ErrMiddleware.Error()
+	case ErrTypeCommandNotFound:
+		return ErrCommandNotFound.Error()
+	case ErrTypeGetChannel:
+		return ErrGetChannel.Error()
+	case ErrTypeDeleteCommandMessage:
+		return ErrDeleteCommandMessage.Error()
+	case ErrTypeGetGuild:
+		return ErrGetGuild.Error()
+	case ErrTypeGuildPrefixGetter:
+		return ErrGuildPrefixGetter.Error()
+	case ErrTypeNotExecutableInDM:
+		return ErrNotExecutableInDMs.Error()
+	}
+	return ""
 }

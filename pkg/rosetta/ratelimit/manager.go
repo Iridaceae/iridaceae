@@ -14,7 +14,10 @@ import (
 type Manager interface {
 
 	// GetBucket returns a token-bucket rate limiter from given context.
-	GetBucket(ctx *rosetta.Context) *Bucket
+	GetBucket(cmd rosetta.Command, uid, gid string) *Bucket
+
+	// GetExecutions returns our internal execution mapping.
+	GetExecutions() *timedmap.TimedMap
 }
 
 type manager struct {
@@ -22,16 +25,23 @@ type manager struct {
 	pool       *sync.Pool
 }
 
-func newManager(cleanupInterval time.Duration) *manager {
+func (m *manager) GetExecutions() *timedmap.TimedMap {
+	return m.executions
+}
+
+func newInternalManager(cleanupInterval time.Duration) *manager {
 	return &manager{
 		executions: timedmap.New(cleanupInterval),
 		pool:       &sync.Pool{New: func() interface{} { return new(Bucket) }},
 	}
 }
 
-func (m *manager) GetBucket(ctx *rosetta.Context) *Bucket {
-	key := fmt.Sprintf("%s:%s:%s", ctx.Command.Name, ctx.Event.Author.ID, ctx.Event.Message.GuildID)
-	expired := time.Duration(ctx.Command.GetLimiterBurst()) * ctx.Command.GetLimiterRestoration()
+func (m *manager) GetBucket(cmd rosetta.Command, uid, gid string) *Bucket {
+	key := fmt.Sprintf("%s:%s:%s", cmd.GetDomain(), uid, gid)
+
+	// all command should implements LimitedConfig.
+	lcmd, _ := cmd.(rosetta.LimitedConfig)
+	expired := time.Duration(lcmd.GetLimiterBurst()) * lcmd.GetLimiterRestoration()
 
 	limiter, ok := m.executions.GetValue(key).(*Bucket)
 	if ok {
@@ -39,7 +49,7 @@ func (m *manager) GetBucket(ctx *rosetta.Context) *Bucket {
 		return limiter
 	}
 
-	limiter = m.pool.Get().(*Bucket).setParams(ctx.Command.GetLimiterBurst(), ctx.Command.GetLimiterRestoration())
+	limiter = m.pool.Get().(*Bucket).setParams(lcmd.GetLimiterBurst(), lcmd.GetLimiterRestoration())
 	m.executions.Set(key, limiter, expired, func(val interface{}) { m.pool.Put(val) })
 	return limiter
 }

@@ -2,7 +2,7 @@ package log
 
 import (
 	"bytes"
-	"errors"
+	errors "errors"
 	"os"
 	"testing"
 
@@ -12,6 +12,7 @@ import (
 
 // hooks fn.
 var (
+	errTest    = errors.New("test error")
 	simpleHook = zerolog.HookFunc(func(e *zerolog.Event, level zerolog.Level, message string) {
 		e.Bool("hasLevel", level != zerolog.NoLevel)
 	})
@@ -72,13 +73,23 @@ func TestEvents(t *testing.T) {
 		{"error level", `{"level":"ERROR","error":"test error","hasLevel":true,"message":"test"}` + "\n", func(l zerolog.Logger) {
 			l = l.Hook(simpleHook)
 			L.log = &l
-			err := errors.New("test error")
-			Error(err).Msg("test")
+			Error(errTest).Msg("test")
 		}},
-		// TODO : fatal and panic tests
+		{"panic level", `{"level":"PANIC","hasLevel":true,"message":"test"}` + "\n", func(l zerolog.Logger) {
+			l = l.Hook(simpleHook)
+			L.log = &l
+			Panic().Msg("test")
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "panic level" {
+				defer func() {
+					if r := recover(); r == nil {
+						t.Error("function shouldn't recover after panic")
+					}
+				}()
+			}
 			out := &bytes.Buffer{}
 			L = NewZ(zerolog.New(out))
 			tt.log(*L.log)
@@ -87,4 +98,13 @@ func TestEvents(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPanic(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("function shouldn't recover after panic")
+		}
+	}()
+	Panic().Msg("")
 }

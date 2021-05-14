@@ -40,5 +40,5 @@ _check each folder readme for more information_
 > <div align="left"><i>why <strong>iridaceae</strong> when we already had </i><a href="https://github.com/jonas747/yagpdb"><strong>yagpdb</strong></a>?</div>
 - `yagpdb` are pretty clunky and bloated in the sense that the maintainer uses a lot of boilerplate, whereas `iridaceae` goals are to stay minimal and bloat-free as possible
 - `yagpdb` structures are pretty messy and harder for development and thus `iridaceae` aims to make it more developer-friendly as well as user-friendly
-- `iridaceae` got a lot of inspirations from `yagpdb` but takes a more lightweight approaches considering structures and deployments, refers to [here](pkg/README.md) for more details
+- `iridaceae` got a lot of inspirations from `yagpdb` but takes a more lightweight approaches considering structures and deployments, refers to [here](pkg/README) for more details
 - `iridaceae` is pretty much <strong>WIP</strong> so any help are appreciated
