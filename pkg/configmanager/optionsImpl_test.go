@@ -8,112 +8,112 @@ import (
 
 func TestOptions_GetBool(t *testing.T) {
 	t.Run("Get bool from an bool options", func(t *testing.T) {
-		topt := &Options{
-			Name:         "bool.opts",
-			Description:  "boolean opts",
+		tt := &optionsImpl{
+			Name:         "bool.optt",
+			Description:  "boolean optt",
 			DefaultValue: true,
 			LoadedValue:  true,
 		}
-		assert.True(t, topt.GetBool())
+		assert.True(t, tt.ToBool())
 	})
 	t.Run("Get another valid bool", func(t *testing.T) {
-		topt := &Options{
-			Name:         "bool.opts",
-			Description:  "boolean opts",
+		tt := &optionsImpl{
+			Name:         "bool.optt",
+			Description:  "boolean optt",
 			DefaultValue: "true",
 			LoadedValue:  "true",
 		}
-		assert.True(t, topt.GetBool())
+		assert.True(t, tt.ToBool())
 	})
 	t.Run("Get a false bool", func(t *testing.T) {
-		topt := &Options{
-			Name:         "bool.opts",
-			Description:  "boolean opts",
+		tt := &optionsImpl{
+			Name:         "bool.optt",
+			Description:  "boolean optt",
 			DefaultValue: "t",
 			LoadedValue:  "t",
 		}
-		assert.False(t, topt.GetBool())
+		assert.False(t, tt.ToBool())
 	})
 	t.Run("Get a true bool from int", func(t *testing.T) {
-		topt := &Options{
-			Name:         "bool.opts",
-			Description:  "boolean opts",
+		tt := &optionsImpl{
+			Name:         "bool.optt",
+			Description:  "boolean optt",
 			DefaultValue: 1,
 			LoadedValue:  1,
 		}
-		assert.True(t, topt.GetBool())
+		assert.True(t, tt.ToBool())
 	})
 }
 
 func TestOptions_GetFloat(t *testing.T) {
 	t.Run("Get a float options", func(t *testing.T) {
-		fopt := &Options{
-			Name:         "float.opts",
-			Description:  "float opts",
+		fopt := &optionsImpl{
+			Name:         "float.optt",
+			Description:  "float optt",
 			DefaultValue: 12.3,
 			LoadedValue:  12.3,
 		}
-		assert.Equal(t, fopt.GetFloat(), 12.3)
+		assert.Equal(t, fopt.ToFloat(), 12.3)
 	})
 	t.Run("Get from int options", func(t *testing.T) {
-		fopt := &Options{
-			Name:         "float.opts",
-			Description:  "float opts",
+		fopt := &optionsImpl{
+			Name:         "float.optt",
+			Description:  "float optt",
 			DefaultValue: 12,
 			LoadedValue:  12,
 		}
-		assert.Equal(t, fopt.GetFloat(), float64(12))
+		assert.Equal(t, fopt.ToFloat(), float64(12))
 	})
 	t.Run("Get a string options", func(t *testing.T) {
-		fopt := &Options{
-			Name:         "float.opts",
-			Description:  "float opts",
+		fopt := &optionsImpl{
+			Name:         "float.optt",
+			Description:  "float optt",
 			DefaultValue: "12.3",
 			LoadedValue:  "12.3",
 		}
-		assert.Equal(t, fopt.GetFloat(), 12.3)
+		assert.Equal(t, fopt.ToFloat(), 12.3)
 	})
 }
 
 func TestOptions_GetInt(t *testing.T) {
 	t.Run("Get a int options", func(t *testing.T) {
-		iopt := &Options{
+		iopt := &optionsImpl{
 			Name:         "test.int",
 			Description:  "test int",
 			DefaultValue: 1,
 			LoadedValue:  1,
 		}
-		assert.Equal(t, iopt.GetInt(), 1)
+		assert.Equal(t, iopt.ToInt(), 1)
 	})
 	t.Run("Get a int option from string", func(t *testing.T) {
-		iopt := &Options{
+		iopt := &optionsImpl{
 			Name:         "test.int",
 			Description:  "test int",
 			DefaultValue: "1",
 			LoadedValue:  "1",
 		}
-		assert.Equal(t, iopt.GetInt(), 1)
+		assert.Equal(t, iopt.ToInt(), 1)
 	})
 }
 
 func TestOptions_GetString(t *testing.T) {
 	t.Run("Get a string options", func(t *testing.T) {
-		sopt := &Options{
+		tt := &optionsImpl{
 			Name:         "test.string",
 			Description:  "test int",
 			DefaultValue: "hello world",
 			LoadedValue:  "hello world",
 		}
-		assert.Equal(t, sopt.GetString(), "hello world")
+		assert.Equal(t, tt.ToString(), "hello world")
 	})
 	t.Run("Get a sttring from int", func(t *testing.T) {
-		sopt := &Options{
+		tt := &optionsImpl{
 			Name:         "test.string",
 			Description:  "test int",
 			DefaultValue: 12,
 			LoadedValue:  12,
 		}
-		assert.Equal(t, sopt.GetString(), "12")
+		assert.Equal(t, tt.ToString(), "12")
 	})
 }
 
@@ -124,26 +124,26 @@ func TestOptions_LoadValue(t *testing.T) {
 	})
 
 	t.Run("Load a memory value", func(t *testing.T) {
-		TestParser.Reset()
-		opt := Options{
+		TestParser.Clear(true, false)
+		opt := optionsImpl{
 			Name:         "random.test",
 			Description:  "0x48",
 			DefaultValue: 0x48,
 			Manager:      TestParser,
 		}
-		opt.Manager.AddSource(&EnvSource{})
+		opt.Manager.RegisterSource(&EnvSource{})
 
 		opt.LoadValue()
 		assert.Equal(t, opt.LoadedValue, 0x48)
 	})
 
 	t.Run("load default bool value", func(t *testing.T) {
-		opt := Options{
+		opt := optionsImpl{
 			Name:         "rand.test",
 			DefaultValue: true,
 			Manager:      TestParser,
 		}
-		opt.Manager.AddSource(&EnvSource{})
+		opt.Manager.RegisterSource(&EnvSource{})
 		opt.LoadValue()
 
 		assert.Equal(t, opt.LoadedValue, true)
@@ -160,19 +160,19 @@ func TestOptions_UpdateValue(t *testing.T) {
 		assert.Equal(t, mockOption.LoadedValue, true)
 	})
 	t.Run("update loaded value to string", func(t *testing.T) {
-		tstStr := "test"
-		mockOption.UpdateValue(tstStr)
-		assert.Equal(t, mockOption.LoadedValue, tstStr)
+		ttStr := "test"
+		mockOption.UpdateValue(ttStr)
+		assert.Equal(t, mockOption.LoadedValue, ttStr)
 	})
 	t.Run("update loaded value to int", func(t *testing.T) {
-		tstInt := 1342
-		mockOption.UpdateValue(tstInt)
-		assert.Equal(t, mockOption.LoadedValue, tstInt)
+		ttInt := 1342
+		mockOption.UpdateValue(ttInt)
+		assert.Equal(t, mockOption.LoadedValue, ttInt)
 	})
 	t.Run("update loaded value to float64", func(t *testing.T) {
-		tstInt := float64(12)
-		mockOption.UpdateValue(tstInt)
-		assert.Equal(t, mockOption.LoadedValue, tstInt)
+		ttInt := float64(12)
+		mockOption.UpdateValue(ttInt)
+		assert.Equal(t, mockOption.LoadedValue, ttInt)
 	})
 }
 

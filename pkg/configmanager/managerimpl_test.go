@@ -8,13 +8,13 @@ import (
 
 func TestNewManager(t *testing.T) {
 	t.Run("Empty manager", func(t *testing.T) {
-		assert.Equal(t, len(NewConfigManager().(*managerImpl).Options), 0)
+		assert.Equal(t, len(NewDefaultManager().(*managerImpl).Options), 0)
 	})
 }
 
 func TestManager_Load(t *testing.T) {
 	t.Run("load a mock options", func(t *testing.T) {
-		TestParser.Load()
+		TestParser.LoadOptions()
 		// should be equal to zero since we haven't register any mockOption
 		assert.Equal(t, len(TestParser.Options), 0)
 	})
@@ -23,8 +23,8 @@ func TestManager_Load(t *testing.T) {
 func TestManager_AddSource(t *testing.T) {
 	// NOTE: for future reference, when add more sources such as redispool and kubernetes add more test case here.
 	t.Run("add envsources", func(t *testing.T) {
-		m, _ := NewConfigManager().(*managerImpl)
-		m.AddSource(&EnvSource{})
+		m, _ := NewDefaultManager().(*managerImpl)
+		m.RegisterSource(&EnvSource{})
 		assert.Equal(t, len(m.sources), 1)
 	})
 }

@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-// Options is our variable configuration.
-type Options struct {
+// optionsImpl is our variable configuration.
+type optionsImpl struct {
 	Name         string // given name format iris.option1.option2.
 	Description  string
 	DefaultValue interface{}
@@ -17,10 +17,13 @@ type Options struct {
 	ConfigSource Source
 }
 
-// LoadValue will load given values if exists, otherwise use default ones.
-func (o *Options) LoadValue() {
+func (o *optionsImpl) LoadValue() {
 	_default := o.DefaultValue
-	man, _ := o.Manager.(*managerImpl)
+	man, ok := o.Manager.(*managerImpl)
+	// This deals with manager implementation without null source.
+	if !ok {
+		panic("given option manager doesn't implement iridaceae internal manager")
+	}
 	o.ConfigSource = nil
 
 	for i := len(man.sources) - 1; i >= 0; i-- {
@@ -35,7 +38,7 @@ func (o *Options) LoadValue() {
 	}
 
 	if o.DefaultValue != nil {
-		if _, ok := o.DefaultValue.(int); ok {
+		if _, ok = o.DefaultValue.(int); ok {
 			_default = interface{}(toIntVal(_default))
 		} else if _, ok = o.DefaultValue.(bool); ok {
 			_default = interface{}(toBoolVal(_default))
@@ -45,8 +48,7 @@ func (o *Options) LoadValue() {
 	o.LoadedValue = _default
 }
 
-// UpdateValue updates loaded value.
-func (o *Options) UpdateValue(val interface{}) {
+func (o *optionsImpl) UpdateValue(val interface{}) {
 	switch val.(type) {
 	case bool:
 		o.LoadedValue = toBoolVal(val)
@@ -59,23 +61,27 @@ func (o *Options) UpdateValue(val interface{}) {
 	}
 }
 
-// GetString are a getter string for &Options.LoadedValue.
-func (o *Options) GetString() string {
+func (o optionsImpl) GetValue() interface{} {
+	return o.LoadedValue
+}
+
+func (o optionsImpl) GetName() string {
+	return o.Name
+}
+
+func (o *optionsImpl) ToString() string {
 	return toStrVal(o.LoadedValue)
 }
 
-// GetInt are a getter int for &Options.LoadedValue.
-func (o *Options) GetInt() int {
+func (o *optionsImpl) ToInt() int {
 	return toIntVal(o.LoadedValue)
 }
 
-// GetBool are a getter bool for &Options.LoadedValue.
-func (o *Options) GetBool() bool {
+func (o *optionsImpl) ToBool() bool {
 	return toBoolVal(o.LoadedValue)
 }
 
-// GetFloat are a getter float64 for &Options.LoadedValue.
-func (o *Options) GetFloat() float64 {
+func (o *optionsImpl) ToFloat() float64 {
 	return toFloat64Val(o.LoadedValue)
 }
 

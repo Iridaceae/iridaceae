@@ -1,4 +1,4 @@
-// Package components contains all static and support variables for iris.
+// Package helpers contains all static and support variables for iris.
 package helpers
 
 import (
@@ -102,8 +102,8 @@ const (
 
 	// ----------------------- colors.
 
-	EmbedColorError    = 0xD32F2F
-	EmbedColorDefault  = 0xFFC107
+	EmbedColorDefault  = 0x6A5ACD
+	EmbedColorError    = 0xE53935
 	EmbedColorUpdated  = 0x8BC34A
 	EmbedColorGray     = 0xB0BEC5
 	EmbedColorOrange   = 0xFB8C00
@@ -113,47 +113,3 @@ const (
 	EmbedColorViolet   = 0x6A1B9A
 	ReportRevokedColor = 0x9C27B0
 )
-
-// Settings is specific configuration for iridaceae.
-type Settings struct {
-	// TODO: generate these from files for extension.
-	Version    int         `yaml:"version" json:"version"`
-	Discord    *Discord    `yaml:"discord" json:"discord"`
-	Permission *Permission `yaml:"permission" json:"permission"`
-	Logging    *Logging    `yaml:"logging" json:"logging"`
-	Metrics    *Metrics    `yaml:"metrics" json:"metrics"`
-}
-
-type Discord struct {
-	GlobalRateLimit *GlobalRateLimit ` yaml:"globalratelimit" json:"globalratelimit"`
-}
-
-type GlobalRateLimit struct {
-	Burst       int `json:"burst"`
-	Restoration int `json:"restoration"`
-}
-
-type Permission struct {
-	User  []string `yaml:"user" json:"user"`
-	Admin []string `yaml:"admin" json:"admin"`
-}
-
-type Logging struct {
-	Enabled bool `yaml:"enabled" json:"enabled"`
-	Level   int  `yaml:"level" json:"level"`
-}
-
-type Metrics struct {
-	Enabled bool   `yaml:"enabled" json:"enabled"`
-	Address string `yaml:"address" json:"address"`
-}
-
-func GetSettings() *Settings {
-	return &Settings{
-		Version:    1,
-		Discord:    &Discord{GlobalRateLimit: &GlobalRateLimit{Burst: 2, Restoration: 10}},
-		Permission: &Permission{User: DefaultUserRules, Admin: DefaultAdminRules},
-		Logging:    &Logging{Enabled: true, Level: 1},
-		Metrics:    &Metrics{Enabled: true, Address: ":9000"},
-	}
-}

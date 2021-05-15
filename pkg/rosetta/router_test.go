@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	helpers2 "github.com/Iridaceae/iridaceae/internal/helpers"
+	"github.com/Iridaceae/iridaceae/internal/helpers"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -17,8 +17,8 @@ import (
 var TestSession *discordgo.Session
 
 func init() {
-	_ = helpers2.LoadGlobalEnv()
-	TestSession = helpers2.MakeTestSession()
+	_ = helpers.LoadGlobalEnv()
+	TestSession = helpers.MakeTestSession()
 }
 
 func TestRouter_Setup(t *testing.T) {
@@ -28,18 +28,18 @@ func TestRouter_Setup(t *testing.T) {
 
 func TestNewDefaultConfig(t *testing.T) {
 	ctx := makeTestCtx(false, true)
-	c := NewDefaultConfig()
+	c := NewRouterConfig()
 	c.OnError(ctx, ErrTypeMiddleware, ErrMiddleware)
 }
 
 func TestNewRouter(t *testing.T) {
 	ctx := makeTestCtx(false, true)
 	tests := []struct {
-		cfg                *Config
+		cfg                *RouterConfig
 		cOnError           bool
 		cGuildPrefixGetter bool
 	}{
-		{NewDefaultConfig(), false, false},
+		{NewRouterConfig(), false, false},
 		{makeTestConfig(), true, true},
 	}
 	for i, tt := range tests {
@@ -111,7 +111,7 @@ func TestRouterExecuteMiddleware(t *testing.T) {
 	// this will determine how many times we want to run our test channel.
 	const count = 2
 	exit := make(chan bool, count)
-	session := helpers2.MakeTestSession()
+	session := helpers.MakeTestSession()
 
 	cmd := &TestCmd{}
 	cfg := makeTestConfig()
@@ -255,12 +255,12 @@ func TestRouter_GetterSetter(t *testing.T) {
 func makeTestMsg(t *testing.T, content ...string) *discordgo.Message {
 	t.Helper()
 	cmd := &discordgo.Message{
-		ChannelID: helpers2.GetEnvOrDefault("CONCERTINA_CHANNELID", ""),
-		GuildID:   helpers2.GetEnvOrDefault("CONCERTINA_GUILDID", ""),
-		Author:    &discordgo.User{ID: helpers2.GetEnvOrDefault("CONCERTINA_USERID", ""), Bot: false},
+		ChannelID: helpers.GetEnvOrDefault("CONCERTINA_CHANNELID", ""),
+		GuildID:   helpers.GetEnvOrDefault("CONCERTINA_GUILDID", ""),
+		Author:    &discordgo.User{ID: helpers.GetEnvOrDefault("CONCERTINA_USERID", ""), Bot: false},
 		Member: &discordgo.Member{
-			GuildID: helpers2.GetEnvOrDefault("CONCERTINA_GUILDID", ""),
-			User:    &discordgo.User{ID: helpers2.GetEnvOrDefault("CONCERTINA_USERID", ""), Bot: false},
+			GuildID: helpers.GetEnvOrDefault("CONCERTINA_GUILDID", ""),
+			User:    &discordgo.User{ID: helpers.GetEnvOrDefault("CONCERTINA_USERID", ""), Bot: false},
 		},
 	}
 	if len(content) > 0 && content[0] != "" {
@@ -269,8 +269,8 @@ func makeTestMsg(t *testing.T, content ...string) *discordgo.Message {
 	return cmd
 }
 
-func makeTestConfig() *Config {
-	return &Config{
+func makeTestConfig() *RouterConfig {
+	return &RouterConfig{
 		GeneralPrefix:         "!",
 		IgnoreCase:            true,
 		AllowDM:               false,

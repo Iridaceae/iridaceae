@@ -1,6 +1,7 @@
 version: 1
 
 discord:
+  prefix: ir!
   globalratelimit:
     burst: 2
     restoration: 10

@@ -24,17 +24,47 @@ type Source interface {
 	Name() string
 }
 
+// Manager acts as a generic interface for us to manage config in various services.
 type Manager interface {
 
-	// AddSource allows users to append given configparser source to the manager.
-	AddSource(s Source)
+	// RegisterSource allows users to append given configparser source to the manager.
+	RegisterSource(s Source)
 
-	// Register will add given configs to the general manager.
-	Register(name, desc string, defaultValue interface{}) (*Options, error)
+	// RegisterOption will add given configs to the general manager.
+	RegisterOption(name, desc string, defaultValue interface{}) (Options, error)
 
-	// Load will configure our options value into given manager.
-	Load()
+	// LoadOptions will configure our options value into given manager.
+	LoadOptions()
 
-	// Reset will reset our sources and options mapping.
-	Reset()
+	// Clear will reset our sources and options mapping.
+	Clear(source bool, options bool)
+}
+
+// Options holds a way for us to interact with config variables and provide
+// a structured way to work with parsed envars or variable from yaml.
+type Options interface {
+
+	// LoadValue will add a given value into our manager instance.
+	LoadValue()
+
+	// UpdateValue updates a value in our current instance.
+	UpdateValue(val interface{})
+
+	// GetValue returns loaded value of given options.
+	GetValue() interface{}
+
+	// GetName returns name of given options
+	GetName() string
+
+	// ToString returns string representation of the loaded value.
+	ToString() string
+
+	// ToInt returns int representation of the loaded value.
+	ToInt() int
+
+	// ToBool returns bool representation of the loaded value.
+	ToBool() bool
+
+	// ToFloat returns float64 representation of the loaded value.
+	ToFloat() float64
 }

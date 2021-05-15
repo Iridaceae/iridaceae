@@ -20,15 +20,15 @@ var SpliceRegex = regexp.MustCompile(`\\s+`)
 var R Router
 
 // C can also be used out of a box, as a master configparser for iris.
-var C *Config
+var C *RouterConfig
 
 func init() {
-	C = NewDefaultConfig()
+	C = NewRouterConfig()
 	R, _ = NewRouter(C).(*routerImpl)
 }
 
-// Config setup configs value for our router.
-type Config struct {
+// RouterConfig setup configs value for our router.
+type RouterConfig struct {
 	GeneralPrefix         string `json:"general_prefix"`
 	IgnoreCase            bool   `json:"ignore_case"`
 	AllowDM               bool   `json:"allow_dm"`
@@ -68,12 +68,12 @@ type Router interface {
 	// RegisterMiddleware registers Middleware interface.
 	RegisterMiddleware(m Middleware)
 
-	// Setup registers given handlers to the passed discordgo.Session which are
+	// RegisterSession add given handlers to the passed discordgo.Session which are
 	// used to handle and parse command.
 	RegisterSession(session *discordgo.Session)
 
 	// GetConfig returns the specified configparser object which was specified on initialization.
-	GetConfig() *Config
+	GetConfig() *RouterConfig
 
 	// GetCommandMap returns internal command map.
 	GetCommandMap() map[string]Command
@@ -89,7 +89,7 @@ type Router interface {
 // router is our default implementation of Router.
 
 type routerImpl struct {
-	config          *Config
+	config          *RouterConfig
 	cmdMap          map[string]Command
 	cmdInstances    []Command
 	middleware      []Middleware
@@ -98,8 +98,8 @@ type routerImpl struct {
 	objectMap       *sync.Map
 }
 
-func NewDefaultConfig() *Config {
-	return &Config{
+func NewRouterConfig() *RouterConfig {
+	return &RouterConfig{
 		GeneralPrefix:         "r!",
 		IgnoreCase:            true,
 		AllowDM:               true,
@@ -108,37 +108,37 @@ func NewDefaultConfig() *Config {
 		UseDefaultHelpCommand: true,
 		DeleteMessageAfter:    false,
 		OnError: func(ctx Context, errType ErrorType, err error) {
-			log.Error(err).Msgf("[%d] %+v", errType, ctx)
+			log.Error(err).Msgf("[%d] %+v", errType, ctx.GetMessage().Content)
 		},
 	}
 }
 
-func NewRouter(c *Config) Router {
-	if c.OnError == nil {
+func NewRouter(r *RouterConfig) Router {
+	if r.OnError == nil {
 		// setup a default onerror func.
-		c.OnError = func(ctx Context, errType ErrorType, err error) {}
+		r.OnError = func(ctx Context, errType ErrorType, err error) {}
 	}
-	if c.GuildPrefixGetter == nil {
-		c.GuildPrefixGetter = func(string) (string, error) { return "", nil }
+	if r.GuildPrefixGetter == nil {
+		r.GuildPrefixGetter = func(string) (string, error) { return "", nil }
 	}
-	r := &routerImpl{
-		config:          c,
+	rr := &routerImpl{
+		config:          r,
 		cmdMap:          make(map[string]Command),
 		cmdInstances:    make([]Command, 0),
-		objectContainer: c.ObjectContainer,
+		objectContainer: r.ObjectContainer,
 		ctxPool:         &sync.Pool{New: func() interface{} { return &contextImpl{objectMap: &sync.Map{}} }},
 		objectMap:       &sync.Map{},
 	}
 
-	if r.objectContainer == nil {
+	if rr.objectContainer == nil {
 		builder, _ := di.NewBuilder()
-		r.objectContainer = builder.Build()
+		rr.objectContainer = builder.Build()
 	}
 
-	if c.UseDefaultHelpCommand {
-		r.RegisterCommand(&DefaultHelpCommand{})
+	if r.UseDefaultHelpCommand {
+		rr.RegisterCommand(&DefaultHelpCommand{})
 	}
-	return r
+	return rr
 }
 
 func (r *routerImpl) GetObject(key string) interface{} {
@@ -304,7 +304,7 @@ func (r *routerImpl) executeMiddlewares(cmd Command, ctx Context, layer Middlewa
 	return true
 }
 
-func (r *routerImpl) GetConfig() *Config {
+func (r *routerImpl) GetConfig() *RouterConfig {
 	return r.config
 }
 

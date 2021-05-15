@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/Iridaceae/iridaceae/pkg/configmanager"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -32,6 +34,6 @@ func DeleteMessageAfter(s *discordgo.Session, msg *discordgo.Message, duration t
 }
 
 // GetInviteLink returns bot invite link with correct permissions.
-func GetInviteLink() string {
-	return fmt.Sprintf(BaseAuthURLTemplate, ConcertinaClientID.GetString(), InvitePermission)
+func GetInviteLink(cid configmanager.Options) string {
+	return fmt.Sprintf(BaseAuthURLTemplate, cid.ToString(), InvitePermission)
 }

@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	helpers2 "github.com/Iridaceae/iridaceae/internal/helpers"
+	"github.com/Iridaceae/iridaceae/internal/helpers"
 
 	"github.com/Iridaceae/iridaceae/pkg/log"
 
@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	_ = helpers2.LoadGlobalEnv()
+	_ = helpers.LoadGlobalEnv()
 	mUser := os.Getenv("IRIS_MONGO_USER")
 	mPass := os.Getenv("IRIS_MONGO_PASS")
 	mDBName := os.Getenv("IRIS_MONGO_DBNAME")

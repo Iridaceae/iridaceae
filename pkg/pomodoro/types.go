@@ -6,7 +6,13 @@
 // (plus all the current features)
 package pomodoro
 
-import "time"
+import (
+	"time"
+
+	"github.com/Iridaceae/iridaceae/pkg/log"
+
+	"github.com/Iridaceae/iridaceae/pkg/rosetta"
+)
 
 // State tracks current state of users pomodoro.
 type State int
@@ -34,12 +40,12 @@ func (s State) String() string {
 
 // Task will describe our activity.
 type Task struct {
-	ID       int           `json:"id"`
-	Message  string        `json:"message"`
-	Duration time.Duration `json:"duration"`
-	Tags     []string      `json:"tags"`      // Tags defines user tag with given task.
-	CmplPoms []*Pomodoro   `json:"cmpl_poms"` // CmplPoms allows us to check our completed poms during the longevity of the task.
-	NumPoms  int           `json:"num_poms"`  // NumPom will give us number of pomodoro running in given task.
+	ID       int           `json:"id" yaml:"id"`
+	Message  string        `json:"message" yaml:"message"`
+	Duration time.Duration `json:"duration" yaml:"duration"`
+	Tags     []string      `json:"tags" yaml:"tags"`          // Tags defines user tag with given task.
+	CmplPoms []*Pomodoro   `json:"cmpl_poms" yaml:"cmplpoms"` // CmplPoms allows us to check our completed poms during the longevity of the task.
+	NumPoms  int           `json:"num_poms" yaml:"numpoms"`   // NumPom will give us number of pomodoro running in given task.
 }
 
 // TaskByID is a sortable array of tasks.
@@ -76,10 +82,10 @@ func (p Pomodoro) Duration() time.Duration {
 
 // Status acts as a middleware for us to track the state of our current pomodoro.
 type Status struct {
-	State     State         `json:"state"`
-	Remaining time.Duration `json:"remaining"`
-	Count     int           `json:"count"`
-	NumPoms   int           `json:"num_poms"` // NumPoms defines number of pomodoros currently active.
+	State     State         `json:"state" yaml:"state"`
+	Remaining time.Duration `json:"remaining" yaml:"remaining"`
+	Count     int           `json:"count" yaml:"count"`
+	NumPoms   int           `json:"num_poms" yaml:"num_poms"` // NumPoms defines number of pomodoros currently active.
 }
 
 // Notifier will act as our middleware to push notification to discord.
@@ -91,3 +97,13 @@ type Notifier interface {
 type NoopNotifier struct{}
 
 func (n NoopNotifier) Notify(string, string) error { return nil }
+
+// DiscordNotifier is our discord middleware.
+type DiscordNotifier struct{}
+
+// Notify will assume our pomodoro handler is registered.
+// TODO: wrote a middleware to intercept this.
+func (d DiscordNotifier) Notify(title, body string) error {
+	log.Info().Msgf("%s: %s", title, body)
+	return rosetta.ErrInvokeDoesNotExists
+}

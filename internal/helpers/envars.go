@@ -3,6 +3,7 @@ package helpers
 import (
 	"fmt"
 	"os/exec"
+	"path"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -11,13 +12,14 @@ import (
 )
 
 var (
-	ConcertinaClientID, _      = configmanager.Register("concertina.clientid", "ClientID of test bot", nil)
-	ConcertinaClientSecrets, _ = configmanager.Register("concertina.clientsecret", "ClientSecret of test bot", nil)
-	ConcertinaBotToken, _      = configmanager.Register("concertina.authtoken", "authentication token of test bot", nil)
-	IridaceaeClientID, _       = configmanager.Register("iris.clientid", "IridaceaeClientID of the bot", nil)
-	IridaceaeClientSecrets, _  = configmanager.Register("iris.clientsecret", "ClientSecret of the bot", nil)
-	IridaceaeBotToken, _       = configmanager.Register("iris.authtoken", "authentication token of the bot", nil)
-	CmdPrefix, _               = configmanager.Register("iris.cmdprefix", "prefix for iris", "ir!")
+	ConcertinaClientID, _      = configmanager.RegisterOption("concertina.clientid", "ClientID of test bot", nil)
+	ConcertinaClientSecrets, _ = configmanager.RegisterOption("concertina.clientsecret", "ClientSecret of test bot", nil)
+	ConcertinaBotToken, _      = configmanager.RegisterOption("concertina.authtoken", "authentication token of test bot", nil)
+	IridaceaeClientID, _       = configmanager.RegisterOption("iris.clientid", "IridaceaeClientID of the bot", nil)
+	IridaceaeClientSecrets, _  = configmanager.RegisterOption("iris.clientsecret", "ClientSecret of the bot", nil)
+	IridaceaeBotToken, _       = configmanager.RegisterOption("iris.authtoken", "authentication token of the bot", nil)
+
+	CmdPrefix, _ = configmanager.RegisterOption("iris.cmdprefix", "prefix for iris", "ir!")
 
 	Loaded     = false
 	CI         = true
@@ -25,8 +27,8 @@ var (
 )
 
 // GetBotToken will handles authToken.
-func GetBotToken(token *configmanager.Options) string {
-	tokenStr := token.GetString()
+func GetBotToken(token configmanager.Options) string {
+	tokenStr := token.ToString()
 	if !strings.HasSuffix(tokenStr, "Bot ") {
 		tokenStr = "Bot " + tokenStr
 	}
@@ -37,25 +39,25 @@ func GetBotToken(token *configmanager.Options) string {
 func GetConfigRoot() string {
 	rootDir, _ := exec.Command("git", "rev-parse", "--show-toplevel").Output()
 	trimmed := strings.ReplaceAll(string(rootDir), "\n", "")
-	return strings.Join([]string{trimmed, configroot}, "/")
+	return path.Join(trimmed, configroot)
 }
 
 // LoadConfig will load given client id, secrets, and token for setting bot.
-func LoadConfig(cid, cs, token *configmanager.Options) error {
+func LoadConfig(cid, cs, token configmanager.Options) error {
 	if Loaded {
 		return nil
 	}
 
 	Loaded = true
-	configmanager.AddSource(&configmanager.EnvSource{})
-	configmanager.Load()
+	configmanager.RegisterSource(&configmanager.EnvSource{})
+	configmanager.LoadOptions()
 
-	required := []*configmanager.Options{cid, cs, token}
+	required := []configmanager.Options{cid, cs, token}
 
 	for _, v := range required {
-		if v.LoadedValue == nil {
-			env := strings.ToUpper(strings.ReplaceAll(v.Name, ".", "_"))
-			return fmt.Errorf("didn't contain required configparser options: %q (%s as envars)", v.Name, env)
+		if v.GetValue() == nil {
+			env := strings.ToUpper(strings.ReplaceAll(v.GetName(), ".", "_"))
+			return fmt.Errorf("didn't contain required configparser options: %q (%s as envars)", v.GetName(), env)
 		}
 	}
 	return nil
@@ -68,5 +70,5 @@ func LoadGlobalEnv() error {
 	if CI {
 		return nil
 	}
-	return godotenv.Load(strings.Join([]string{GetConfigRoot(), "defaults.env"}, "/"))
+	return godotenv.Load(path.Join(GetConfigRoot(), "defaults.env"))
 }

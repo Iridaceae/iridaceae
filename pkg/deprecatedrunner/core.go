@@ -12,11 +12,9 @@ import (
 	"syscall"
 	"time"
 
-	helpers2 "github.com/Iridaceae/iridaceae/internal/helpers"
+	"github.com/Iridaceae/iridaceae/internal/helpers"
 
 	"github.com/Iridaceae/iridaceae/pkg/log"
-
-	"github.com/Iridaceae/iridaceae/pkg/rosetta"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -25,7 +23,6 @@ import (
 
 const defaultPomDuration = 25 * time.Minute
 
-// pomDuration defines default sessions (should always be 25 mins).
 var pomDuration time.Duration
 
 type cmdHandler func(s *discordgo.Session, m *discordgo.MessageCreate, ex string)
@@ -51,18 +48,17 @@ type Iris struct {
 func New() *Iris {
 	// setup new logLevel
 
-	err := helpers2.LoadConfig(helpers2.IridaceaeClientID, helpers2.IridaceaeClientSecrets, helpers2.IridaceaeBotToken)
+	err := helpers.LoadConfig(helpers.IridaceaeClientID, helpers.IridaceaeClientSecrets, helpers.IridaceaeBotToken)
 	if err != nil {
 		log.Error(err).Msg("")
 	}
-
 	ir := &Iris{
 		poms: NewUserPomodoroMap(),
 	}
 
 	ir.registerCmdHandlers()
 	ir.helpMessage = ir.buildHelpMessage()
-	ir.inviteMessage = fmt.Sprintf("Click here: <" + helpers2.GetInviteLink() + "> to invite me to the server")
+	ir.inviteMessage = fmt.Sprintf("Click here: <" + helpers.GetInviteLink(helpers.IridaceaeClientID) + "> to invite me to the server")
 	return ir
 }
 
@@ -83,7 +79,7 @@ func (ir *Iris) buildHelpMessage() string {
 	// just use map iteration order
 	for cmdStr, cmd := range ir.cmdHandlers {
 		helpBuffer.WriteString(fmt.Sprintf("\n•  **%s**  -  %s\n", cmdStr, cmd.desc))
-		helpBuffer.WriteString(fmt.Sprintf("   Example: `%s%s %s`\n", helpers2.CmdPrefix.GetString(), cmdStr, cmd.exampleParams))
+		helpBuffer.WriteString(fmt.Sprintf("   Example: `%s%s %s`\n", helpers.CmdPrefix.ToString(), cmdStr, cmd.exampleParams))
 	}
 
 	helpBuffer.WriteString("\n" + ir.inviteMessage)
@@ -94,7 +90,7 @@ func (ir *Iris) buildHelpMessage() string {
 // Start will start the bot, blocking til completed.
 func (ir *Iris) Start() error {
 	var err error
-	ir.discord, err = discordgo.New(helpers2.GetBotToken(helpers2.IridaceaeBotToken))
+	ir.discord, err = discordgo.New(helpers.GetBotToken(helpers.IridaceaeBotToken))
 
 	if err != nil {
 		return err
@@ -131,17 +127,17 @@ func (ir *Iris) onMessageReceived(s *discordgo.Session, m *discordgo.MessageCrea
 	}
 
 	msg := m.Content
-	if ok := strings.Contains(msg, helpers2.CmdPrefix.GetString()); !ok {
+	if ok := strings.Contains(msg, helpers.CmdPrefix.ToString()); !ok {
 		return
 	}
 
 	// we want to know who send the message
 	log.Debug().Msgf("sent by:%s#%s content:%s", m.Author.Username, m.Author.Discriminator, m.Content)
 
-	cmdPrefixLen := len(helpers2.CmdPrefix.GetString())
+	cmdPrefixLen := len(helpers.CmdPrefix.ToString())
 
 	// dispatch the command iff we have our prefix, (case-insensitive) otherwise throws an errors
-	if len(msg) > cmdPrefixLen && strings.EqualFold(helpers2.CmdPrefix.GetString(), msg[0:cmdPrefixLen]) {
+	if len(msg) > cmdPrefixLen && strings.EqualFold(helpers.CmdPrefix.ToString(), msg[0:cmdPrefixLen]) {
 		afterPrefix := msg[cmdPrefixLen:]
 		cmd := strings.SplitN(afterPrefix, " ", 2)
 
@@ -210,7 +206,7 @@ func (ir *Iris) onPomEnded(notify NotifyInfo, completed bool) {
 		embed := &discordgo.MessageEmbed{
 			Type:        "rich",
 			Title:       notifyTitle,
-			Color:       rosetta.EmbedColorDefault,
+			Color:       helpers.EmbedColorDefault,
 			Description: notifyDesc,
 		}
 
@@ -275,7 +271,7 @@ func (ir *Iris) onCmdStartPom(s *discordgo.Session, m *discordgo.MessageCreate, 
 		embed := &discordgo.MessageEmbed{
 			Type:        "rich",
 			Title:       notifyTitle,
-			Color:       rosetta.EmbedColorDefault,
+			Color:       helpers.EmbedColorDefault,
 			Description: notifyDesc,
 		}
 
@@ -303,7 +299,7 @@ func (ir *Iris) onCmdStatus(s *discordgo.Session, m *discordgo.MessageCreate, ex
 	embed := &discordgo.MessageEmbed{
 		Type:        "rich",
 		Title:       notifyTitle,
-		Color:       rosetta.EmbedColorDefault,
+		Color:       helpers.EmbedColorDefault,
 		Description: notifyDesc,
 	}
 

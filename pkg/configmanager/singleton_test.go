@@ -8,9 +8,9 @@ import (
 )
 
 // TestParser acts as a test configparser manager that can be used globally.
-var TestParser = NewConfigManager().(*managerImpl)
+var TestParser = NewDefaultManager().(*managerImpl)
 
-var mockOption = &Options{
+var mockOption = &optionsImpl{
 	Name:        "configparser.options1",
 	Description: "this a mock options",
 	Manager:     TestParser,
@@ -18,13 +18,15 @@ var mockOption = &Options{
 
 func setupConfigTest(t *testing.T) {
 	t.Helper()
-	TestParser.AddSource(&EnvSource{})
+	TestParser.Clear(true, false)
+	TestParser.RegisterSource(&EnvSource{})
 }
 
 func createAndRegister(t *testing.T, name, desc string, defaultValue interface{}) error {
 	t.Helper()
-	_, err := TestParser.Register(name, desc, defaultValue)
-	TestParser.Load()
+	TestParser.Clear(true, false)
+	_, err := TestParser.RegisterOption(name, desc, defaultValue)
+	TestParser.LoadOptions()
 	return err
 }
 
@@ -38,7 +40,7 @@ func createTestEnvVars(t *testing.T, key, value string) {
 
 func TestRegister(t *testing.T) {
 	t.Run("register an unvalid options to default configparser manager", func(t *testing.T) {
-		opt, err := Register("test-asdf", "this shouldn't register", nil)
+		opt, err := RegisterOption("test-asdf", "this shouldn't register", nil)
 		assert.Error(t, err)
 		assert.Nil(t, opt)
 	})
@@ -47,19 +49,19 @@ func TestRegister(t *testing.T) {
 func TestLoad(t *testing.T) {
 	t.Run("mock load", func(t *testing.T) {
 		// we didn't actually have any configparser loaded so len(options) = 0
-		Load()
+		LoadOptions()
 		assert.Equal(t, len(Standalone.Options), 0)
 	})
 }
 
 func TestAddSource(t *testing.T) {
 	t.Run("add envsources", func(t *testing.T) {
-		AddSource(&EnvSource{})
+		RegisterSource(&EnvSource{})
 		assert.Equal(t, len(Standalone.sources), 1)
 	})
 	t.Run("reset after source", func(t *testing.T) {
-		AddSource(&EnvSource{})
-		Reset()
+		RegisterSource(&EnvSource{})
+		Clear()
 		assert.Equal(t, len(Standalone.sources), 0)
 	})
 }

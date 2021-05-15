@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Iridaceae/iridaceae/internal/helpers"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -43,7 +45,7 @@ func (d *DefaultHelpCommand) IsExecutableInDM() bool {
 
 func (d *DefaultHelpCommand) Exec(ctx Context) error {
 	embed := &discordgo.MessageEmbed{
-		Color:     EmbedColorDefault,
+		Color:     helpers.EmbedColorDefault,
 		Fields:    make([]*discordgo.MessageEmbedField, 0),
 		Timestamp: time.RFC3339,
 		Footer:    &discordgo.MessageEmbedFooter{Text: "with :hearts: and :coffee: by iridaceae"},

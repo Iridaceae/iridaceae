@@ -4,23 +4,23 @@ package configmanager
 // managerImpl holds types for generic managers to generate configs.
 type managerImpl struct {
 	sources []Source
-	Options map[string]*Options
+	Options map[string]*optionsImpl
 }
 
-// NewConfigManager makes a configs manager.
-func NewConfigManager() Manager {
-	return &managerImpl{Options: make(map[string]*Options)}
+// NewDefaultManager makes a configs manager.
+func NewDefaultManager() Manager {
+	return &managerImpl{Options: make(map[string]*optionsImpl)}
 }
 
-func (c *managerImpl) AddSource(source Source) {
+func (c *managerImpl) RegisterSource(source Source) {
 	c.sources = append(c.sources, source)
 }
 
-func (c *managerImpl) Register(name, desc string, defaultValue interface{}) (*Options, error) {
+func (c *managerImpl) RegisterOption(name, desc string, defaultValue interface{}) (Options, error) {
 	if _, err := matchOptionsRegex(name); err != nil {
 		return nil, ErrInvalidFormat
 	}
-	opt := &Options{
+	opt := &optionsImpl{
 		Name:         name,
 		Description:  desc,
 		DefaultValue: defaultValue,
@@ -30,13 +30,17 @@ func (c *managerImpl) Register(name, desc string, defaultValue interface{}) (*Op
 	return opt, nil
 }
 
-func (c *managerImpl) Load() {
+func (c *managerImpl) LoadOptions() {
 	for _, v := range c.Options {
 		v.LoadValue()
 	}
 }
 
-func (c *managerImpl) Reset() {
-	c.sources = make([]Source, 0)
-	c.Options = make(map[string]*Options)
+func (c *managerImpl) Clear(source bool, option bool) {
+	if source {
+		c.sources = make([]Source, 0)
+	}
+	if option {
+		c.Options = make(map[string]*optionsImpl)
+	}
 }

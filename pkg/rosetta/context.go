@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/Iridaceae/iridaceae/internal/helpers"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -125,5 +127,5 @@ func (c *contextImpl) RespondEmbed(embed *discordgo.MessageEmbed) (*discordgo.Me
 }
 
 func (c *contextImpl) RespondEmbedError(title string, err error) (*discordgo.Message, error) {
-	return c.session.ChannelMessageSendEmbed(c.channel.ID, &discordgo.MessageEmbed{Title: title, Description: fmt.Sprintf("*%s*", err.Error()), Color: EmbedColorError})
+	return c.session.ChannelMessageSendEmbed(c.channel.ID, &discordgo.MessageEmbed{Title: title, Description: fmt.Sprintf("*%s*", err.Error()), Color: helpers.EmbedColorError})
 }

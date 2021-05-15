@@ -1,4 +1,3 @@
-// Package pomodoro defines our pomodoro logics.
 package deprecatedrunner
 
 import (

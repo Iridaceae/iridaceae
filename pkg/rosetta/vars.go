@@ -52,7 +52,4 @@ var (
 
 	// ErrDeleteCommandMessage is thrown when error occurred when deleting message.
 	ErrDeleteCommandMessage = errors.New("failed while deleting command message")
-
-	EmbedColorDefault = 0x6A5ACD
-	EmbedColorError   = 0xE53935
 )

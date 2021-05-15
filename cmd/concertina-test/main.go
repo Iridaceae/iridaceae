@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	helpers2 "github.com/Iridaceae/iridaceae/internal/helpers"
+	"github.com/Iridaceae/iridaceae/internal/helpers"
 
 	"github.com/Iridaceae/iridaceae/pkg/log"
 
@@ -20,14 +20,14 @@ func main() {
 
 	// we will handle all flags here
 
-	_ = helpers2.LoadGlobalEnv()
+	_ = helpers.LoadGlobalEnv()
 	// TODO: should check if it is running inside docker or a CI pipe
 	log.Warn().Msg("Make sure that envars are set correctly in docker and CI.")
 
-	if err := helpers2.LoadConfig(helpers2.ConcertinaClientID, helpers2.ConcertinaClientSecrets, helpers2.ConcertinaBotToken); err != nil {
+	if err := helpers.LoadConfig(helpers.ConcertinaClientID, helpers.ConcertinaClientSecrets, helpers.ConcertinaBotToken); err != nil {
 		log.Error(err).Msg("couldn't load required envars.")
 	}
-	dg, err := discordgo.New(helpers2.GetBotToken(helpers2.ConcertinaBotToken))
+	dg, err := discordgo.New(helpers.GetBotToken(helpers.ConcertinaBotToken))
 	if err != nil {
 		panic(err)
 	}
