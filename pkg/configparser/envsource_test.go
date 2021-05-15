@@ -2,7 +2,11 @@ package configparser
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
+
+var testSource = &EnvSource{}
 
 func TestEnvSource_GetValue(t *testing.T) {
 	t.Run("get existed envars", func(t *testing.T) {
@@ -13,8 +17,8 @@ func TestEnvSource_GetValue(t *testing.T) {
 		opt := "test.option1.option2"
 		createTestEnvVars(t, key, value)
 		v, err := testSource.GetValue(opt)
-		cfgAssert.Equal(v, value)
-		cfgAssert.Nil(err)
+		assert.Equal(t, v, value)
+		assert.Nil(t, err)
 	})
 
 	t.Run("get nil envars", func(t *testing.T) {
@@ -25,8 +29,8 @@ func TestEnvSource_GetValue(t *testing.T) {
 		opt := "test.nil"
 		createTestEnvVars(t, key, value)
 		v, err := testSource.GetValue(opt)
-		cfgAssert.Nil(v)
-		cfgAssert.ErrorIs(err, ErrEmptyValue)
+		assert.Nil(t, v)
+		assert.ErrorIs(t, err, ErrEmptyValue)
 	})
 
 	t.Run("test regex with uncorrect envars", func(t *testing.T) {
@@ -38,8 +42,8 @@ func TestEnvSource_GetValue(t *testing.T) {
 		createTestEnvVars(t, key, value)
 		for _, val := range opt {
 			v, err := testSource.GetValue(val)
-			cfgAssert.NotEqual(v, value)
-			cfgAssert.ErrorIs(err, ErrInvalidFormat)
+			assert.NotEqual(t, v, value)
+			assert.ErrorIs(t, err, ErrInvalidFormat)
 		}
 	})
 }
@@ -47,6 +51,6 @@ func TestEnvSource_GetValue(t *testing.T) {
 func TestEnvSource_Name(t *testing.T) {
 	t.Run("get name", func(t *testing.T) {
 		setupConfigTest(t)
-		cfgAssert.Equal(testSource.Name(), "ENV")
+		assert.Equal(t, testSource.Name(), "ENV")
 	})
 }

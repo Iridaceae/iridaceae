@@ -2,27 +2,26 @@ package configparser
 
 // Options is our variable configuration.
 type Options struct {
-	// Name will have format iris.option1.option2
-	Name         string
+	Name         string // given name format iris.option1.option2.
 	Description  string
 	DefaultValue interface{}
 	LoadedValue  interface{}
-	Manager      *ConfigManager
+	Manager      Manager // all manager will implements our default implementation.
 	ConfigSource Source
 }
 
 // LoadValue will load given values if exists, otherwise use default ones.
 func (o *Options) LoadValue() {
-	def := o.DefaultValue
+	_default := o.DefaultValue
+	man := o.Manager.(*managerImpl)
 	o.ConfigSource = nil
 
-	for i := len(o.Manager.sources) - 1; i >= 0; i-- {
-		source := o.Manager.sources[i]
-		// v would be value from given source, check envsource.go for examples
+	for i := len(man.sources) - 1; i >= 0; i-- {
+		source := man.sources[i]
 		v, _ := source.GetValue(o.Name)
 
 		if v != nil {
-			def = v
+			_default = v
 			o.ConfigSource = source
 			break
 		}
@@ -30,13 +29,13 @@ func (o *Options) LoadValue() {
 
 	if o.DefaultValue != nil {
 		if _, ok := o.DefaultValue.(int); ok {
-			def = interface{}(toIntVal(def))
+			_default = interface{}(toIntVal(_default))
 		} else if _, ok = o.DefaultValue.(bool); ok {
-			def = interface{}(toBoolVal(def))
+			_default = interface{}(toBoolVal(_default))
 		}
 	}
 
-	o.LoadedValue = def
+	o.LoadedValue = _default
 }
 
 // UpdateValue updates loaded value.

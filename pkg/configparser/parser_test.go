@@ -8,7 +8,7 @@ import (
 
 func TestNewManager(t *testing.T) {
 	t.Run("Empty manager", func(t *testing.T) {
-		assert.Equal(t, len(NewConfigManager().Options), 0)
+		assert.Equal(t, len(NewConfigManager().(*managerImpl).Options), 0)
 	})
 }
 
@@ -20,33 +20,10 @@ func TestManager_Load(t *testing.T) {
 	})
 }
 
-func TestRegister(t *testing.T) {
-	t.Run("register an unvalid options to default config manager", func(t *testing.T) {
-		opt, err := Register("test-asdf", "this shouldn't register", nil)
-		assert.Error(t, err)
-		assert.Nil(t, opt)
-	})
-}
-
-func TestLoad(t *testing.T) {
-	t.Run("mock load", func(t *testing.T) {
-		// we didn't actually have any config loaded so len(options) = 0
-		Load()
-		assert.Equal(t, len(Standalone.Options), 0)
-	})
-}
-
-func TestAddSource(t *testing.T) {
-	t.Run("add envsources", func(t *testing.T) {
-		AddSource(&EnvSource{})
-		assert.Equal(t, len(Standalone.sources), 1)
-	})
-}
-
 func TestManager_AddSource(t *testing.T) {
 	// NOTE: for future reference, when add more sources such as redispool and kubernetes add more test case here.
 	t.Run("add envsources", func(t *testing.T) {
-		m := NewConfigManager()
+		m := NewConfigManager().(*managerImpl)
 		m.AddSource(&EnvSource{})
 		assert.Equal(t, len(m.sources), 1)
 	})

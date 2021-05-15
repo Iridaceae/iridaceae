@@ -1,0 +1,23 @@
+version: 1
+
+discord:
+  ratelimit:
+    burst: 2
+    restoration: 10
+
+permission:
+  user:
+  - +rs.etc.*
+  - +rs.chat.*
+  admin:
+  - +rs.guild.*
+  - +rs.etc.*
+  - rs.chat.*
+
+logging:
+  enabled: true
+  level: 1 # refers to rs/zerolog log level
+
+metrics:
+  enabled: true
+  addr: ":9000"
