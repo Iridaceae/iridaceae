@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	helpers2 "github.com/Iridaceae/iridaceae/internal/helpers"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -42,7 +44,7 @@ func (e *EmbedMessage) Edit(content, title string, color int) *EmbedMessage {
 		Footer:      &discordgo.MessageEmbedFooter{Text: fmt.Sprintf("edited by %s", e.Author.Username)},
 	}
 	if color == 0 {
-		newEmbed.Color = EmbedColorDefault
+		newEmbed.Color = helpers2.EmbedColorDefault
 	}
 	return e.EditRaw(newEmbed)
 }
@@ -66,7 +68,7 @@ func SendEmbed(s *discordgo.Session, channelID, content, title string, color int
 		Title:       title,
 	}
 	if color == 0 {
-		e.Color = EmbedColorViolet
+		e.Color = helpers2.EmbedColorViolet
 	}
 	return SendEmbedRaw(s, channelID, e)
 }
@@ -84,7 +86,7 @@ func SendEmbedError(s *discordgo.Session, channelID string, err error) *EmbedMes
 		Title:       "Error",
 		Description: err.Error(),
 		Timestamp:   time.Now().Format(time.RFC3339),
-		Color:       EmbedColorError,
+		Color:       helpers2.EmbedColorError,
 		Footer:      &discordgo.MessageEmbedFooter{Text: "Please contact @aarnphm for help"},
 	}
 	return SendEmbedRaw(s, channelID, e)
@@ -97,7 +99,7 @@ func (e *EmbedMessage) SendEmbedComplex(s *discordgo.Session, channelID, content
 		Title:       title,
 		Description: content,
 		Timestamp:   time.Now().Format(time.RFC3339),
-		Color:       EmbedColorDefault,
+		Color:       helpers2.EmbedColorDefault,
 	}
 	mentioned := fmt.Sprintf("%s\n", e.Author.Mention())
 	return SendEmbedComplexRaw(s, embed, channelID, mentioned)

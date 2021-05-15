@@ -19,7 +19,7 @@ var SpliceRegex = regexp.MustCompile(`\\s+`)
 // R can be used out of the box, acts as a master router for iris.
 var R Router
 
-// C can also be used out of a box, as a master config for iris.
+// C can also be used out of a box, as a master configparser for iris.
 var C *Config
 
 func init() {
@@ -72,7 +72,7 @@ type Router interface {
 	// used to handle and parse command.
 	RegisterSession(session *discordgo.Session)
 
-	// GetConfig returns the specified config object which was specified on initialization.
+	// GetConfig returns the specified configparser object which was specified on initialization.
 	GetConfig() *Config
 
 	// GetCommandMap returns internal command map.

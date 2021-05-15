@@ -1,6 +1,6 @@
 package configmanager
 
-// Standalone is a singleton config manager that acts as a general manager for iris.
+// Standalone is a singleton configparser manager that acts as a general manager for iris.
 var Standalone = NewConfigManager().(*managerImpl)
 
 func AddSource(s Source) {

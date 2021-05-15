@@ -3,7 +3,7 @@ package rosetta
 import (
 	"testing"
 
-	"github.com/Iridaceae/iridaceae/pkg/helpers"
+	helpers2 "github.com/Iridaceae/iridaceae/internal/helpers"
 )
 
 // we need a general testRunner to avoid duplication like below.
@@ -33,7 +33,7 @@ func TestDefaultHelpCommand_GetterSetter(t *testing.T) {
 func TestDefaultHelpCommand_Exec(t *testing.T) {
 	r := NewRouter(makeTestConfig())
 	ctx := makeTestCtx(false, false)
-	ctx.session = helpers.MakeTestSession()
+	ctx.session = helpers2.MakeTestSession()
 	msg := makeTestMsg(t, "!help")
 
 	help := &DefaultHelpCommand{}

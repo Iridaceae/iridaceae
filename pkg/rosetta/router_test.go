@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"testing"
 
+	helpers2 "github.com/Iridaceae/iridaceae/internal/helpers"
+
 	"github.com/bwmarrin/discordgo"
 
 	"github.com/rs/zerolog/log"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/Iridaceae/iridaceae/pkg/helpers"
 )
 
 var TestSession *discordgo.Session
 
 func init() {
-	_ = helpers.LoadGlobalEnv()
-	TestSession = helpers.MakeTestSession()
+	_ = helpers2.LoadGlobalEnv()
+	TestSession = helpers2.MakeTestSession()
 }
 
 func TestRouter_Setup(t *testing.T) {
@@ -111,7 +111,7 @@ func TestRouterExecuteMiddleware(t *testing.T) {
 	// this will determine how many times we want to run our test channel.
 	const count = 2
 	exit := make(chan bool, count)
-	session := helpers.MakeTestSession()
+	session := helpers2.MakeTestSession()
 
 	cmd := &TestCmd{}
 	cfg := makeTestConfig()
@@ -221,7 +221,7 @@ func TestRouter_GetterSetter(t *testing.T) {
 		testFunc func() interface{}
 		expected interface{}
 	}{
-		{"get config", func() interface{} { return r.GetConfig() }, cfg},
+		{"get configparser", func() interface{} { return r.GetConfig() }, cfg},
 		{"get command map", func() interface{} { return r.GetCommandMap() }, map[string]Command{"ping": &TestCmd{}, "p": &TestCmd{}}},
 		{"get command instance", func() interface{} { return r.GetCommandInstances()[0] }, cmd},
 		{"get command", func() interface{} {
@@ -255,12 +255,12 @@ func TestRouter_GetterSetter(t *testing.T) {
 func makeTestMsg(t *testing.T, content ...string) *discordgo.Message {
 	t.Helper()
 	cmd := &discordgo.Message{
-		ChannelID: helpers.GetEnvOrDefault("CONCERTINA_CHANNELID", ""),
-		GuildID:   helpers.GetEnvOrDefault("CONCERTINA_GUILDID", ""),
-		Author:    &discordgo.User{ID: helpers.GetEnvOrDefault("CONCERTINA_USERID", ""), Bot: false},
+		ChannelID: helpers2.GetEnvOrDefault("CONCERTINA_CHANNELID", ""),
+		GuildID:   helpers2.GetEnvOrDefault("CONCERTINA_GUILDID", ""),
+		Author:    &discordgo.User{ID: helpers2.GetEnvOrDefault("CONCERTINA_USERID", ""), Bot: false},
 		Member: &discordgo.Member{
-			GuildID: helpers.GetEnvOrDefault("CONCERTINA_GUILDID", ""),
-			User:    &discordgo.User{ID: helpers.GetEnvOrDefault("CONCERTINA_USERID", ""), Bot: false},
+			GuildID: helpers2.GetEnvOrDefault("CONCERTINA_GUILDID", ""),
+			User:    &discordgo.User{ID: helpers2.GetEnvOrDefault("CONCERTINA_USERID", ""), Bot: false},
 		},
 	}
 	if len(content) > 0 && content[0] != "" {

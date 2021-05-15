@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Iridaceae/iridaceae/pkg/helpers"
+	helpers2 "github.com/Iridaceae/iridaceae/internal/helpers"
 
 	"github.com/Iridaceae/iridaceae/pkg/rosetta"
 
@@ -19,7 +19,7 @@ const count = 1000
 var tm *managerImpl
 
 func init() {
-	_ = helpers.LoadGlobalEnv()
+	_ = helpers2.LoadGlobalEnv()
 	tm = newInternalManager(10 * time.Minute)
 }
 

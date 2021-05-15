@@ -43,6 +43,7 @@ type Task struct {
 }
 
 // TaskByID is a sortable array of tasks.
+// Implements Go's sorting interface.
 type TaskByID []*Task
 
 func (t TaskByID) Len() int             { return len(t) }

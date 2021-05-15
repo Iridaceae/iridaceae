@@ -7,11 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestParser acts as a test config manager that can be used globally.
+// TestParser acts as a test configparser manager that can be used globally.
 var TestParser = NewConfigManager().(*managerImpl)
 
 var mockOption = &Options{
-	Name:        "config.options1",
+	Name:        "configparser.options1",
 	Description: "this a mock options",
 	Manager:     TestParser,
 }
@@ -37,7 +37,7 @@ func createTestEnvVars(t *testing.T, key, value string) {
 }
 
 func TestRegister(t *testing.T) {
-	t.Run("register an unvalid options to default config manager", func(t *testing.T) {
+	t.Run("register an unvalid options to default configparser manager", func(t *testing.T) {
 		opt, err := Register("test-asdf", "this shouldn't register", nil)
 		assert.Error(t, err)
 		assert.Nil(t, opt)
@@ -46,7 +46,7 @@ func TestRegister(t *testing.T) {
 
 func TestLoad(t *testing.T) {
 	t.Run("mock load", func(t *testing.T) {
-		// we didn't actually have any config loaded so len(options) = 0
+		// we didn't actually have any configparser loaded so len(options) = 0
 		Load()
 		assert.Equal(t, len(Standalone.Options), 0)
 	})

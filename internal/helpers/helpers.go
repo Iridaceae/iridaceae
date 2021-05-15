@@ -5,23 +5,14 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
-
-	"github.com/bwmarrin/discordgo"
 )
 
-// DomainRegex follows our same rule for configparser.
-const DomainRegex string = "^(([\\w\\.])+(\\.)([\\w]){2,4}([\\w]*))*$"
-
-func MakeTestSession() *discordgo.Session {
-	// TODO: a better way to get general token.
-	botToken := os.Getenv("CONCERTINA_AUTHTOKEN")
-	// ensure sessions are established
-	dg, err := discordgo.New("Bot " + botToken)
-	if err != nil {
-		panic(err)
-	}
-	return dg
-}
+const (
+	// DomainRegex follows our same rule for configmanager.
+	DomainRegex string = "^(([\\w\\.])+(\\.)([\\w]){2,4}([\\w]*))*$"
+	// BaseAuthURLTemplate is our default API invitation link.
+	BaseAuthURLTemplate string = "https://discord.com/api/oauth2/authorize?client_id=%s&scope=bot&permissions=%d"
+)
 
 func GetEnvOrDefault(env, def string) string {
 	v := os.Getenv(env)

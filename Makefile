@@ -10,11 +10,11 @@ GOMOD=$(GOCMD) mod
 BINARY_NAME=iridaceae-server
 TEST_BINARY_NAME=concertina-test
 PKGDIR=cmd/iridaceae-server/main.go
-TEST_PKGDIR=cmd/concertina-test/main.go 
+TEST_PKGDIR=cmd/concertina-test/main.go
 PACKAGE_NAME=$(shell basename -s .git `git config --get remote.origin.url`)
 
 # others
-GOLANGCI_LINT_VERSION=1.39.0
+GOLANGCI_LINT_VERSION=1.40.0
 
 # folders
 DIST_FOLDER=dist
@@ -154,7 +154,7 @@ lint: install-lint
 .PHONY: format
 format: install-gofumports
 	find . -name \*.go | xargs ./bin/gofumports -local github.com/Iridaceae/iridaceae -w
-	gofmt -w -s internal/**/*.go pkg/**/*.go
+	gofmt -w -s pkg/**/*.go internal/**/*.go cmd/**/*.go
 
 locale=$(shell cat .golangci.yml | grep locale | sed 's/ //g' | sed 's/locale://g')
 .PHONY: spelling

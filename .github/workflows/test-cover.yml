@@ -1,6 +1,6 @@
 name: test-coverage
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   push:
     branches: [ main ]
@@ -44,5 +44,3 @@ jobs:
         with:
           file: ./coverage.txt
           name: codecov-umbrella
-
-

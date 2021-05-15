@@ -2,7 +2,6 @@ package configmanager
 
 import (
 	"fmt"
-	"io"
 )
 
 const OptionsRegex string = "^(([\\w\\.])+(\\.)([\\w]){2,4}([\\w]*))*$"
@@ -25,17 +24,6 @@ type Source interface {
 	Name() string
 }
 
-// Parser allows us to handle read and write to and from file.
-type Parser interface {
-	// Marshal serialize data stream into io.Writer from our config
-	// instance and return errors during serialization.
-	Marshal(w io.Writer, c *Config) error
-
-	// Unmarshal deserializes a config instance from io.Reader and
-	// return our config instance and error occurred during serialization.
-	Unmarshal(r io.Reader) (*Config, error)
-}
-
 type Manager interface {
 
 	// AddSource allows users to append given configparser source to the manager.
@@ -49,38 +37,4 @@ type Manager interface {
 
 	// Reset will reset our sources and options mapping.
 	Reset()
-}
-
-// Config is specific configuration for iridaceae.
-type Config struct {
-	// TODO: generate these from files for extension.
-	Version    int         `yaml:"version" json:"version"`
-	Discord    *Discord    `yaml:"discord" json:"discord"`
-	Permission *Permission `yaml:"permission" json:"permission"`
-	Logging    *Logging    `yaml:"logging" json:"logging"`
-	Metrics    *Metrics    `yaml:"metrics" json:"metrics"`
-}
-
-type Discord struct {
-	GlobalRateLimit *GlobalRateLimit ` yaml:"globalratelimit" json:"globalratelimit"`
-}
-
-type GlobalRateLimit struct {
-	Burst       int `json:"burst"`
-	Restoration int `json:"restoration"`
-}
-
-type Permission struct {
-	User  []string `yaml:"user" json:"user"`
-	Admin []string `yaml:"admin" json:"admin"`
-}
-
-type Logging struct {
-	Enabled bool `yaml:"enabled" json:"enabled"`
-	Level   int  `yaml:"level" json:"level"`
-}
-
-type Metrics struct {
-	Enabled bool   `yaml:"enabled" json:"enabled"`
-	Address string `yaml:"address" json:"address"`
 }

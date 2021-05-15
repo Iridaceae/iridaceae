@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// L is our default logger implementation.
 var L *Logger
 
 func init() {

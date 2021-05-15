@@ -3,9 +3,9 @@
 package acceptmsg
 
 import (
-	"github.com/Iridaceae/iridaceae/internal/components"
-
 	"github.com/bwmarrin/discordgo"
+
+	helpers2 "github.com/Iridaceae/iridaceae/internal/helpers"
 )
 
 const (
@@ -47,7 +47,7 @@ func (a *AcceptMessage) WithEmbed(e *discordgo.MessageEmbed) *AcceptMessage {
 // WithContent creates an embed with default color and specified content as descriptions.
 func (a *AcceptMessage) WithContent(content string) *AcceptMessage {
 	a.Embed = &discordgo.MessageEmbed{
-		Color:       components.EmbedColorDefault,
+		Color:       helpers2.EmbedColorDefault,
 		Description: content,
 	}
 	return a
@@ -80,10 +80,10 @@ func (a *AcceptMessage) OnDecline(onDec ActionHandler) *AcceptMessage {
 // Send pushes accept message into a channel and setup listener handler for reactions.
 func (a *AcceptMessage) Send(channelID string) (*AcceptMessage, error) {
 	if a.Session == nil {
-		return nil, components.ErrSessionNotDefined
+		return nil, helpers2.ErrSessionNotDefined
 	}
 	if a.Embed == nil {
-		return nil, components.ErrEmbedNotDefined
+		return nil, helpers2.ErrEmbedNotDefined
 	}
 
 	msg, _ := a.Session.ChannelMessageSendEmbed(channelID, a.Embed)

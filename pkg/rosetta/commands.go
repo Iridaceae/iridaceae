@@ -5,6 +5,7 @@ import (
 )
 
 const (
+	// GroupGlobalAdmin defines stringer for global admin.
 	GroupGlobalAdmin = "GLOBAL ADMIN"
 	GroupGuildAdmin  = "GUILD ADMIN"
 	GroupModeration  = "MODERATION"

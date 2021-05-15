@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	helpers2 "github.com/Iridaceae/iridaceae/internal/helpers"
 
-	"github.com/Iridaceae/iridaceae/pkg/helpers"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/sarulabs/di/v2"
 
@@ -41,7 +41,7 @@ var (
 )
 
 func init() {
-	_ = helpers.LoadGlobalEnv()
+	_ = helpers2.LoadGlobalEnv()
 }
 
 func makeTestCtx(initOM bool, mockSess bool) *contextImpl {
@@ -53,7 +53,7 @@ func makeTestCtx(initOM bool, mockSess bool) *contextImpl {
 		session:   &discordgo.Session{Token: "rosetta_testToken"},
 		message:   &discordgo.Message{ID: "rosetta_testMessage", Author: &discordgo.User{ID: "rosetta_testUser"}},
 		guild:     &discordgo.Guild{ID: "rosetta_testGuild"},
-		channel:   &discordgo.Channel{ID: helpers.GetEnvOrDefault("CONCERTINA_CHANNELID", "")},
+		channel:   &discordgo.Channel{ID: helpers2.GetEnvOrDefault("CONCERTINA_CHANNELID", "")},
 		member:    &discordgo.Member{Nick: "rosetta_testNick"},
 	}
 	if mockSess {
@@ -96,17 +96,17 @@ func TestContextGetter(t *testing.T) {
 		{"is edit", func() interface{} { return ctx.IsEdit() }, ctx.isEdit},
 		{"respond text", func() interface{} {
 			msg, err := ctx.RespondText("hello world")
-			helpers.DeleteMessageAfter(ctx.GetSession(), msg, 20*time.Second)
+			helpers2.DeleteMessageAfter(ctx.GetSession(), msg, 20*time.Second)
 			return err
 		}, nil},
 		{"respond embed", func() interface{} {
 			msg, err := ctx.RespondEmbed(TestEmbedMsg)
-			defer helpers.DeleteMessageAfter(ctx.GetSession(), msg, 20*time.Second)
+			defer helpers2.DeleteMessageAfter(ctx.GetSession(), msg, 20*time.Second)
 			return err
 		}, nil},
 		{"respond embed error", func() interface{} {
 			msg, err := ctx.RespondEmbedError("test with defined error", ErrCommandNotFound)
-			defer helpers.DeleteMessageAfter(ctx.GetSession(), msg, 20*time.Second)
+			defer helpers2.DeleteMessageAfter(ctx.GetSession(), msg, 20*time.Second)
 			return err
 		}, nil},
 	}

@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Iridaceae/iridaceae/pkg/helpers"
+	helpers2 "github.com/Iridaceae/iridaceae/internal/helpers"
 
 	"github.com/Iridaceae/iridaceae/pkg/log"
 
@@ -51,7 +51,7 @@ type Iris struct {
 func New() *Iris {
 	// setup new logLevel
 
-	err := helpers.LoadConfig(helpers.IridaceaeClientID, helpers.IridaceaeClientSecrets, helpers.IridaceaeBotToken)
+	err := helpers2.LoadConfig(helpers2.IridaceaeClientID, helpers2.IridaceaeClientSecrets, helpers2.IridaceaeBotToken)
 	if err != nil {
 		log.Error(err).Msg("")
 	}
@@ -62,7 +62,7 @@ func New() *Iris {
 
 	ir.registerCmdHandlers()
 	ir.helpMessage = ir.buildHelpMessage()
-	ir.inviteMessage = fmt.Sprintf("Click here: <"+helpers.BaseAuthURLTemplate+"> to invite me to the server", helpers.IridaceaeClientID.GetString())
+	ir.inviteMessage = fmt.Sprintf("Click here: <" + helpers2.GetInviteLink() + "> to invite me to the server")
 	return ir
 }
 
@@ -73,7 +73,6 @@ func (ir *Iris) registerCmdHandlers() {
 		"stop":   {handler: ir.onCmdCancelPom, desc: "cancel current pom cycle", exampleParams: ""},
 		"status": {handler: ir.onCmdStatus, desc: "get status of given users", exampleParams: ""},
 		"invite": {handler: ir.onCmdInvite, desc: "SetZ an invite link you can use to have the bot join the server", exampleParams: ""},
-		// "simp":   {handler: ir.onCmdSimp, desc: "notify another friend with the good stuff", exampleParams: ""},
 	}
 }
 
@@ -84,7 +83,7 @@ func (ir *Iris) buildHelpMessage() string {
 	// just use map iteration order
 	for cmdStr, cmd := range ir.cmdHandlers {
 		helpBuffer.WriteString(fmt.Sprintf("\n•  **%s**  -  %s\n", cmdStr, cmd.desc))
-		helpBuffer.WriteString(fmt.Sprintf("   Example: `%s%s%s`\n", helpers.CmdPrefix.GetString(), cmdStr, cmd.exampleParams))
+		helpBuffer.WriteString(fmt.Sprintf("   Example: `%s%s %s`\n", helpers2.CmdPrefix.GetString(), cmdStr, cmd.exampleParams))
 	}
 
 	helpBuffer.WriteString("\n" + ir.inviteMessage)
@@ -95,7 +94,8 @@ func (ir *Iris) buildHelpMessage() string {
 // Start will start the bot, blocking til completed.
 func (ir *Iris) Start() error {
 	var err error
-	ir.discord, err = discordgo.New(helpers.GetBotToken(helpers.IridaceaeBotToken))
+	ir.discord, err = discordgo.New(helpers2.GetBotToken(helpers2.IridaceaeBotToken))
+
 	if err != nil {
 		return err
 	}
@@ -130,14 +130,18 @@ func (ir *Iris) onMessageReceived(s *discordgo.Session, m *discordgo.MessageCrea
 		return
 	}
 
+	msg := m.Content
+	if ok := strings.Contains(msg, helpers2.CmdPrefix.GetString()); !ok {
+		return
+	}
+
 	// we want to know who send the message
 	log.Debug().Msgf("sent by:%s#%s content:%s", m.Author.Username, m.Author.Discriminator, m.Content)
-	msg := m.Content
 
-	cmdPrefixLen := len(helpers.CmdPrefix.GetString())
+	cmdPrefixLen := len(helpers2.CmdPrefix.GetString())
 
 	// dispatch the command iff we have our prefix, (case-insensitive) otherwise throws an errors
-	if len(msg) > cmdPrefixLen && strings.EqualFold(helpers.CmdPrefix.GetString(), msg[0:cmdPrefixLen]) {
+	if len(msg) > cmdPrefixLen && strings.EqualFold(helpers2.CmdPrefix.GetString(), msg[0:cmdPrefixLen]) {
 		afterPrefix := msg[cmdPrefixLen:]
 		cmd := strings.SplitN(afterPrefix, " ", 2)
 

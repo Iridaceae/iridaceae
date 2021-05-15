@@ -17,13 +17,11 @@ var (
 	IridaceaeClientID, _       = configmanager.Register("iris.clientid", "IridaceaeClientID of the bot", nil)
 	IridaceaeClientSecrets, _  = configmanager.Register("iris.clientsecret", "ClientSecret of the bot", nil)
 	IridaceaeBotToken, _       = configmanager.Register("iris.authtoken", "authentication token of the bot", nil)
-	CmdPrefix, _               = configmanager.Register("iris.cmdprefix", "prefix for iris", "-ir")
-	Loaded                     = false
-	CI                         = true
-)
+	CmdPrefix, _               = configmanager.Register("iris.cmdprefix", "prefix for iris", "ir!")
 
-const (
-	BaseAuthURLTemplate string = "https://discord.com/api/oauth2/authorize?client_id=%s&scope=bot"
+	Loaded     = false
+	CI         = true
+	configroot = "config"
 )
 
 // GetBotToken will handles authToken.
@@ -35,11 +33,11 @@ func GetBotToken(token *configmanager.Options) string {
 	return tokenStr
 }
 
-// GetConfigRoot returns our config dir.
+// GetConfigRoot returns our configparser dir.
 func GetConfigRoot() string {
 	rootDir, _ := exec.Command("git", "rev-parse", "--show-toplevel").Output()
 	trimmed := strings.ReplaceAll(string(rootDir), "\n", "")
-	return strings.Join([]string{trimmed, "config"}, "/")
+	return strings.Join([]string{trimmed, configroot}, "/")
 }
 
 // LoadConfig will load given client id, secrets, and token for setting bot.
@@ -57,7 +55,7 @@ func LoadConfig(cid, cs, token *configmanager.Options) error {
 	for _, v := range required {
 		if v.LoadedValue == nil {
 			env := strings.ToUpper(strings.ReplaceAll(v.Name, ".", "_"))
-			return fmt.Errorf("didn't contain required config options: %q (%s as envars)", v.Name, env)
+			return fmt.Errorf("didn't contain required configparser options: %q (%s as envars)", v.Name, env)
 		}
 	}
 	return nil
