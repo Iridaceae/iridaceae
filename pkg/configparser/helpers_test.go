@@ -11,8 +11,15 @@ type testVar struct {
 	expected interface{}
 }
 
+type testString string
+
+func (t testString) String() string {
+	return string(t)
+}
+
 var stringVars = []testVar{
 	{"hello world", "hello world"},
+	{testString("hello world"), "hello world"},
 	{12, "12"},
 	{true, "true"},
 	{2.34, "2.340"},
@@ -21,24 +28,22 @@ var stringVars = []testVar{
 
 var intVars = []testVar{
 	{"1", 1},
-	{"test", ""},
+	{"test", 0},
 	{12, 12},
 	{12.3, 12},
 	{true, 1},
-	{"", 1},
 	{false, 0},
-	{float32(2.34), ""},
+	{&testVar{}, ""},
 }
 
 var floatVars = []testVar{
 	{"1.23", 1.23},
-	{"test", ""},
-	{12, 12},
+	{12, float64(12)},
 	{12.300, 12.300},
 	{true, 1},
-	{"", 1},
+	{"", 0},
 	{false, 0},
-	{float32(2.34), ""},
+	{&testVar{}, ""},
 }
 
 var boolVars = []testVar{
@@ -49,7 +54,7 @@ var boolVars = []testVar{
 	{1, true},
 	{-123, false},
 	{true, true},
-	{float32(2.34), ""},
+	{&testVar{}, false},
 }
 
 func TestConvertVal(t *testing.T) {

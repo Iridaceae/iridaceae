@@ -27,11 +27,10 @@ func toStrVal(i interface{}) string {
 func toIntVal(i interface{}) int {
 	switch t := i.(type) {
 	case string:
-		n, ok := strconv.Atoi(t)
-		if ok == nil {
+		if n, ok := strconv.Atoi(t); ok == nil {
 			return n
 		}
-		panic("cannot convert string to int")
+		return 0
 	case int, float64:
 		return t.(int)
 	case bool:
@@ -51,7 +50,7 @@ func toFloat64Val(i interface{}) float64 {
 		if ok == nil {
 			return n
 		}
-		panic("cannot convert string to float64")
+		return 0
 	case int:
 		return float64(t)
 	case float64:

@@ -13,9 +13,9 @@ const envNameRegex = "(ENV|env)+"
 var (
 	testSource    Source
 	testEnvSource *EnvSource
-	defaultAssert *assert.Assertions
+	cfgAssert     *assert.Assertions
 
-	testOptions = &Options{
+	testOpts = &Options{
 		Name:        "config.options1",
 		Description: "this a mock options",
 		Manager:     TestParser,
@@ -24,7 +24,7 @@ var (
 
 func setupConfigTest(t *testing.T) {
 	t.Helper()
-	defaultAssert = assert.New(t)
+	cfgAssert = assert.New(t)
 	addTestSource(t, &EnvSource{})
 	testSource = getTestEnvSource(t)
 }

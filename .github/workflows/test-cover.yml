@@ -1,4 +1,4 @@
-name: test and send coverage to CodeCov
+name: test-coverage
 
 # Controls when the action will run. 
 on:

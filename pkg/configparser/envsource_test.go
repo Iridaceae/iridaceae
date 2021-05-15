@@ -13,8 +13,8 @@ func TestEnvSource_GetValue(t *testing.T) {
 		opt := "test.option1.option2"
 		createTestEnvVars(t, key, value)
 		v, err := testSource.GetValue(opt)
-		defaultAssert.Equal(v, value)
-		defaultAssert.Nil(err)
+		cfgAssert.Equal(v, value)
+		cfgAssert.Nil(err)
 	})
 
 	t.Run("get nil envars", func(t *testing.T) {
@@ -25,8 +25,8 @@ func TestEnvSource_GetValue(t *testing.T) {
 		opt := "test.nil"
 		createTestEnvVars(t, key, value)
 		v, err := testSource.GetValue(opt)
-		defaultAssert.Nil(v)
-		defaultAssert.ErrorIs(err, ErrEmptyValue)
+		cfgAssert.Nil(v)
+		cfgAssert.ErrorIs(err, ErrEmptyValue)
 	})
 
 	t.Run("test regex with uncorrect envars", func(t *testing.T) {
@@ -38,8 +38,8 @@ func TestEnvSource_GetValue(t *testing.T) {
 		createTestEnvVars(t, key, value)
 		for _, val := range opt {
 			v, err := testSource.GetValue(val)
-			defaultAssert.NotEqual(v, value)
-			defaultAssert.ErrorIs(err, ErrInvalidFormat)
+			cfgAssert.NotEqual(v, value)
+			cfgAssert.ErrorIs(err, ErrInvalidFormat)
 		}
 	})
 }
@@ -47,6 +47,6 @@ func TestEnvSource_GetValue(t *testing.T) {
 func TestEnvSource_Name(t *testing.T) {
 	t.Run("get name", func(t *testing.T) {
 		setupConfigTest(t)
-		defaultAssert.Equal(testSource.Name(), "ENV")
+		cfgAssert.Equal(testSource.Name(), "ENV")
 	})
 }
