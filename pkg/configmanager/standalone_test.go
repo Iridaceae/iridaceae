@@ -1,4 +1,4 @@
-package configparser
+package configmanager
 
 import (
 	"os"
@@ -7,12 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const envNameRegex = "(ENV|env)+"
-
 // TestParser acts as a test config manager that can be used globally.
 var TestParser = NewConfigManager().(*managerImpl)
 
-var testOpts = &Options{
+var mockOption = &Options{
 	Name:        "config.options1",
 	Description: "this a mock options",
 	Manager:     TestParser,
@@ -20,7 +18,7 @@ var testOpts = &Options{
 
 func setupConfigTest(t *testing.T) {
 	t.Helper()
-	addTestSource(t, &EnvSource{})
+	TestParser.AddSource(&EnvSource{})
 }
 
 func createAndRegister(t *testing.T, name, desc string, defaultValue interface{}) error {
@@ -28,11 +26,6 @@ func createAndRegister(t *testing.T, name, desc string, defaultValue interface{}
 	_, err := TestParser.Register(name, desc, defaultValue)
 	TestParser.Load()
 	return err
-}
-
-func addTestSource(t *testing.T, s Source) {
-	t.Helper()
-	TestParser.AddSource(s)
 }
 
 func createTestEnvVars(t *testing.T, key, value string) {
@@ -66,7 +59,6 @@ func TestAddSource(t *testing.T) {
 	})
 	t.Run("reset after source", func(t *testing.T) {
 		AddSource(&EnvSource{})
-		AddSource(&YamlSource{})
 		Reset()
 		assert.Equal(t, len(Standalone.sources), 0)
 	})

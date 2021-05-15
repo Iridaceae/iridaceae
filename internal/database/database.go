@@ -5,23 +5,16 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/Iridaceae/iridaceae/pkg/helpers"
 
 	"github.com/Iridaceae/iridaceae/pkg/log"
 
-	"github.com/joho/godotenv"
-
 	"github.com/globalsign/mgo/bson"
 )
 
 func init() {
-	err := godotenv.Load(strings.Join([]string{helpers.GetRootDir(), "defaults.env"}, "/"))
-	if err != nil {
-		log.Error(err).Msg("Error loading env file")
-	}
-
+	_ = helpers.LoadGlobalEnv()
 	mUser := os.Getenv("IRIS_MONGO_USER")
 	mPass := os.Getenv("IRIS_MONGO_PASS")
 	mDBName := os.Getenv("IRIS_MONGO_DBNAME")

@@ -32,6 +32,20 @@ var (
 
 	PermLvlBotOwner   = 69420
 	PermLvlGuildOwner = 100
+
+	DefaultAdminRules = []string{
+		"+rs.guild.*",
+		"+rs.etc.*",
+		"+rs.chat.*",
+	}
+	DefaultUserRules = []string{
+		"+rs.etc.*",
+		"+rs.chat.*",
+	}
+	AdditionPermission = []string{
+		"rs.guild.config.karma",
+		"rs.guild.config.unbanrequest",
+	}
 )
 
 const (
@@ -72,11 +86,11 @@ const (
 
 	// ----------------------- colors.
 
-	EmbedColorError    = 0xd32f2f
-	EmbedColorDefault  = 0xffc107
-	EmbedColorUpdated  = 0x8bc34a
-	EmbedColorGray     = 0xb0bec5
-	EmbedColorOrange   = 0xfb8c00
+	EmbedColorError    = 0xD32F2F
+	EmbedColorDefault  = 0xFFC107
+	EmbedColorUpdated  = 0x8BC34A
+	EmbedColorGray     = 0xB0BEC5
+	EmbedColorOrange   = 0xFB8C00
 	EmbedColorGreen    = 0x8BC34A
 	EmbedColorCyan     = 0x00BCD4
 	EmbedColorYellow   = 0xFFC107

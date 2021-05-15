@@ -1,5 +1,5 @@
-// Package configparser defines some default configs handler including a configparser parser with ability to update value dynamically
-package configparser
+// Package configmanager defines some default configs handler including a configparser parser with ability to update value dynamically
+package configmanager
 
 // managerImpl holds types for generic managers to generate configs.
 type managerImpl struct {

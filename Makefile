@@ -154,7 +154,7 @@ lint: install-lint
 .PHONY: format
 format: install-gofumports
 	find . -name \*.go | xargs ./bin/gofumports -local github.com/Iridaceae/iridaceae -w
-	gofmt -w -s **/*.go
+	gofmt -w -s internal/**/*.go pkg/**/*.go
 
 locale=$(shell cat .golangci.yml | grep locale | sed 's/ //g' | sed 's/locale://g')
 .PHONY: spelling

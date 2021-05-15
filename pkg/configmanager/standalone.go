@@ -1,4 +1,4 @@
-package configparser
+package configmanager
 
 // Standalone is a singleton config manager that acts as a general manager for iris.
 var Standalone = NewConfigManager().(*managerImpl)

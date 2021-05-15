@@ -1,7 +1,7 @@
 version: 1
 
 discord:
-  ratelimit:
+  globalratelimit:
     burst: 2
     restoration: 10
 
@@ -16,8 +16,8 @@ permission:
 
 logging:
   enabled: true
-  level: 1 # refers to rs/zerolog log level
+  level: 1
 
 metrics:
   enabled: true
-  addr: ":9000"
+  address: ":9000"

@@ -1,4 +1,4 @@
-package configparser
+package configmanager
 
 import (
 	"testing"
@@ -119,8 +119,8 @@ func TestOptions_GetString(t *testing.T) {
 
 func TestOptions_LoadValue(t *testing.T) {
 	t.Run("Load a nil default value", func(t *testing.T) {
-		testOpts.LoadValue()
-		assert.Nil(t, testOpts.LoadedValue)
+		mockOption.LoadValue()
+		assert.Nil(t, mockOption.LoadedValue)
 	})
 
 	t.Run("Load a memory value", func(t *testing.T) {
@@ -151,28 +151,28 @@ func TestOptions_LoadValue(t *testing.T) {
 }
 
 func TestOptions_UpdateValue(t *testing.T) {
-	testOpts.LoadValue()
+	mockOption.LoadValue()
 	t.Run("check default value", func(t *testing.T) {
-		assert.Nil(t, testOpts.DefaultValue)
+		assert.Nil(t, mockOption.DefaultValue)
 	})
 	t.Run("update loaded value to boolean", func(t *testing.T) {
-		testOpts.UpdateValue(true)
-		assert.Equal(t, testOpts.LoadedValue, true)
+		mockOption.UpdateValue(true)
+		assert.Equal(t, mockOption.LoadedValue, true)
 	})
 	t.Run("update loaded value to string", func(t *testing.T) {
 		tstStr := "test"
-		testOpts.UpdateValue(tstStr)
-		assert.Equal(t, testOpts.LoadedValue, tstStr)
+		mockOption.UpdateValue(tstStr)
+		assert.Equal(t, mockOption.LoadedValue, tstStr)
 	})
 	t.Run("update loaded value to int", func(t *testing.T) {
 		tstInt := 1342
-		testOpts.UpdateValue(tstInt)
-		assert.Equal(t, testOpts.LoadedValue, tstInt)
+		mockOption.UpdateValue(tstInt)
+		assert.Equal(t, mockOption.LoadedValue, tstInt)
 	})
 	t.Run("update loaded value to float64", func(t *testing.T) {
 		tstInt := float64(12)
-		testOpts.UpdateValue(tstInt)
-		assert.Equal(t, testOpts.LoadedValue, tstInt)
+		mockOption.UpdateValue(tstInt)
+		assert.Equal(t, mockOption.LoadedValue, tstInt)
 	})
 }
 
