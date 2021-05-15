@@ -7,13 +7,13 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func ScLevelEncoder() func(l zerolog.Level) string {
+func LevelEncoder() func(l zerolog.Level) string {
 	return func(l zerolog.Level) string {
 		return strings.ToUpper(l.String())
 	}
 }
 
-func ScCallerEncoder() func(file string, line int) string {
+func CallerEncoder() func(file string, line int) string {
 	return func(file string, line int) string {
 		return TrimmedPath(file) + ":" + strconv.Itoa(line)
 	}

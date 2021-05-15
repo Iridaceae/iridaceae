@@ -3,13 +3,17 @@ package helpers
 import (
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-// TODO: a better way to get general token.
+// DomainRegex follows our same rule for configparser.
+const DomainRegex string = "^(([\\w\\.])+(\\.)([\\w]){2,4}([\\w]*))*$"
+
 func MakeTestSession() *discordgo.Session {
+	// TODO: a better way to get general token.
 	botToken := os.Getenv("CONCERTINA_AUTHTOKEN")
 	// ensure sessions are established
 	dg, err := discordgo.New("Bot " + botToken)
@@ -35,4 +39,11 @@ func GetRevision() string {
 
 func GetVersion() string {
 	return "v1"
+}
+
+func CheckDomainCompile(name string) bool {
+	if _, err := regexp.MatchString(DomainRegex, name); err != nil {
+		return false
+	}
+	return true
 }

@@ -38,5 +38,5 @@ func TestDefaultHelpCommand_Exec(t *testing.T) {
 
 	help := &DefaultHelpCommand{}
 	r.Register(help)
-	r.(*router).trigger(ctx.session, msg)
+	r.(*routerImpl).trigger(ctx.session, msg)
 }

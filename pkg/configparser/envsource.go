@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// EnvSource defines source for environment variables.
 type EnvSource struct{}
 
 // GetValue will get env vars with following format for config parsing: iris.option1.option2.
@@ -25,6 +26,7 @@ func (e *EnvSource) GetValue(key string) (interface{}, error) {
 	return nil, ErrInvalidFormat
 }
 
+// Name will return the name of given source.
 func (e *EnvSource) Name() string {
 	return "ENV"
 }

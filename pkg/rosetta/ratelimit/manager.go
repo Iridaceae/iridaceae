@@ -20,23 +20,23 @@ type Manager interface {
 	GetExecutions() *timedmap.TimedMap
 }
 
-type manager struct {
+type managerImpl struct {
 	executions *timedmap.TimedMap
 	pool       *sync.Pool
 }
 
-func (m *manager) GetExecutions() *timedmap.TimedMap {
+func (m *managerImpl) GetExecutions() *timedmap.TimedMap {
 	return m.executions
 }
 
-func newInternalManager(cleanupInterval time.Duration) *manager {
-	return &manager{
+func newInternalManager(cleanupInterval time.Duration) *managerImpl {
+	return &managerImpl{
 		executions: timedmap.New(cleanupInterval),
 		pool:       &sync.Pool{New: func() interface{} { return new(Bucket) }},
 	}
 }
 
-func (m *manager) GetBucket(cmd rosetta.Command, uid, gid string) *Bucket {
+func (m *managerImpl) GetBucket(cmd rosetta.Command, uid, gid string) *Bucket {
 	key := fmt.Sprintf("%s:%s:%s", cmd.GetDomain(), uid, gid)
 
 	// all command should implements LimitedConfig.

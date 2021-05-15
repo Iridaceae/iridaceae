@@ -14,7 +14,7 @@ import (
 
 func TestScLevelEncoder(t *testing.T) {
 	original := zerolog.LevelFieldMarshalFunc
-	zerolog.LevelFieldMarshalFunc = ScLevelEncoder()
+	zerolog.LevelFieldMarshalFunc = LevelEncoder()
 	defer func() {
 		zerolog.LevelFieldMarshalFunc = original
 	}()
@@ -51,7 +51,7 @@ func TestScCallerEncoder(t *testing.T) {
 	// test our encoder behavior.
 	original := zerolog.CallerMarshalFunc
 	defer func() { zerolog.CallerMarshalFunc = original }()
-	zerolog.CallerMarshalFunc = ScCallerEncoder()
+	zerolog.CallerMarshalFunc = CallerEncoder()
 	_, file, line, _ := runtime.Caller(0)
 	caller := fmt.Sprintf("%s:%d", TrimmedPath(file), line+2)
 	L.log.Log().Caller().Msg("msg")

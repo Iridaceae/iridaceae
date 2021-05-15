@@ -7,19 +7,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Iridaceae/iridaceae/pkg/rosetta"
+	"github.com/Iridaceae/iridaceae/pkg/helpers"
 
-	"github.com/Iridaceae/iridaceae/pkg"
+	"github.com/Iridaceae/iridaceae/pkg/rosetta"
 
 	"github.com/stretchr/testify/assert"
 )
 
 const count = 1000
 
-var tm *manager
+var tm *managerImpl
 
 func init() {
-	_ = pkg.LoadGlobalEnv()
+	_ = helpers.LoadGlobalEnv()
 	tm = newInternalManager(10 * time.Minute)
 }
 
@@ -59,7 +59,7 @@ func TestManager_GetBucket(t *testing.T) {
 		l3 := m.GetBucket(test, "u2", "guild")
 		assert.Equal(t, l1, l2)
 		if l3 == l1 || l3 == l2 {
-			t.Error(errDupsBucket(l3))
+			t.Errorf("%+v was a duplicate of %+v & %+v.", l3, l1, l2)
 		}
 	})
 	t.Run("add unknown bucket", func(t *testing.T) {
@@ -69,10 +69,6 @@ func TestManager_GetBucket(t *testing.T) {
 		assert.Equal(t, tm.executions.GetValue(key).(*Bucket), tm.GetBucket(cmd, "user1", "gid1"))
 		assert.Equal(t, count, tm.executions.Size())
 	})
-}
-
-func errDupsBucket(i1 interface{}) string {
-	return fmt.Sprintf("%+v was a duplicate of l1 & l2.", i1)
 }
 
 type TestCmd struct {
@@ -121,7 +117,7 @@ func (t *TestCmd) IsExecutableInDM() bool {
 	return true
 }
 
-func (t *TestCmd) Exec(ctx rosetta.Context) error {
+func (t *TestCmd) Exec(_ rosetta.Context) error {
 	t.wasExecuted = true
 	if t.fail {
 		return errors.New("test error")

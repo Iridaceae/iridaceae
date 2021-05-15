@@ -1,4 +1,4 @@
-package pkg
+package helpers
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/joho/godotenv"
 
-	configparser "github.com/Iridaceae/iridaceae/pkg/configmanager"
+	"github.com/Iridaceae/iridaceae/pkg/configparser"
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 	IridaceaeClientID, _       = configparser.Register("iris.clientid", "IridaceaeClientID of the bot", nil)
 	IridaceaeClientSecrets, _  = configparser.Register("iris.clientsecret", "ClientSecret of the bot", nil)
 	IridaceaeBotToken, _       = configparser.Register("iris.authtoken", "authentication token of the bot", nil)
-	CmdPrefix, _               = configparser.Register("iris.cmdprefix", "prefix for iris", "-ir ")
+	CmdPrefix, _               = configparser.Register("iris.cmdprefix", "prefix for iris", "-ir")
 	Loaded                     = false
 	CI                         = true
 )
@@ -41,8 +41,8 @@ func GetRootDir() string {
 	return strings.ReplaceAll(string(rootDir), "\n", "")
 }
 
-// LoadConfig will load given clientid, secrets, and token for setting bot.
-func LoadConfig(clientid, clientsecret, token *configparser.Options) error {
+// LoadConfig will load given client id, secrets, and token for setting bot.
+func LoadConfig(cid, cs, token *configparser.Options) error {
 	if Loaded {
 		return nil
 	}
@@ -51,11 +51,7 @@ func LoadConfig(clientid, clientsecret, token *configparser.Options) error {
 	configparser.AddSource(&configparser.EnvSource{})
 	configparser.Load()
 
-	required := []*configparser.Options{
-		clientid,
-		clientsecret,
-		token,
-	}
+	required := []*configparser.Options{cid, cs, token}
 
 	for _, v := range required {
 		if v.LoadedValue == nil {
@@ -72,5 +68,5 @@ func LoadGlobalEnv() error {
 	if CI {
 		return nil
 	}
-	return godotenv.Load(strings.Join([]string{GetRootDir(), "defaults.env"}, "/"))
+	return godotenv.Load(strings.Join([]string{GetRootDir(), "config", "defaults.env"}, "/"))
 }

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Iridaceae/iridaceae/pkg"
-
 	"github.com/bwmarrin/discordgo"
 
 	"github.com/rs/zerolog/log"
@@ -19,13 +17,13 @@ import (
 var TestSession *discordgo.Session
 
 func init() {
-	_ = pkg.LoadGlobalEnv()
+	_ = helpers.LoadGlobalEnv()
 	TestSession = helpers.MakeTestSession()
 }
 
 func TestRouter_Setup(t *testing.T) {
 	r := NewRouter(makeTestConfig())
-	r.Setup(TestSession)
+	r.RegisterSession(TestSession)
 }
 
 func TestNewDefaultConfig(t *testing.T) {
@@ -76,7 +74,7 @@ func TestRouter_Register(t *testing.T) {
 		cmd := &TestCmd{}
 		r.Register(cmd)
 
-		for _, instance := range r.(*router).cmdMap {
+		for _, instance := range r.(*routerImpl).cmdMap {
 			assert.Equal(t, cmd, instance)
 		}
 	})
@@ -95,8 +93,8 @@ func TestRouter_Register(t *testing.T) {
 		r := NewRouter(makeTestConfig())
 		mw := &TestMiddleware{}
 		r.Register(mw)
-		assert.NotZero(t, r.(*router).middleware)
-		assert.Equal(t, mw, r.(*router).middleware[0])
+		assert.NotZero(t, r.(*routerImpl).middleware)
+		assert.Equal(t, mw, r.(*routerImpl).middleware[0])
 	})
 	t.Run("register panic interface", func(t *testing.T) {
 		defer func() {
@@ -134,7 +132,7 @@ func TestRouterExecuteMiddleware(t *testing.T) {
 	session.AddHandler(func(s *discordgo.Session, e *discordgo.Ready) {
 		failFunc := func(s *discordgo.Session, fail bool, msg *discordgo.Message) {
 			cmd.fail = fail
-			r.(*router).trigger(s, msg)
+			r.(*routerImpl).trigger(s, msg)
 			switch cmd.fail {
 			case true:
 				assert.True(t, m1.executed)
@@ -202,7 +200,7 @@ func testTrigger(t *testing.T, session *discordgo.Session, exit chan bool, shall
 	r.GetConfig().OnError = func(ctx Context, errType ErrorType, err error) {}
 
 	session.AddHandler(func(_ *discordgo.Session, e *discordgo.Ready) {
-		r.(*router).trigger(session, msg)
+		r.(*routerImpl).trigger(session, msg)
 		if !cmd.executed && shallExecuted {
 			t.Error("command was not executed")
 		} else if cmd.executed && !shallExecuted {
@@ -228,7 +226,7 @@ func TestRouter_GetterSetter(t *testing.T) {
 		{"get command instance", func() interface{} { return r.GetCommandInstances()[0] }, cmd},
 		{"get command", func() interface{} {
 			res := make([]bool, 0)
-			for i := range r.(*router).cmdMap {
+			for i := range r.(*routerImpl).cmdMap {
 				_, ok := r.GetCommand(i)
 				res = append(res, ok)
 			}
@@ -236,13 +234,13 @@ func TestRouter_GetterSetter(t *testing.T) {
 		}, []bool{true, true}},
 		{"set object", func() interface{} {
 			r.SetObject("rosetta_testAnother", 69420)
-			rec, ok := r.(*router).objectMap.Load("rosetta_testAnother")
+			rec, ok := r.(*routerImpl).objectMap.Load("rosetta_testAnother")
 			assert.True(t, ok)
 			v, _ := rec.(int)
 			return v
 		}, 69420},
 		{"get object", func() interface{} {
-			r.(*router).objectMap.Store("rosetta_test", 456)
+			r.(*routerImpl).objectMap.Store("rosetta_test", 456)
 			v, _ := r.GetObject("rosetta_test").(int)
 			return v
 		}, 456},

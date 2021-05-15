@@ -39,8 +39,8 @@ func New() *Logger {
 
 	zerolog.CallerFieldName = "source"
 	zerolog.TimeFieldFormat = time.RFC3339
-	zerolog.LevelFieldMarshalFunc = ScLevelEncoder()
-	zerolog.CallerMarshalFunc = ScCallerEncoder()
+	zerolog.LevelFieldMarshalFunc = LevelEncoder()
+	zerolog.CallerMarshalFunc = CallerEncoder()
 
 	L = &Logger{log: &l}
 	return L

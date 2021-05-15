@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/Iridaceae/iridaceae/pkg"
 	"github.com/Iridaceae/iridaceae/pkg/deprecatedrunner"
+	"github.com/Iridaceae/iridaceae/pkg/helpers"
 	"github.com/Iridaceae/iridaceae/pkg/log"
 )
 
@@ -12,11 +12,11 @@ func main() {
 	defer log.Info().Msg("--shutdown--")
 	// we will handle all flags here
 
-	_ = pkg.LoadGlobalEnv()
+	_ = helpers.LoadGlobalEnv()
 	// TODO: should check if it is running inside docker or a CI pipe
 	log.Warn().Msg("Make sure that envars are set correctly in docker and CI.")
 
-	if err := pkg.LoadConfig(pkg.ConcertinaClientID, pkg.ConcertinaClientSecrets, pkg.ConcertinaBotToken); err != nil {
+	if err := helpers.LoadConfig(helpers.ConcertinaClientID, helpers.ConcertinaClientSecrets, helpers.ConcertinaBotToken); err != nil {
 		log.Error(err).Msg("couldn't load required envars.")
 	}
 	// setup metrics here.

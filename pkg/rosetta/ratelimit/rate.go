@@ -11,7 +11,7 @@ import (
 	"github.com/Iridaceae/iridaceae/pkg/rosetta"
 )
 
-// RateLimiter implements a managers of rate limiters.
+// RateLimiter implements a middleware that manage multiple rate limiters.
 // This can also be parsed a custom Manager instance if you want to handle limiters differently.
 type RateLimiter struct {
 	m Manager
@@ -46,8 +46,8 @@ func (r *RateLimiter) Handle(cmd rosetta.Command, ctx rosetta.Context, layer ros
 
 	limiter := r.m.GetBucket(cmd, ctx.GetUser().ID, gid)
 	if k, next := limiter.Take(); !k {
-		_, err := ctx.RespondEmbedError(fmt.Sprintf("You are being rate limited.\nWait %s before using this command again.", next.String()), rosetta.ErrRateLimited)
-		return false, err
+		_, _ = ctx.RespondEmbedError(fmt.Sprintf("You are being rate limited.\nWait %s before using this command again.", next.String()), rosetta.ErrRateLimited)
+		return false, rosetta.ErrRateLimited
 	}
 	return true, nil
 }

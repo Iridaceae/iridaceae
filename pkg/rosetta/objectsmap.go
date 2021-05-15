@@ -10,6 +10,8 @@ type ReadOnlyObjectMap interface {
 	// SetObject sets a value to the object.
 	// This is used to workaround di.Container to get
 	// our router instance inside our router context.
+	// This should only be implemented in ObjectMap when
+	// I figure out a workaround this issues for di.Container.
 	SetObject(key string, value interface{})
 }
 

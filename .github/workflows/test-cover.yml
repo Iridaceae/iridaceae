@@ -1,4 +1,4 @@
-name: test and cover
+name: test and send coverage to CodeCov
 
 # Controls when the action will run. 
 on:
@@ -11,33 +11,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Setup Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: ${{ matrix.go-version }} 
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Cache Go modules
-        uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys:
-            ${{ runner.os }}-go-
-      - name: run tests 
-        run: go test -v -covermode=count ./...
-        env:
-          CONCERTINA_AUTHTOKEN: ${{ secrets.CONCERTINA_AUTHTOKEN }}
-          CONCERTINA_CLIENTID: ${{ secrets.CONCERTINA_CLIENTID }}
-          CONCERTINA_CLIENTSECRET: ${{ secrets.CONCERTINA_CLIENTSECRET }}
-          CONCERTINA_GUILDID: ${{ secrets.CONCERTINA_GUILDID }}
-          CONCERTINA_CHANNELID: ${{ secrets.CONCERTINA_CHANNELID }}
-
-  coverage:
+  test-coverage:
     runs-on: ubuntu-latest
 
     steps:

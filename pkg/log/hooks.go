@@ -27,7 +27,7 @@ func (m MapperHook) Run(e *zerolog.Event, level zerolog.Level, message string) {
 }
 
 // Storage defines our key, value mapping for our context.
-// Storage is inherently safe for concurrency and goroutines.
+// Storage is inherently safe when using in goroutine.
 type Storage struct {
 	items map[string]interface{}
 	sync.RWMutex

@@ -3,9 +3,6 @@ package configparser
 
 import (
 	"fmt"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 const OptionsRegex string = "^(([\\w\\.])+(\\.)([\\w]){2,4}([\\w]*))*$"
@@ -21,16 +18,6 @@ var (
 type Source interface {
 	GetValue(key string) (interface{}, error)
 	Name() string
-}
-
-type Options struct {
-	// Name will have format iris.option1.option2
-	Name         string
-	Description  string
-	DefaultValue interface{}
-	LoadedValue  interface{}
-	Manager      *ConfigManager
-	ConfigSource Source
 }
 
 // ConfigManager holds types for generic managers to generate configs.
@@ -71,126 +58,75 @@ func (c *ConfigManager) Load() {
 	}
 }
 
-// LoadValue will load given values if exists, otherwise use default ones.
-func (opt *Options) LoadValue() {
-	def := opt.DefaultValue
-	opt.ConfigSource = nil
+// Options is our variable configuration.
+type Options struct {
+	// Name will have format iris.option1.option2
+	Name         string
+	Description  string
+	DefaultValue interface{}
+	LoadedValue  interface{}
+	Manager      *ConfigManager
+	ConfigSource Source
+}
 
-	for i := len(opt.Manager.sources) - 1; i >= 0; i-- {
-		source := opt.Manager.sources[i]
+// LoadValue will load given values if exists, otherwise use default ones.
+func (o *Options) LoadValue() {
+	def := o.DefaultValue
+	o.ConfigSource = nil
+
+	for i := len(o.Manager.sources) - 1; i >= 0; i-- {
+		source := o.Manager.sources[i]
 		// v would be value from given source, check envsource.go for examples
-		v, _ := source.GetValue(opt.Name)
+		v, _ := source.GetValue(o.Name)
 
 		if v != nil {
 			def = v
-			opt.ConfigSource = source
+			o.ConfigSource = source
 			break
 		}
 	}
 
-	if opt.DefaultValue != nil {
-		if _, ok := opt.DefaultValue.(int); ok {
+	if o.DefaultValue != nil {
+		if _, ok := o.DefaultValue.(int); ok {
 			def = interface{}(toIntVal(def))
-		} else if _, ok := opt.DefaultValue.(bool); ok {
+		} else if _, ok = o.DefaultValue.(bool); ok {
 			def = interface{}(toBoolVal(def))
 		}
 	}
 
-	opt.LoadedValue = def
+	o.LoadedValue = def
 }
 
 // UpdateValue updates loaded value.
-func (opt *Options) UpdateValue(val interface{}) {
+func (o *Options) UpdateValue(val interface{}) {
 	switch val.(type) {
 	case bool:
-		opt.LoadedValue = toBoolVal(val)
+		o.LoadedValue = toBoolVal(val)
 	case string:
-		opt.LoadedValue = toStrVal(val)
+		o.LoadedValue = toStrVal(val)
 	case int:
-		opt.LoadedValue = toIntVal(val)
+		o.LoadedValue = toIntVal(val)
 	case float64:
-		opt.LoadedValue = toFloat64Val(val)
+		o.LoadedValue = toFloat64Val(val)
 	}
 }
 
 // GetString are a getter string for &Options.LoadedValue.
-func (opt *Options) GetString() string {
-	return toStrVal(opt.LoadedValue)
+func (o *Options) GetString() string {
+	return toStrVal(o.LoadedValue)
 }
 
 // GetInt are a getter int for &Options.LoadedValue.
-func (opt *Options) GetInt() int {
-	return toIntVal(opt.LoadedValue)
+func (o *Options) GetInt() int {
+	return toIntVal(o.LoadedValue)
 }
 
 // GetBool are a getter bool for &Options.LoadedValue.
-func (opt *Options) GetBool() bool {
-	return toBoolVal(opt.LoadedValue)
+func (o *Options) GetBool() bool {
+	return toBoolVal(o.LoadedValue)
 }
 
 // GetFloat are a getter float64 for &Options.LoadedValue.
-func (opt *Options) GetFloat() float64 {
-	return toFloat64Val(opt.LoadedValue)
-}
-
-func toStrVal(i interface{}) string {
-	switch t := i.(type) {
-	case string:
-		return t
-	case int:
-		return strconv.FormatInt(int64(t), 10)
-	case fmt.Stringer:
-		return t.String()
-	}
-	return ""
-}
-
-func toIntVal(i interface{}) int {
-	switch t := i.(type) {
-	case string:
-		n, _ := strconv.Atoi(t)
-		return n
-	case int:
-		return t
-	}
-	return 0
-}
-
-func toFloat64Val(i interface{}) float64 {
-	switch t := i.(type) {
-	case string:
-		n, _ := strconv.ParseFloat(t, 64)
-		return n
-	case int:
-		return float64(t)
-	case float64:
-		return t
-	}
-	return 0
-}
-
-func toBoolVal(i interface{}) bool {
-	switch t := i.(type) {
-	case string:
-		lower := strings.ToLower(strings.TrimSpace(t))
-		// NOTE: regex match
-		if lower == "true" || lower == "yes" || lower == "on" || lower == "enabled" || lower == "1" {
-			return true
-		}
-		return false
-	case int:
-		return t > 0
-	case bool:
-		return t
-	}
-
-	return false
-}
-
-func matchOptionsRegex(key string) (bool, error) {
-	b, _ := regexp.MatchString(OptionsRegex, key)
-	if b {
-		return b, nil
-	}
-	return b, ErrInvalidOptionsMatch
+func (o *Options) GetFloat() float64 {
+	return toFloat64Val(o.LoadedValue)
 }

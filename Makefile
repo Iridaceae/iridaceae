@@ -33,11 +33,11 @@ run: build ## run iridaceae in local context
 
 .PHONY: test
 test:
-	$(GOTEST) -v -race ./...
+	$(GOTEST) -v -race -covermode=atomic ./pkg/...
 
-.PHONY: test-cov
-test-cov:
-	$(GOTEST) -v -race -covermode=atomic ./...
+.PHONY: coverage
+coverage:
+	$(GOTEST) -cover -race ./pkg/...
 
 .PHONY: clean
 clean:

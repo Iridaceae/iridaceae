@@ -34,7 +34,7 @@ type Context interface {
 	// GetMember returns the member object of the author of the message.
 	GetMember() *discordgo.Member
 
-	// IsDM returns true if context is sent in a dms or group dms, false otherwise
+	// IsDM returns true if contextImpl is sent in a dms or group dms, false otherwise
 	IsDM() bool
 
 	// IsEdit returns true if event is a *discordgo.MessageUpdate event.
@@ -50,8 +50,8 @@ type Context interface {
 	RespondEmbedError(title string, err error) (*discordgo.Message, error)
 }
 
-// context is our default implementation of Context.
-type context struct {
+// contextImpl is our default implementation of Context.
+type contextImpl struct {
 	isDM      bool
 	isEdit    bool
 	router    Router
@@ -64,7 +64,7 @@ type context struct {
 	member    *discordgo.Member
 }
 
-func (c *context) GetObject(key string) (value interface{}) {
+func (c *contextImpl) GetObject(key string) (value interface{}) {
 	var ok bool
 	if c.objectMap != nil {
 		value, ok = c.objectMap.Load(key)
@@ -76,54 +76,54 @@ func (c *context) GetObject(key string) (value interface{}) {
 	return
 }
 
-func (c *context) SetObject(key string, value interface{}) {
+func (c *contextImpl) SetObject(key string, value interface{}) {
 	c.objectMap.Store(key, value)
 }
 
-func (c *context) GetSession() *discordgo.Session {
+func (c *contextImpl) GetSession() *discordgo.Session {
 	return c.session
 }
 
-func (c *context) GetArguments() *Arguments {
+func (c *contextImpl) GetArguments() *Arguments {
 	return c.args
 }
 
-func (c *context) GetChannel() *discordgo.Channel {
+func (c *contextImpl) GetChannel() *discordgo.Channel {
 	return c.channel
 }
 
-func (c *context) GetMessage() *discordgo.Message {
+func (c *contextImpl) GetMessage() *discordgo.Message {
 	return c.message
 }
 
-func (c *context) GetGuild() *discordgo.Guild {
+func (c *contextImpl) GetGuild() *discordgo.Guild {
 	return c.guild
 }
 
-func (c *context) GetUser() *discordgo.User {
+func (c *contextImpl) GetUser() *discordgo.User {
 	return c.message.Author
 }
 
-func (c *context) GetMember() *discordgo.Member {
+func (c *contextImpl) GetMember() *discordgo.Member {
 	return c.member
 }
 
-func (c *context) IsDM() bool {
+func (c *contextImpl) IsDM() bool {
 	return c.isDM
 }
 
-func (c *context) IsEdit() bool {
+func (c *contextImpl) IsEdit() bool {
 	return c.isEdit
 }
 
-func (c *context) RespondText(content string) (*discordgo.Message, error) {
+func (c *contextImpl) RespondText(content string) (*discordgo.Message, error) {
 	return c.session.ChannelMessageSend(c.channel.ID, content)
 }
 
-func (c *context) RespondEmbed(embed *discordgo.MessageEmbed) (*discordgo.Message, error) {
+func (c *contextImpl) RespondEmbed(embed *discordgo.MessageEmbed) (*discordgo.Message, error) {
 	return c.session.ChannelMessageSendEmbed(c.channel.ID, embed)
 }
 
-func (c *context) RespondEmbedError(title string, err error) (*discordgo.Message, error) {
+func (c *contextImpl) RespondEmbedError(title string, err error) (*discordgo.Message, error) {
 	return c.session.ChannelMessageSendEmbed(c.channel.ID, &discordgo.MessageEmbed{Title: title, Description: fmt.Sprintf("*%s*", err.Error()), Color: EmbedColorError})
 }

@@ -42,9 +42,9 @@ func TestTrimPreSuffix(t *testing.T) {
 
 func TestArrayContains(t *testing.T) {
 	t.Run("ignore case", func(t *testing.T) {
-		tarr := []string{"1", "2", "3"}
+		arr := []string{"1", "2", "3"}
 		contained := "test"
-		ok := arrayContains(tarr, contained, false)
+		ok := arrayContains(arr, contained, false)
 		assert.False(t, ok)
 	})
 	t.Run("case sensitive", func(t *testing.T) {

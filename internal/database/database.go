@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Iridaceae/iridaceae/pkg/log"
+	"github.com/Iridaceae/iridaceae/pkg/helpers"
 
-	"github.com/Iridaceae/iridaceae/pkg"
+	"github.com/Iridaceae/iridaceae/pkg/log"
 
 	"github.com/joho/godotenv"
 
@@ -17,7 +17,7 @@ import (
 )
 
 func init() {
-	err := godotenv.Load(strings.Join([]string{pkg.GetRootDir(), "defaults.env"}, "/"))
+	err := godotenv.Load(strings.Join([]string{helpers.GetRootDir(), "defaults.env"}, "/"))
 	if err != nil {
 		log.Error(err).Msg("Error loading env file")
 	}

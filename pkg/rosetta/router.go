@@ -24,7 +24,7 @@ var C *Config
 
 func init() {
 	C = NewDefaultConfig()
-	R, _ = NewRouter(C).(*router)
+	R, _ = NewRouter(C).(*routerImpl)
 }
 
 // Config setup configs value for our router.
@@ -70,7 +70,7 @@ type Router interface {
 
 	// Setup registers given handlers to the passed discordgo.Session which are
 	// used to handle and parse command.
-	Setup(session *discordgo.Session)
+	RegisterSession(session *discordgo.Session)
 
 	// GetConfig returns the specified config object which was specified on initialization.
 	GetConfig() *Config
@@ -88,7 +88,7 @@ type Router interface {
 
 // router is our default implementation of Router.
 
-type router struct {
+type routerImpl struct {
 	config          *Config
 	cmdMap          map[string]Command
 	cmdInstances    []Command
@@ -121,12 +121,12 @@ func NewRouter(c *Config) Router {
 	if c.GuildPrefixGetter == nil {
 		c.GuildPrefixGetter = func(string) (string, error) { return "", nil }
 	}
-	r := &router{
+	r := &routerImpl{
 		config:          c,
 		cmdMap:          make(map[string]Command),
 		cmdInstances:    make([]Command, 0),
 		objectContainer: c.ObjectContainer,
-		ctxPool:         &sync.Pool{New: func() interface{} { return &context{objectMap: &sync.Map{}} }},
+		ctxPool:         &sync.Pool{New: func() interface{} { return &contextImpl{objectMap: &sync.Map{}} }},
 		objectMap:       &sync.Map{},
 	}
 
@@ -141,7 +141,7 @@ func NewRouter(c *Config) Router {
 	return r
 }
 
-func (r *router) GetObject(key string) interface{} {
+func (r *routerImpl) GetObject(key string) interface{} {
 	value, err := r.objectContainer.SafeGet(key)
 	if err != nil {
 		value, _ = r.objectMap.Load(key)
@@ -149,11 +149,11 @@ func (r *router) GetObject(key string) interface{} {
 	return value
 }
 
-func (r *router) SetObject(key string, value interface{}) {
+func (r *routerImpl) SetObject(key string, value interface{}) {
 	r.objectMap.Store(key, value)
 }
 
-func (r *router) Register(v interface{}) {
+func (r *routerImpl) Register(v interface{}) {
 	switch i := v.(type) {
 	case Command:
 		r.RegisterCommand(i)
@@ -164,7 +164,7 @@ func (r *router) Register(v interface{}) {
 	}
 }
 
-func (r *router) RegisterCommand(cmd Command) {
+func (r *routerImpl) RegisterCommand(cmd Command) {
 	r.cmdInstances = append(r.cmdInstances, cmd)
 	for _, i := range cmd.GetInvokers() {
 		if r.config.IgnoreCase {
@@ -177,18 +177,18 @@ func (r *router) RegisterCommand(cmd Command) {
 	}
 }
 
-func (r *router) RegisterMiddleware(m Middleware) {
+func (r *routerImpl) RegisterMiddleware(m Middleware) {
 	r.middleware = append(r.middleware, m)
 }
 
-func (r *router) Setup(session *discordgo.Session) {
+func (r *routerImpl) RegisterSession(session *discordgo.Session) {
 	session.AddHandler(func(s *discordgo.Session, e *discordgo.MessageCreate) { r.trigger(s, e.Message) })
 	if r.config.ExecuteOnEdit {
 		session.AddHandler(func(s *discordgo.Session, e *discordgo.MessageUpdate) { r.trigger(s, e.Message) })
 	}
 }
 
-func (r *router) trigger(s *discordgo.Session, msg *discordgo.Message) {
+func (r *routerImpl) trigger(s *discordgo.Session, msg *discordgo.Message) {
 	var (
 		err    error
 		prefix = ""
@@ -199,7 +199,7 @@ func (r *router) trigger(s *discordgo.Session, msg *discordgo.Message) {
 		return
 	}
 
-	ctx, _ := r.ctxPool.Get().(*context)
+	ctx, _ := r.ctxPool.Get().(*contextImpl)
 	ctx.router = r
 	ctx.session = s
 	ctx.message = msg
@@ -286,7 +286,7 @@ func (r *router) trigger(s *discordgo.Session, msg *discordgo.Message) {
 	}
 }
 
-func (r *router) executeMiddlewares(cmd Command, ctx Context, layer MiddlewareLayer) bool {
+func (r *routerImpl) executeMiddlewares(cmd Command, ctx Context, layer MiddlewareLayer) bool {
 	for _, m := range r.middleware {
 		if m.GetLayer()&layer == 0 {
 			continue
@@ -304,19 +304,19 @@ func (r *router) executeMiddlewares(cmd Command, ctx Context, layer MiddlewareLa
 	return true
 }
 
-func (r *router) GetConfig() *Config {
+func (r *routerImpl) GetConfig() *Config {
 	return r.config
 }
 
-func (r *router) GetCommandMap() map[string]Command {
+func (r *routerImpl) GetCommandMap() map[string]Command {
 	return r.cmdMap
 }
 
-func (r *router) GetCommandInstances() []Command {
+func (r *routerImpl) GetCommandInstances() []Command {
 	return r.cmdInstances
 }
 
-func (r *router) GetCommand(invoke string) (Command, bool) {
+func (r *routerImpl) GetCommand(invoke string) (Command, bool) {
 	if r.config.IgnoreCase {
 		invoke = strings.ToLower(invoke)
 	}

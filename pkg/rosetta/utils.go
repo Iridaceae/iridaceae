@@ -6,6 +6,7 @@ import (
 	"sync"
 )
 
+// hasPrefix will returns striped message without prefix and true if message contains prefix.
 func hasPrefix(msg string, prefix string, ignoreCase bool) (string, bool) {
 	strToCheck := msg
 	if ignoreCase {

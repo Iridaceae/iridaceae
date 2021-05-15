@@ -5,8 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Iridaceae/iridaceae/pkg"
-
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Iridaceae/iridaceae/pkg/helpers"
@@ -43,11 +41,11 @@ var (
 )
 
 func init() {
-	_ = pkg.LoadGlobalEnv()
+	_ = helpers.LoadGlobalEnv()
 }
 
-func makeTestCtx(initOM bool, mockSess bool) *context {
-	ctx := &context{
+func makeTestCtx(initOM bool, mockSess bool) *contextImpl {
+	ctx := &contextImpl{
 		isDM:      true,
 		isEdit:    true,
 		args:      ParseArguments("a b c"),
@@ -68,9 +66,9 @@ func makeTestCtx(initOM bool, mockSess bool) *context {
 			return nil
 		}
 
-		rr := &router{
+		rr := &routerImpl{
 			objectContainer: b.Build(),
-			ctxPool:         &sync.Pool{New: func() interface{} { return &context{objectMap: &sync.Map{}} }},
+			ctxPool:         &sync.Pool{New: func() interface{} { return &contextImpl{objectMap: &sync.Map{}} }},
 			objectMap:       &sync.Map{},
 		}
 		ctx.router = rr
